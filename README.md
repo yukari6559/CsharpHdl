@@ -36,10 +36,11 @@ C# HDL 記述（このプロジェクト）
 | TinyTapeOut 提出 | 縮小コアだけを記述して公式ラッパーに接続 |
 | 周辺 IP | UART / タイマー等をモジュールとして再利用 |
 
-## リポジトリ構成（予定）
+## リポジトリ構成
 
 ```
 CsharpHdl/
+├── CsharpHdl.slnx        # ソリューション（.NET 10）
 ├── docs/                 # 仕様・ガイド（日本語）
 ├── src/
 │   ├── SharpHdl.Core/    # AST・DSL API（あなたが実装）
@@ -47,7 +48,16 @@ CsharpHdl/
 │   ├── SharpHdl.Cli/     # 生成 CLI
 │   └── SharpHdl.Tests/
 ├── examples/             # ALU・blink 等の記述例
-└── out/generated/        # 生成物の出力先（gitignore 推奨）
+└── out/generated/        # 生成物の出力先（gitignore）
+```
+
+## ビルド
+
+```bash
+cd CsharpHdl
+dotnet build CsharpHdl.slnx
+dotnet test CsharpHdl.slnx
+dotnet run --project src/SharpHdl.Cli -- --version
 ```
 
 ## 方針

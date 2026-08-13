@@ -2,6 +2,7 @@
 
 ```
 CsharpHdl/
+├── CsharpHdl.slnx           # ソリューション（.NET 10）
 ├── README.md
 ├── docs/                    # 仕様・ガイド
 ├── src/
@@ -12,7 +13,14 @@ CsharpHdl/
 ├── examples/
 │   ├── alu/                 # 記述例（実装する）
 │   └── blink/
-└── out/generated/           # emit 出力（gitignore 推奨）
+└── out/generated/           # emit 出力（gitignore）
+```
+
+参照関係:
+
+```
+SharpHdl.Cli ----→ SharpHdl.Emit ----→ SharpHdl.Core
+SharpHdl.Tests --→ SharpHdl.Emit ----→ SharpHdl.Core
 ```
 
 | 置き場 | 内容 |
