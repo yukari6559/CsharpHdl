@@ -4,6 +4,8 @@
 
 [dsl-spec.md](../dsl-spec.md) に沿った API と、[verilog-emit-spec.md](../verilog-emit-spec.md) に沿った Emitter を実装する。
 
+**進め方が分からないとき** → [phase-2-how-to-think.md](phase-2-how-to-think.md)（§2.5: 小さな課題とヒント）
+
 ## 実装するもの
 
 | 部品 | 場所 |

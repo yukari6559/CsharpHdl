@@ -29,6 +29,7 @@
 | [guides/phase-0-foundation.md](guides/phase-0-foundation.md) | 方針固め |
 | [guides/phase-1-alu.md](guides/phase-1-alu.md) | 文字列 or AST で ALU 生成 |
 | [guides/phase-2-dsl.md](guides/phase-2-dsl.md) | DSL + Emitter |
+| [guides/phase-2-how-to-think.md](guides/phase-2-how-to-think.md) | Phase 2 の考え方・小さな課題とヒント（コードなし） |
 | [guides/phase-3-cpu-ready.md](guides/phase-3-cpu-ready.md) | CPU 向け機能（Mem / 階層） |
 | [guides/phase-4-tooling.md](guides/phase-4-tooling.md) | CLI・パッケージ化・消費者連携 |
 
@@ -48,5 +49,6 @@
 「Reg はどう書く？」     → dsl-spec.md
 「assign になる条件は？」 → verilog-emit-spec.md
 「今週何を作る？」       → guides/phase-N-*.md
+「Signal で止まった」    → guides/phase-2-how-to-think.md
 「MyOs からどう使う？」  → consumers.md
 ```
