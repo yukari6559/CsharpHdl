@@ -24,4 +24,34 @@ public class ModuleTests
 		Assert.Equal(testmodule1.Input, expr.Left);
 		Assert.Equal(testmodule1.Output, expr.Right);
 	}
+
+	[Fact]
+	public void TestAluModuleStmt()
+	{
+		Alu alu = new();
+		alu.Describe();
+		List<Stmt> stmts = alu.GetStmts().ToList();
+		SwitchStmt switchStmt = (SwitchStmt)stmts[0];
+		Assert.Equal(4,switchStmt.Cases.Count);
+		Assert.Equal(0u,switchStmt.Cases[0].Value);
+		AssignStmt assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
+		Assert.Equal(alu.Y,assignStmt.Signal);
+		OpExpr opExpr  = (OpExpr) assignStmt.Expr;
+		Assert.Equal(Op.Plus,opExpr.Op);
+		Assert.Equal(1u,switchStmt.Cases[1].Value);
+		assignStmt = (AssignStmt)switchStmt.Cases[1].Stmts[0];
+		Assert.Equal(alu.Y,assignStmt.Signal);
+		opExpr  = (OpExpr) assignStmt.Expr;
+		Assert.Equal(Op.Minus,opExpr.Op);
+		Assert.Equal(2u,switchStmt.Cases[2].Value);
+		assignStmt = (AssignStmt)switchStmt.Cases[2].Stmts[0];
+		Assert.Equal(alu.Y,assignStmt.Signal);
+		opExpr  = (OpExpr) assignStmt.Expr;
+		Assert.Equal(Op.And,opExpr.Op);
+		Assert.Equal(3u,switchStmt.Cases[3].Value);
+		assignStmt = (AssignStmt)switchStmt.Cases[3].Stmts[0];
+		Assert.Equal(alu.Y,assignStmt.Signal);
+		opExpr  = (OpExpr) assignStmt.Expr;
+		Assert.Equal(Op.Or,opExpr.Op);
+	}
 }
