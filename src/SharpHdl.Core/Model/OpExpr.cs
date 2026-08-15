@@ -9,5 +9,8 @@ public class OpExpr : Expr
 
 public enum Op
 {
-	Plus
+	Plus,
+	Minus,
+	And,
+	Or
 }
