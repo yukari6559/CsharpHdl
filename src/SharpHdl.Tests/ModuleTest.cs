@@ -14,4 +14,14 @@ public class ModuleTests
 		Assert.Equal("Output", signals[1].Name);
 		Assert.Equal(1u, signals[1].Width);
 	}
+
+	[Fact]
+	public void TestModuleExpr()
+	{
+		TestModule1 testmodule1 = new();
+		OpExpr expr = testmodule1.Input + testmodule1.Output;
+		Assert.Equal(Op.Plus, expr.Op);
+		Assert.Equal(testmodule1.Input, expr.Left);
+		Assert.Equal(testmodule1.Output, expr.Right);
+	}
 }

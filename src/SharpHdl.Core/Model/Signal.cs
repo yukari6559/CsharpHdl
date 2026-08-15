@@ -5,7 +5,7 @@ public enum SignalDirection
     Input,
     Output
 }
-public class Signal
+public class Signal : Expr
 {
 	protected SignalDirection Direction{get;}
 	public string Name {get;}
