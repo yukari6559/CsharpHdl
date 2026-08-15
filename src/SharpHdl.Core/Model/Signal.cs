@@ -17,6 +17,14 @@ public class Signal : Expr
 		Name = name;
 		Direction = direction;
 	}
+
+	public void Assign(Expr expr)
+	{
+		AssignStmt assignStmt = new (this, expr);
+		if(CurrentWrite.CurrentStmts == null)
+			throw new Exception();
+		CurrentWrite.CurrentStmts.Add(assignStmt);
+	}
 }
 
 public class In : Signal
