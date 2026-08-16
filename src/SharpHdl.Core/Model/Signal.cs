@@ -7,7 +7,7 @@ public enum SignalDirection
 }
 public class Signal : Expr
 {
-	protected SignalDirection Direction{get;}
+	public SignalDirection Direction{get;private set;}
 	public string Name {get;}
 	public uint Width {get;}
 

@@ -1,6 +1,7 @@
 namespace SharpHdl.Tests;
 
 using SharpHdl.Core.Model;
+using SharpHdl.Emit;
 
 public class ModuleTests
 {
@@ -53,5 +54,23 @@ public class ModuleTests
 		Assert.Equal(alu.Y,assignStmt.Signal);
 		opExpr  = (OpExpr) assignStmt.Expr;
 		Assert.Equal(Op.Or,opExpr.Op);
+	}
+
+	[Fact]
+	public void TestAluModuleEmitter_EmitsPortFrame()
+	{
+		Alu alu = new();
+		var verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
+
+		const string expected =
+			"module Alu(\n" +
+			"\tinput wire [31:0] A,\n" +
+			"\tinput wire [31:0] B,\n" +
+			"\tinput wire [1:0] Op,\n" +
+			"\toutput wire [31:0] Y\n" +
+			");\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
 	}
 }
