@@ -16,12 +16,20 @@ public static class VerilogEmitter
 		StringBuilder verilogsb = new();
 
 		List<Signal> signals = module.GetPorts().ToList();
+		List<Stmt> stmts = module.GetStmts().ToList(); 
 		
 		verilogsb.Append($"module {moduleName}(\n");
 		for(int i = 0; i < signals.Count; i++)
 		{
 			var item = signals[i];
-			if(item.Direction == SignalDirection.Input)
+			if(item.Width == 1)
+			{
+				if(item.Direction == SignalDirection.Input)
+					verilogsb.Append($"\tinput wire {item.Name}");
+				else if (item.Direction == SignalDirection.Output)
+					verilogsb.Append($"\toutput wire {item.Name}");
+			}
+			else if(item.Direction == SignalDirection.Input)
 				verilogsb.Append($"\tinput wire [{item.Width - 1}:0] {item.Name}");
 			else if (item.Direction == SignalDirection.Output)
 				verilogsb.Append($"\toutput wire [{item.Width - 1}:0] {item.Name}");
@@ -31,8 +39,37 @@ public static class VerilogEmitter
 				verilogsb.Append("\n");
 		}
 		verilogsb.Append(");\n");
+		foreach(var item in stmts)
+		{
+			if(item is AssignStmt)
+			{
+				AssignStmt assignStmt = (AssignStmt)item;
+				Expr expr = assignStmt.Expr;
+				string s = emitExpr(expr);
+				verilogsb.Append($"\tassign {assignStmt.Signal.Name} = {s};\n");
+			}
+		}
 		verilogsb.Append("endmodule");
 
 		return verilogsb.ToString();
+	}
+
+	public static string emitExpr(Expr expr)
+	{
+		
+		if(expr is Signal)
+		{
+			Signal signal = (Signal)expr;
+			return signal.Name;
+		}
+		else if(expr is OpExpr)
+		{
+			OpExpr opExpr = (OpExpr)expr;
+			return emitExpr(opExpr.Left) + " " + opExpr.Op.ToCustomString() + " " + emitExpr(opExpr.Right);
+		}
+		else
+		{
+			throw new Exception();
+		}
 	}
 }

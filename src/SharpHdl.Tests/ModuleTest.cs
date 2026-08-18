@@ -73,4 +73,42 @@ public class ModuleTests
 
 		Assert.Equal(expected, verilog);
 	}
+
+	[Fact]
+	public void TestTestModuleEmitter_EmitsSimpleModule()
+	{
+		TestModule1 testModule1 = new ();
+		testModule1.Describe();
+		var verilog = VerilogEmitter.Emitter(testModule1, nameof(TestModule1));
+
+		const string expected =
+			"module TestModule1(\n" +
+			"\tinput wire Input,\n" +
+			"\toutput wire Output\n" +
+			");\n" +
+			"\tassign Output = Input;\n"+
+			"endmodule";
+		
+		Console.WriteLine(verilog);
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestAluModuleEmitter_EmitsAll()
+	{
+		Alu alu = new();
+		alu.Describe();
+		var verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
+
+		const string expected =
+			"module Alu(\n" +
+			"\tinput wire [31:0] A,\n" +
+			"\tinput wire [31:0] B,\n" +
+			"\tinput wire [1:0] Op,\n" +
+			"\toutput wire [31:0] Y\n" +
+			");\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
 }

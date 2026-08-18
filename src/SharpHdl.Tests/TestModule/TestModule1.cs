@@ -9,4 +9,12 @@ public sealed class TestModule1 : Module
 	{
 		SetPorts([Input, Output]);
 	}
+
+	public override void Describe()
+	{
+		Comb(() =>
+		{
+			Output.Assign(Input);
+		});
+	}
 }

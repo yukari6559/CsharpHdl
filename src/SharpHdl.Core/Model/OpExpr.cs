@@ -14,3 +14,15 @@ public enum Op
 	And,
 	Or
 }
+
+public static class OpExtension
+{
+	public static string ToCustomString(this Op op) => op switch
+	{
+		Op.Plus => "+",
+		Op.Minus => "-",
+		Op.And => "&",
+		Op.Or => "|",
+		_ => op.ToString()
+	};
+}
