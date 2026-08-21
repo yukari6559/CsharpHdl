@@ -107,6 +107,10 @@ public class ModuleTests
 			"\tinput wire [1:0] Op,\n" +
 			"\toutput wire [31:0] Y\n" +
 			");\n" +
+			"\tassign Y = (Op == 2'd0) ? (A + B) :\n" +
+			"\t\t(Op == 2'd1) ? (A - B) :\n" +
+			"\t\t(Op == 2'd2) ? (A & B) :\n" +
+			"\t\t(A | B);\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);

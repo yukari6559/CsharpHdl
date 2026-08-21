@@ -48,6 +48,31 @@ public static class VerilogEmitter
 				string s = emitExpr(expr);
 				verilogsb.Append($"\tassign {assignStmt.Signal.Name} = {s};\n");
 			}
+			if(item is SwitchStmt)
+			{
+				SwitchStmt switchStmt = (SwitchStmt)item;
+				Signal? beforeSignal = null;
+				AssignStmt assignStmt = assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
+				for(int i = 0; i < switchStmt.Cases.Count; i++)
+				{
+					assignStmt = (AssignStmt)switchStmt.Cases[i].Stmts[0];
+					if (i != 0 && beforeSignal != assignStmt.Signal)
+						throw new Exception();
+					else if (i == 0)
+					{
+						verilogsb.Append($"\tassign {assignStmt.Signal.Name} = ({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[0].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
+						beforeSignal = assignStmt.Signal;
+						continue;
+					}
+					else if (i == switchStmt.Cases.Count - 1)
+					{
+						verilogsb.Append($"\t\t({emitExpr(assignStmt.Expr)});\n");
+						break;
+					}
+					verilogsb.Append($"\t\t({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[i].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
+					beforeSignal = assignStmt.Signal;
+				}
+			}
 		}
 		verilogsb.Append("endmodule");
 
