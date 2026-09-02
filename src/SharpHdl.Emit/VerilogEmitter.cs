@@ -48,6 +48,23 @@ public static class VerilogEmitter
 				string s = emitExpr(expr);
 				verilogsb.Append($"\tassign {assignStmt.Signal.Name} = {s};\n");
 			}
+			if(item is SeqBlockStmt)
+			{
+				SeqBlockStmt seqBlock = (SeqBlockStmt)item;
+				verilogsb.Append($"\talways @(posedge {seqBlock.Clk.Name}) begin\n");
+				foreach(var bodyItem in seqBlock.Body)
+				{
+					if(bodyItem is SeqAssignStmt seqAssign)
+					{
+						verilogsb.Append($"\t\tif ({seqBlock.Reset.Name}) begin\n");
+						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
+						verilogsb.Append($"\t\tend else begin\n");
+						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {emitExpr(seqAssign.Expr)};\n");
+						verilogsb.Append($"\t\tend\n");
+					}
+				}
+				verilogsb.Append("\tend\n");
+			}
 			if(item is SwitchStmt)
 			{
 				SwitchStmt switchStmt = (SwitchStmt)item;

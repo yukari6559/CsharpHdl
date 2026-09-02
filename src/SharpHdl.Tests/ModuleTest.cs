@@ -94,6 +94,61 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestCounterModuleStmt()
+	{
+		Counter counter = new();
+		counter.Describe();
+		List<Stmt> stmts = counter.GetStmts().ToList();
+
+		Assert.Single(stmts);
+		SeqBlockStmt block = (SeqBlockStmt)stmts[0];
+		Assert.Equal(counter.Clk, block.Clk);
+		Assert.Equal(counter.Rst, block.Reset);
+		Assert.Single(block.Body);
+
+		SeqAssignStmt assign = (SeqAssignStmt)block.Body[0];
+		Assert.Equal(counter.Count, assign.Signal);
+		Assert.Equal(0u, assign.ResetValue);
+		OpExpr expr = (OpExpr)assign.Expr;
+		Assert.Equal(Op.Plus, expr.Op);
+		Assert.Equal(counter.Count, expr.Left);
+		Assert.Equal(counter.Step, expr.Right);
+	}
+
+	[Fact]
+	public void TestSeqAssign_OutsideSeq_Throws()
+	{
+		Counter counter = new();
+		Assert.Throws<Exception>(() => counter.Count.Assign(0, counter.Count));
+	}
+
+	[Fact]
+	public void TestCounterModuleEmitter_EmitsSeq()
+	{
+		Counter counter = new();
+		counter.Describe();
+		var verilog = VerilogEmitter.Emitter(counter, nameof(Counter));
+
+		const string expected =
+			"module Counter(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire rst,\n" +
+			"\tinput wire [7:0] step,\n" +
+			"\toutput wire [7:0] count\n" +
+			");\n" +
+			"\talways @(posedge clk) begin\n" +
+			"\t\tif (rst) begin\n" +
+			"\t\t\tcount <= 8'd0;\n" +
+			"\t\tend else begin\n" +
+			"\t\t\tcount <= count + step;\n" +
+			"\t\tend\n" +
+			"\tend\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestAluModuleEmitter_EmitsAll()
 	{
 		Alu alu = new();

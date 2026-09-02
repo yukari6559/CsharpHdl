@@ -32,6 +32,7 @@ public class Module
 	{
 		CurrentWrite.CurrentModule = this;
 		CurrentWrite.CurrentStmts = Stmts;
+		CurrentWrite.ModuleType = ModuleType.Comb;
 		try
 		{
 			action.Invoke();
@@ -40,8 +41,29 @@ public class Module
 		{
 			CurrentWrite.CurrentModule = null;
 			CurrentWrite.CurrentStmts = null;
+			CurrentWrite.ModuleType = null;
 		}
 	}
+
+	public void Seq(In clk, In reset, Action action)
+	{
+		CurrentWrite.CurrentModule = this;
+		List<Stmt> seqBlockStmts = new();
+		CurrentWrite.CurrentStmts = seqBlockStmts;
+		CurrentWrite.ModuleType = ModuleType.Seq;
+		try
+		{
+			action.Invoke();
+		}
+		finally
+		{
+			CurrentWrite.CurrentModule = null;
+			CurrentWrite.CurrentStmts = null;
+			CurrentWrite.ModuleType = null;
+		}
+		Stmts.Add(new SeqBlockStmt(clk, reset, seqBlockStmts));
+	}
+
 	public void Switch(In op, params (uint value, Action action)[] casesParam)
 	{
 		CurrentWrite.CurrentModule = this;

@@ -36,3 +36,29 @@ public class SwitchStmt : Stmt
 		Cases = cases;
 	}
 }
+
+public class SeqBlockStmt : Stmt
+{
+	public In Clk{get; private set;}
+	public In Reset{get; private set;}
+	public List<Stmt> Body{get; private set;}
+	public SeqBlockStmt(In clk, In reset, List<Stmt> body)
+	{
+		Clk = clk;
+		Reset = reset;
+		Body = body;
+	}
+}
+
+public class SeqAssignStmt : Stmt
+{
+	public Signal Signal{get; private set;}
+	public Expr Expr{get; private set;}
+	public uint ResetValue{get;private set;}
+	public SeqAssignStmt(Signal signal, Expr expr, uint resetValue)
+	{
+		Signal = signal;
+		Expr = expr;
+		ResetValue = resetValue;
+	}
+}

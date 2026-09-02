@@ -23,7 +23,21 @@ public class Signal : Expr
 		AssignStmt assignStmt = new (this, expr);
 		if(CurrentWrite.CurrentStmts == null)
 			throw new Exception();
-		CurrentWrite.CurrentStmts.Add(assignStmt);
+		if(CurrentWrite.ModuleType == ModuleType.Comb)
+			CurrentWrite.CurrentStmts.Add(assignStmt);
+		else
+			throw new Exception();
+	}
+
+	public void Assign(uint resetValue, Expr next)
+	{
+		SeqAssignStmt assignStmt = new(this, next, resetValue);
+		if(CurrentWrite.CurrentStmts == null)
+			throw new Exception();
+		if(CurrentWrite.ModuleType == ModuleType.Seq)
+			CurrentWrite.CurrentStmts.Add(assignStmt);
+		else
+			throw new Exception();
 	}
 }
 
