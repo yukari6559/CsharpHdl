@@ -7,7 +7,8 @@
 | 順 | 文書 | 目的 |
 |----|------|------|
 | 1 | [getting-started.md](getting-started.md) | 何を作るか・最初の週 |
-| 2 | [ROADMAP.md](ROADMAP.md) | フェーズ全体 |
+| 2 | [ROADMAP.md](ROADMAP.md) | フェーズ全体（Phase 0–4） |
+| 2b | [long-term-plan.md](long-term-plan.md) | 長期計画（Phase A–H: VSCode / FPGA / 合成探究） |
 | 3 | [dsl-spec.md](dsl-spec.md) | DSL の契約（API イメージ） |
 | 4 | [verilog-emit-spec.md](verilog-emit-spec.md) | 生成 Verilog の約束 |
 | 5 | [guides/phase-0-foundation.md](guides/phase-0-foundation.md) | 実装開始 |
@@ -32,6 +33,13 @@
 | [guides/phase-2-how-to-think.md](guides/phase-2-how-to-think.md) | Phase 2 の考え方・小さな課題とヒント（コードなし） |
 | [guides/phase-3-cpu-ready.md](guides/phase-3-cpu-ready.md) | CPU 向け機能（Mem / 階層） |
 | [guides/phase-4-tooling.md](guides/phase-4-tooling.md) | CLI・パッケージ化・消費者連携 |
+
+## 長期計画
+
+| 文書 | 内容 |
+|------|------|
+| [long-term-plan.md](long-term-plan.md) | VSCode 統合・ピン Attribute・マルチバックエンド・合成探究 |
+| [ROADMAP.md](ROADMAP.md) § Phase 5+ | 長期計画の概要（本計画へのリンク） |
 
 ## 運用
 
