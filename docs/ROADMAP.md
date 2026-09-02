@@ -27,12 +27,29 @@
 | G3 | `dotnet pack` またはプロジェクト参照で MyOsProject から利用 |
 | G4 | examples が Verilator で通る |
 
-## やらないこと（初期）
+## やらないこと（初期 Phase 0–4）
 
 - 任意 C# の HLS 変換
 - パイプライン自動挿入
 - SystemVerilog の高度な機能全対応
 - GUI
+
+Phase 0–4 完了後は [long-term-plan.md](long-term-plan.md) に従い、VSCode 統合・ピン GUI・マルチ FPGA バックエンド等を段階的に追加する。
+
+## Phase 5+（長期計画）
+
+Phase 4 以降の拡張は [long-term-plan.md](long-term-plan.md) に詳述。概要:
+
+| Phase | 内容 |
+|-------|------|
+| A | 既存 Phase 2–4 完遂（DSL / CLI / Verilator） |
+| B | Attribute・ボード定義・`sharphdl.json` |
+| C | 制約ファイル生成（XDC / SDC / QSF） |
+| D | バックエンド抽象化（Yosys / Vivado / Quartus） |
+| E | VSCode 拡張 |
+| F | ピン GUI ↔ ソース自動同期 |
+| G | エンドツーエンド統合（記述 → 書き込み） |
+| H | Yosys バックエンド自作（技術探究） |
 
 ## 消費者との関係
 
