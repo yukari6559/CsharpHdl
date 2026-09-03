@@ -20,6 +20,8 @@ public class Signal : Expr
 
 	public void Assign(Expr expr)
 	{
+		if(expr.GetWidth() != Width)
+			throw new WidthMismatchException();
 		AssignStmt assignStmt = new (this, expr);
 		if(CurrentWrite.CurrentStmts == null)
 			throw new Exception();
@@ -31,6 +33,8 @@ public class Signal : Expr
 
 	public void Assign(uint resetValue, Expr next)
 	{
+		if(next.GetWidth() != Width)
+			throw new WidthMismatchException();
 		SeqAssignStmt assignStmt = new(this, next, resetValue);
 		if(CurrentWrite.CurrentStmts == null)
 			throw new Exception();
