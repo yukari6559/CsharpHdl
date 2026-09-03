@@ -1,5 +1,15 @@
 # 統合ログ
 
+## 2026-09-03 — Phase 2 完了（幅不一致）
+
+### 実施
+- [x] `Expr.GetWidth()`（Signal = Width、OpExpr = Left）
+- [x] `WidthMismatchException` と Assign 時チェック（Comb / Seq）
+- [x] BadWidth テスト（8←32）で Comb / Seq の失敗を固定
+
+### 仕様
+- 検出タイミングは代入時。演算結果幅は左オペランド幅
+
 ## 2026-09-02 — 長期開発計画ドキュメント追加
 
 ### 実施

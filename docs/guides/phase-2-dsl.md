@@ -17,8 +17,8 @@
 
 ## 完了条件
 
-- [ ] DSL で ALU を記述し、Phase 1 と同等の Verilog が出る  
-- [ ] 同期カウンタ例が動く  
-- [ ] 幅不一致がエラーになる  
+- [x] DSL で ALU を記述し、Phase 1 と同等の Verilog が出る  
+- [x] 同期カウンタ例が動く  
+- [x] 幅不一致がエラーになる  
 
 → [phase-3-cpu-ready.md](phase-3-cpu-ready.md)

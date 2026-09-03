@@ -9,10 +9,10 @@
 
 ## 必須ケース（Phase 1〜2）
 
-- [ ] ALU add/sub/and/or  
-- [ ] 同期カウンタ（rst で 0）  
-- [ ] 幅不一致で emit が失敗する  
-- [ ] 生成ファイルが空でない  
+- [x] ALU add/sub/and/or  
+- [x] 同期カウンタ（rst で 0）  
+- [x] 幅不一致で Assign が失敗する（Comb / Seq）  
+- [x] 生成ファイルが空でない  
 
 ## Integration
 
