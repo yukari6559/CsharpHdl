@@ -123,6 +123,20 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestCombAssign_WidthMismatch_Throws()
+	{
+		BadWidthModule module = new();
+		Assert.Throws<WidthMismatchException>(module.DescribeCombMismatch);
+	}
+
+	[Fact]
+	public void TestSeqAssign_WidthMismatch_Throws()
+	{
+		BadWidthModule module = new();
+		Assert.Throws<WidthMismatchException>(module.DescribeSeqMismatch);
+	}
+
+	[Fact]
 	public void TestCounterModuleEmitter_EmitsSeq()
 	{
 		Counter counter = new();
