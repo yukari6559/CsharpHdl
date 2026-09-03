@@ -62,3 +62,16 @@ public class SeqAssignStmt : Stmt
 		ResetValue = resetValue;
 	}
 }
+
+public class InstanceStmt : Stmt
+{
+	public Module ChildModule{get; private set;}
+	public string InstanceName{get; private set;}
+	public List<PortConnection> PortConnections{get; private set;}
+	public InstanceStmt(Module childModule, string instanceName, List<PortConnection> portConnections)
+	{
+		ChildModule = childModule;
+		InstanceName = instanceName;
+		PortConnections = portConnections;
+	}
+}

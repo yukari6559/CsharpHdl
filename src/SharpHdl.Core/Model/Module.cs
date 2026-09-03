@@ -81,4 +81,9 @@ public class Module
 		parent.Add(new SwitchStmt(op,cases));
 		CurrentWrite.CurrentStmts = Stmts;
 	}
+
+	public void Instance(Module childModule, string instanceName, List<PortConnection> portConnections)
+	{
+		
+	}
 }
