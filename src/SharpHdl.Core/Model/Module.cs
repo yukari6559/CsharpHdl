@@ -82,8 +82,9 @@ public class Module
 		CurrentWrite.CurrentStmts = Stmts;
 	}
 
-	public void Instance(Module childModule, string instanceName, List<PortConnection> portConnections)
+	public void Instance(Module childModule, string instanceName, params (Signal ChildPort, Signal parentSignal)[] connections)
 	{
-		
+		var portConnections = connections.Select(c => new PortConnection{ChildPort = c.ChildPort, ParentSignal = c.parentSignal}).ToList();
+		Stmts.Add(new InstanceStmt(childModule, instanceName, portConnections));
 	}
 }
