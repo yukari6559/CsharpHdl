@@ -18,12 +18,15 @@ public static class VerilogEmitter
 		List<Signal> signals = top.GetPorts().ToList();
 		List<Stmt> stmts = top.GetStmts().ToList();
 		List<InstanceStmt> instanceStmts = new();
+		HashSet<string> emitted = new();
 
 		foreach(var item in  stmts)
 		{
 			if(item is InstanceStmt)
 			{
 				instanceStmts.Add((InstanceStmt)item);
+				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
+        			continue;
 				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
 			}
 		}
