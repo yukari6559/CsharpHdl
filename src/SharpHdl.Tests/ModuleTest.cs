@@ -184,4 +184,52 @@ public class ModuleTests
 
 		Assert.Equal(expected, verilog);
 	}
+
+	[Fact]
+	public void TestAluTopModuleStmt()
+	{
+		AluTop top = new();
+		top.Describe();
+		List<Stmt> stmts = top.GetStmts().ToList();
+
+		Assert.Single(stmts);
+		InstanceStmt instance = (InstanceStmt)stmts[0];
+		Assert.Equal("alu", instance.InstanceName);
+		Assert.IsType<Alu>(instance.ChildModule);
+		Assert.Equal(4, instance.PortConnections.Count);
+		Assert.Equal(top.A, instance.PortConnections[0].ParentSignal);
+		Assert.Equal(top.Y, instance.PortConnections[3].ParentSignal);
+	}
+
+	[Fact]
+	public void TestAluTopModuleEmitter_EmitsHierarchy()
+	{
+		AluTop top = new();
+		top.Describe();
+		var verilog = VerilogEmitter.Emitter(top, nameof(AluTop));
+
+		const string expected =
+			"module Alu(\n" +
+			"\tinput wire [31:0] A,\n" +
+			"\tinput wire [31:0] B,\n" +
+			"\tinput wire [1:0] Op,\n" +
+			"\toutput wire [31:0] Y\n" +
+			");\n" +
+			"\tassign Y = (Op == 2'd0) ? (A + B) :\n" +
+			"\t\t(Op == 2'd1) ? (A - B) :\n" +
+			"\t\t(Op == 2'd2) ? (A & B) :\n" +
+			"\t\t(A | B);\n" +
+			"endmodule" +
+			"module AluTop(\n" +
+			"\tinput wire [31:0] A,\n" +
+			"\tinput wire [31:0] B,\n" +
+			"\tinput wire [1:0] Op,\n" +
+			"\toutput wire [31:0] Y\n" +
+			");\n" +
+			"\tAlu alu (\n" +
+			"\t\t.A(A),\t\t.B(B),\t\t.Op(Op),\t\t.Y(Y));\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
 }
