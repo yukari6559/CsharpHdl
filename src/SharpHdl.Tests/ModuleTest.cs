@@ -232,4 +232,29 @@ public class ModuleTests
 
 		Assert.Equal(expected, verilog);
 	}
+
+	[Fact]
+	public void TestDualAluTopEmitter_EmitsChildModuleOnce()
+	{
+		DualAluTop top = new();
+		top.Describe();
+		var verilog = VerilogEmitter.Emitter(top, nameof(DualAluTop));
+
+		Assert.Equal(1, CountOccurrences(verilog, "module Alu("));
+		Assert.Contains("Alu alu0 (", verilog);
+		Assert.Contains("Alu alu1 (", verilog);
+		Assert.Equal(2, CountOccurrences(verilog, "endmodule"));
+	}
+
+	private static int CountOccurrences(string text, string value)
+	{
+		int count = 0;
+		int index = 0;
+		while ((index = text.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+		{
+			count++;
+			index += value.Length;
+		}
+		return count;
+	}
 }
