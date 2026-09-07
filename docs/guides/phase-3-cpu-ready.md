@@ -4,10 +4,24 @@
 
 消費者が CPU コアを書ける最低限を足す。**特定 ISA はここには置かない。**
 
-## 追加機能
+## 階層モジュール（完了）
+
+| 部品 | 場所 |
+|------|------|
+| `PortConnection`, `InstanceStmt` | `SharpHdl.Core` |
+| `Module.Instance(...)` | `SharpHdl.Core` |
+| 子→親連結 + インスタンス行 emit | `SharpHdl.Emit` |
+| `AluTop` / `DualAluTop` テスト | `SharpHdl.Tests` |
+| 階層例 | `examples/alu-top/` |
+
+### 完了条件（階層）
+
+- [x] モジュール階層とポート接続  
+- [x] 階層 2 段の例が emit できる（`AluTop`・`DualAluTop`）  
+
+## 追加機能（残り）
 
 - [ ] `Mem`（1R1W、同期）  
-- [ ] モジュール階層とポート接続  
 - [ ] ビットスライス / 連結（必要なら）  
 - [ ] 複数ファイルまたは連結出力  
 
@@ -20,9 +34,9 @@
 
 SimpleRISC 本体は MyOsProject 側。
 
-## 完了条件
+## 完了条件（フェーズ全体）
 
-- [ ] 階層 2 段の例が emit できる  
+- [x] 階層 2 段の例が emit できる  
 - [ ] Mem 例がシミュレーションできる  
 
-→ [phase-4-tooling.md](phase-4-tooling.md)
+→ 次: [phase-4-tooling.md](phase-4-tooling.md)（Mem 完了後）

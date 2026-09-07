@@ -148,7 +148,7 @@ public class ModuleTests
 			"\tinput wire clk,\n" +
 			"\tinput wire rst,\n" +
 			"\tinput wire [7:0] step,\n" +
-			"\toutput wire [7:0] count\n" +
+			"\toutput reg [7:0] count\n" +
 			");\n" +
 			"\talways @(posedge clk) begin\n" +
 			"\t\tif (rst) begin\n" +
@@ -244,6 +244,49 @@ public class ModuleTests
 		Assert.Contains("Alu alu0 (", verilog);
 		Assert.Contains("Alu alu1 (", verilog);
 		Assert.Equal(2, CountOccurrences(verilog, "endmodule"));
+	}
+
+	[Fact]
+	public void TestSimpleRamModuleStmt()
+	{
+		SimpleRam ram = new();
+		ram.Describe();
+		List<Stmt> stmts = ram.GetStmts().ToList();
+
+		Assert.Single(stmts);
+		MemStmt mem = Assert.IsType<MemStmt>(stmts[0]);
+		Assert.Equal(256u, mem.Depth);
+		Assert.Equal(32u, mem.Width);
+		Assert.Equal(ram.Clk, mem.Clk);
+		Assert.Equal(ram.We, mem.We);
+		Assert.Equal(ram.Addr, mem.Addr);
+		Assert.Equal(ram.Wdata, mem.Wdata);
+		Assert.Equal(ram.Rdata, mem.Rdata);
+	}
+
+	[Fact]
+	public void TestSimpleRamModuleEmitter_EmitsMem()
+	{
+		SimpleRam ram = new();
+		ram.Describe();
+		var verilog = VerilogEmitter.Emitter(ram, nameof(SimpleRam));
+
+		const string expected =
+			"module SimpleRam(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire we,\n" +
+			"\tinput wire [7:0] addr,\n" +
+			"\tinput wire [31:0] wdata,\n" +
+			"\toutput reg [31:0] rdata\n" +
+			");\n" +
+			"reg [31:0] mem [0:255];\n" +
+			"always @(posedge clk) begin\n" +
+			"\tif (we) mem[addr] <= wdata;\n" +
+			"\trdata <= mem[addr];\n" +
+			"end\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
 	}
 
 	private static int CountOccurrences(string text, string value)

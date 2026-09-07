@@ -87,4 +87,9 @@ public class Module
 		var portConnections = connections.Select(c => new PortConnection{ChildPort = c.ChildPort, ParentSignal = c.parentSignal}).ToList();
 		Stmts.Add(new InstanceStmt(childModule, instanceName, portConnections));
 	}
+
+	public void Mem(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata)
+	{
+		Stmts.Add(new MemStmt(clk, depth, width, we, addr, wdata, rdata));
+	}
 }

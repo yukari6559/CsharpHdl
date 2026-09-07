@@ -19,6 +19,7 @@ public static class VerilogEmitter
 		List<Stmt> stmts = top.GetStmts().ToList();
 		List<InstanceStmt> instanceStmts = new();
 		HashSet<string> emitted = new();
+		HashSet<Signal> regOuts = new();
 
 		foreach(var item in  stmts)
 		{
@@ -28,6 +29,18 @@ public static class VerilogEmitter
 				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
         			continue;
 				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
+			}
+			if(item is SeqBlockStmt seq)
+			{
+				foreach(var body in seq.Body)
+				{
+					if(body is SeqAssignStmt sa)
+						regOuts.Add(sa.Signal);
+				}
+			}
+			if(item is MemStmt mem)
+			{
+				regOuts.Add(mem.Rdata);
 			}
 		}
 
@@ -39,11 +52,15 @@ public static class VerilogEmitter
 			{
 				if(item.Direction == SignalDirection.Input)
 					verilogsb.Append($"\tinput wire {item.Name}");
+				else if(regOuts.Contains(item))
+					verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
 				else if (item.Direction == SignalDirection.Output)
 					verilogsb.Append($"\toutput wire {item.Name}");
 			}
 			else if(item.Direction == SignalDirection.Input)
 				verilogsb.Append($"\tinput wire [{item.Width - 1}:0] {item.Name}");
+			else if(regOuts.Contains(item))
+				verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
 			else if (item.Direction == SignalDirection.Output)
 				verilogsb.Append($"\toutput wire [{item.Width - 1}:0] {item.Name}");
 			if (i + 1 != signals.Count)
@@ -68,6 +85,14 @@ public static class VerilogEmitter
 
 		foreach(var item in stmts)
 		{
+			if(item is MemStmt)
+			{
+				verilogsb.Append($"reg [{((MemStmt)item).Width - 1}:0] mem [0:{((MemStmt)item).Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {((MemStmt)item).Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({((MemStmt)item).We.Name}) mem[{((MemStmt)item).Addr.Name}] <= {((MemStmt)item).Wdata.Name};\n");
+				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
+				verilogsb.Append($"end\n");
+			}
 			if(item is AssignStmt)
 			{
 				AssignStmt assignStmt = (AssignStmt)item;
@@ -131,8 +156,24 @@ public static class VerilogEmitter
 
 		List<Signal> signals = module.GetPorts().ToList();
 		List<Stmt> stmts = module.GetStmts().ToList(); 
+		HashSet<Signal> regOuts = new();
 		
 		verilogsb.Append($"module {moduleName}(\n");
+		foreach(var item in  stmts)
+		{
+			if(item is SeqBlockStmt seq)
+			{
+				foreach(var body in seq.Body)
+				{
+					if(body is SeqAssignStmt sa)
+						regOuts.Add(sa.Signal);
+				}
+			}
+			if(item is MemStmt mem)
+			{
+				regOuts.Add(mem.Rdata);
+			}
+		}
 		for(int i = 0; i < signals.Count; i++)
 		{
 			var item = signals[i];
@@ -140,11 +181,15 @@ public static class VerilogEmitter
 			{
 				if(item.Direction == SignalDirection.Input)
 					verilogsb.Append($"\tinput wire {item.Name}");
+				else if(regOuts.Contains(item))
+					verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
 				else if (item.Direction == SignalDirection.Output)
 					verilogsb.Append($"\toutput wire {item.Name}");
 			}
 			else if(item.Direction == SignalDirection.Input)
 				verilogsb.Append($"\tinput wire [{item.Width - 1}:0] {item.Name}");
+			else if(regOuts.Contains(item))
+				verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
 			else if (item.Direction == SignalDirection.Output)
 				verilogsb.Append($"\toutput wire [{item.Width - 1}:0] {item.Name}");
 			if (i + 1 != signals.Count)
@@ -155,6 +200,14 @@ public static class VerilogEmitter
 		verilogsb.Append(");\n");
 		foreach(var item in stmts)
 		{
+			if(item is MemStmt)
+			{
+				verilogsb.Append($"reg [{((MemStmt)item).Width - 1}:0] mem [0:{((MemStmt)item).Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {((MemStmt)item).Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({((MemStmt)item).We.Name}) mem[{((MemStmt)item).Addr.Name}] <= {((MemStmt)item).Wdata.Name};\n");
+				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
+				verilogsb.Append($"end\n");
+			}
 			if(item is AssignStmt)
 			{
 				AssignStmt assignStmt = (AssignStmt)item;

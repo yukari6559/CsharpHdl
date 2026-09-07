@@ -1,5 +1,16 @@
 # 統合ログ
 
+## 2026-09-04 — Phase 3 階層モジュール完了（docs 完了印）
+
+### 実施
+- [x] `PortConnection` / `InstanceStmt` / `Module.Instance`
+- [x] Emitter: 子→親連結 + インスタンス行、二重 `module` 防止
+- [x] `AluTop` / `DualAluTop` テスト、`examples/alu-top`
+- [x] [phase-3-cpu-ready.md](guides/phase-3-cpu-ready.md) に階層の完了印
+
+### 仕様
+- Phase 3 全体は未完了（Mem 残り）。階層部分のみフェーズ内で区切り
+
 ## 2026-09-03 — Phase 2 完了（幅不一致）
 
 ### 実施

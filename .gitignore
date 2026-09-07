@@ -3,3 +3,6 @@ out/
 bin/
 obj/
 .vs/
+
+# Constella 連携（ローカル運用・LAN 設定含む）
+constella/

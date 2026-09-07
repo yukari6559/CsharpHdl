@@ -18,7 +18,7 @@
 
 ## Phase 3
 - [ ] Mem 1R1W
-- [ ] 階層モジュール
+- [x] 階層モジュール
 
 ## Phase 4
 - [ ] CLI emit
