@@ -32,7 +32,7 @@
 | [guides/phase-2-dsl.md](guides/phase-2-dsl.md) | DSL + Emitter |
 | [guides/phase-2-how-to-think.md](guides/phase-2-how-to-think.md) | Phase 2 の考え方・小さな課題とヒント（コードなし） |
 | [guides/phase-3-cpu-ready.md](guides/phase-3-cpu-ready.md) | CPU 向け機能（Mem / 階層） |
-| [guides/phase-4-tooling.md](guides/phase-4-tooling.md) | 消費者参照（本線）・CLI 補助・pack |
+| [guides/phase-4-tooling.md](guides/phase-4-tooling.md) | nuget.org 配布（T1）・消費者 emit・CLI 補助 |
 
 ## 長期計画
 
@@ -48,7 +48,8 @@
 | [phase-checklist.md](phase-checklist.md) | チェックリスト |
 | [repo-layout.md](repo-layout.md) | ディレクトリ |
 | [glossary.md](glossary.md) | 用語 |
-| [consumers.md](consumers.md) | MyOsProject 等からの使い方 |
+| [consumers.md](consumers.md) | nuget.org / 参照での使い方 |
+| [tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md) | RISC-Sharp 宿題（T1 nuget.org 等） |
 | [integration-log.md](integration-log.md) | 記録 |
 
 ## 迷ったら
@@ -58,5 +59,6 @@
 「assign になる条件は？」 → verilog-emit-spec.md
 「今週何を作る？」       → guides/phase-N-*.md
 「Signal で止まった」    → guides/phase-2-how-to-think.md
-「MyOs からどう使う？」  → consumers.md
+「MyOs / RISC-Sharp からどう使う？」 → consumers.md
+「宿題チケットは？」 → tickets/riscv-sharp-requests.md
 ```

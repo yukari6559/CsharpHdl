@@ -2,9 +2,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SharpHdl.Core\SharpHdl.Core.csproj" />
+	<None Include="LICENSE.txt" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <PropertyGroup>
+	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+  	<PackageId>SharpHdl.Emit</PackageId>
+	<Version>0.1.0</Version>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

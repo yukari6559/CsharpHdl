@@ -1,16 +1,30 @@
 # 統合ログ
 
+## 2026-09-07 — T1 方針: 配布先は nuget.org
+
+### 実施
+- [x] docs: 推奨取り込みを nuget.org（PackageReference）に変更
+- [x] 私有フィードは使わない旨をチケット / consumers / phase-4 に反映
+
+### 残り（T1 実装）
+- [x] csproj パッケージメタ + `dotnet pack`
+- [x] nuget.org へ push（Core / Emit `0.1.0`）
+- [ ] PackageReference のみで消費者ビルド確認
+
+パッケージ:
+- https://www.nuget.org/packages/SharpHdl.Core/0.1.0
+- https://www.nuget.org/packages/SharpHdl.Emit/0.1.0
+
 ## 2026-09-07 — Phase 4 方針: 消費者参照が本線
 
 ### 実施
-- [x] docs / README: 本線＝ProjectReference＋自前 Module、CLI は補助
+- [x] docs / README: 本線＝ライブラリ参照＋自前 Module、CLI は補助
 - [x] `consumers.md` / `cli-spec.md` / `phase-4-tooling.md` を同方針に更新
 - [x] README Quick Start を本線に合わせる
 
 ### 残り
-- [ ] MyOs（等）から参照して自前 Module を emit
+- [ ] nuget.org 公開（T1）後に消費者で自前 Module を emit
 - [ ] CLI emit（examples・最小）
-- [ ] pack は必要になったら
 
 ## 2026-09-07 — Phase 3 Mem（1R1W）emit 完了
 

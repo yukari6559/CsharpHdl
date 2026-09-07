@@ -1,4 +1,6 @@
 out/
+artifacts/
+*.nupkg
 *.user
 bin/
 obj/

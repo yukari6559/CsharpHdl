@@ -64,16 +64,17 @@ dotnet run --project src/SharpHdl.Cli -- --version
 
 回路は **消費者側の C#** に書く。CLI だけで `.v` を吐くのはデモ用。
 
-1. 隣のプロジェクトから [SharpHdl.Core](src/SharpHdl.Core) / [SharpHdl.Emit](src/SharpHdl.Emit) を ProjectReference（手順: [docs/consumers.md](docs/consumers.md)）  
+1. [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) を **nuget.org** から PackageReference（手順: [docs/consumers.md](docs/consumers.md)）。版は公開中の最新（例: `0.1.0`） 
 2. 自分の `Module` を記述する（書き方の参考: `examples/`）  
 3. Program またはテストから Emitter を呼び、`.v` を出力する  
 4. 生成 Verilog をシミュレーション / FPGA / TinyTapeOut へ  
 
-補助 CLI（examples 再生成など）: [docs/cli-spec.md](docs/cli-spec.md)
+補助 CLI（examples 再生成など）: [docs/cli-spec.md](docs/cli-spec.md)  
+消費者宿題: [docs/tickets/riscv-sharp-requests.md](docs/tickets/riscv-sharp-requests.md)
 
 ## 方針
 
 - **同期設計・明示的なクロック／リセット**を前提にする
 - 最初は機能を極小に（ALU → レジスタ → ステートマシン）
 - 生成 Verilog は **人が読める**こと
-- 消費者は **プロジェクト参照を推奨**（submodule / 必要なら NuGet）。C# コンパイルの恩恵は参照経路が本線
+- 消費者は **nuget.org の PackageReference を推奨**（開発中のみ ProjectReference）。C# コンパイルの恩恵は参照経路が本線

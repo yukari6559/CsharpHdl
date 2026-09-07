@@ -21,7 +21,7 @@
 - [x] 階層モジュール
 
 ## Phase 4
-- [ ] consumers.md のプロジェクト参照で自前 Module を emit（本線）
-- [x] README Quick Start が本線と一致
+- [ ] T1: nuget.org に Core / Emit を公開し PackageReference でビルド
+- [x] README Quick Start が本線と一致（参照手段は nuget.org へ更新）
 - [ ] CLI emit（examples 補助・最小で可）
-- [ ] pack は必要になったら
+- [ ] 消費者で自前 Module を emit（T1 後）
