@@ -1,5 +1,19 @@
 # 統合ログ
 
+## 2026-09-07 — Phase 3 Mem（1R1W）emit 完了
+
+### 実施
+- [x] `MemStmt` / `Module.Mem(clk, depth, width, we, addr, wdata, rdata)`
+- [x] Emitter: `reg [...] mem [...]` + 同期 read/write
+- [x] seq/Mem 駆動ポートを `output reg` に分類（Counter スナップショット更新）
+- [x] `SimpleRam` テスト 2 件、`examples/mem`
+- [x] `Module.Mem` 幅・depth チェック（`WidthMismatchException`）
+
+### 仕様
+- 読みレイテンシ 1 サイクル（`rdata <= mem[addr]`）
+- `Module.Mem` 入口で幅・depth チェック（`WidthMismatchException`）
+- Verilator は未（Phase 4）
+
 ## 2026-09-04 — Phase 3 階層モジュール完了（docs 完了印）
 
 ### 実施

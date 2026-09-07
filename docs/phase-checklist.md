@@ -17,7 +17,7 @@
 - [ ] スナップショットテスト
 
 ## Phase 3
-- [ ] Mem 1R1W
+- [x] Mem 1R1W（emit・幅チェック・テスト。Verilator は Phase 4）
 - [x] 階層モジュール
 
 ## Phase 4

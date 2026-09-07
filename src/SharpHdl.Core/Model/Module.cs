@@ -90,6 +90,8 @@ public class Module
 
 	public void Mem(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata)
 	{
+		if (!(we.Width == 1) || !(wdata.Width == width) || !(rdata.Width == width) || !(depth >= 1) || !(addr.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(clk.Width == 1))
+			throw new WidthMismatchException();
 		Stmts.Add(new MemStmt(clk, depth, width, we, addr, wdata, rdata));
 	}
 }
