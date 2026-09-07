@@ -3,26 +3,25 @@
 消費者: [RISC-Sharp](../../RISC-Sharp)（RV64 CPU / FPGA / 自作 OS）  
 方針: ISA は消費者側。CsharpHdl は原語だけ足す。
 
-## T1 — nuget.org に pack / 公開する
+## T1 — nuget.org に pack / 公開する — **完了（クローズ）**
 
-**優先度:** 高（RISC-Sharp は参照方式を **nuget.org** にしたい）
+**優先度:** 高だった（RISC-Sharp は参照方式を nuget.org にしたい）
 
 - [x] `SharpHdl.Core` / `SharpHdl.Emit` を `dotnet pack` できる（パッケージメタ付き）
 - [x] nuget.org へ push し、公開ページから取れる（`0.1.0`）
 - [x] [consumers.md](../consumers.md) に nuget.org での取り込み手順がある
-- [ ] 消費者が ProjectReference なし（PackageReference のみ）でビルドできる
+- [x] 消費者が ProjectReference なし（PackageReference のみ）でビルドできる
 
 公開パッケージ:
 
 - https://www.nuget.org/packages/SharpHdl.Core/0.1.0
 - https://www.nuget.org/packages/SharpHdl.Emit/0.1.0
 
-（索引反映前は検索に出なくても、URL・版指定の restore は可能なことが多い）
+**配布先:** nuget.org（公開）。手順の正本: [consumers.md](../consumers.md) の「C. NuGet（nuget.org）」。
 
-**配布先:** nuget.org（公開）。  
-公開後は RISC-Sharp 側を PackageReference に切り替えて上記の残り1項を閉じる。
+RISC-Sharp 側の宿題表（`docs/phase-0-contract.md`）もクローズ済みに更新すること。
 
-## T2 — RV64 CPU 向け原語（Phase 1 前）
+## T2 — RV64 CPU 向け原語（Phase 1 前）— **次**
 
 **優先度:** 高（無いとコア記述が DSL をフォークし始める）
 
@@ -39,4 +38,4 @@
 ## 受け取り方
 
 - チケット消化 → RISC-Sharp の `docs/phase-0-contract.md` の宿題表を更新
-- nuget.org 公開後 → RISC-Sharp の参照を ProjectReference から PackageReference へ
+- 参照は nuget.org の PackageReference（T1 完了）

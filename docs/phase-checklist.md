@@ -21,7 +21,8 @@
 - [x] 階層モジュール
 
 ## Phase 4
-- [ ] T1: nuget.org に Core / Emit を公開し PackageReference でビルド
-- [x] README Quick Start が本線と一致（参照手段は nuget.org へ更新）
+- [x] T1: nuget.org に Core / Emit を公開し PackageReference でビルド
+- [x] README Quick Start が本線と一致（参照手段は nuget.org）
 - [ ] CLI emit（examples 補助・最小で可）
-- [ ] 消費者で自前 Module を emit（T1 後）
+- [ ] 消費者で自前 Module を emit（任意・接続確認の延長）
+- [ ] T2: RV64 向け原語（tickets 参照）

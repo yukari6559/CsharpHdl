@@ -21,7 +21,7 @@ CLI で examples を吐くのはデモ・CI 用の脇役（[cli-spec.md](cli-spe
 CsharpHdl のコードや docs に消費者固有の ISA を埋め込まない。  
 ISA 固有の Module は **消費者側**に置く。
 
-宿題チケット: [tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md)（T1 = nuget.org 公開）。
+宿題チケット: [tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md)（**T1 完了** → 次は T2）。
 
 ---
 
@@ -68,9 +68,9 @@ Emit だけ参照して Core が推移的に入るかは Restore 次第。入ら
 
 ---
 
-### A. プロジェクト参照（暫定・本リポジトリ開発向け）
+### A. プロジェクト参照（本リポジトリ開発向け）
 
-T1（nuget.org 公開）完了までは可。公開後の消費者は C へ切り替える。
+CsharpHdl 本体の開発や、未公開版の試し用。消費者の常用は **C（nuget.org）**。
 
 ```
 workspace/
@@ -107,7 +107,7 @@ git submodule add <url-to-CsharpHdl> third_party/CsharpHdl
 
 ## RISC-Sharp / MyOs での使い方（想定）
 
-1. nuget.org の SharpHdl パッケージを参照する（T1 完了後）  
+1. nuget.org の SharpHdl パッケージを参照する（T1 完了・推奨）  
 2. 消費者側に CPU / 周辺の Module を置く  
 3. ビルドまたは小さなホストから生成 Verilog を出力  
 4. 消費者側のハードウェアフローに乗せる  

@@ -24,7 +24,7 @@
 | G0 | 手で書いた Verilog と同等の ALU を C# から出力 |
 | G1 | `Module` DSL で ALU / カウンタ |
 | G2 | 1R1W メモリ + 階層モジュール |
-| G3 | nuget.org のパッケージで消費者から自前 Module を emit |
+| G3 | nuget.org のパッケージで消費者から参照・ビルド（T1 完了・`0.1.0`） |
 | G4 | examples が Verilator で通る |
 
 ## やらないこと（初期 Phase 0–4）
