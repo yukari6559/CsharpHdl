@@ -60,9 +60,20 @@ dotnet test CsharpHdl.slnx
 dotnet run --project src/SharpHdl.Cli -- --version
 ```
 
+## Quick Start（本線）
+
+回路は **消費者側の C#** に書く。CLI だけで `.v` を吐くのはデモ用。
+
+1. 隣のプロジェクトから [SharpHdl.Core](src/SharpHdl.Core) / [SharpHdl.Emit](src/SharpHdl.Emit) を ProjectReference（手順: [docs/consumers.md](docs/consumers.md)）  
+2. 自分の `Module` を記述する（書き方の参考: `examples/`）  
+3. Program またはテストから Emitter を呼び、`.v` を出力する  
+4. 生成 Verilog をシミュレーション / FPGA / TinyTapeOut へ  
+
+補助 CLI（examples 再生成など）: [docs/cli-spec.md](docs/cli-spec.md)
+
 ## 方針
 
 - **同期設計・明示的なクロック／リセット**を前提にする
 - 最初は機能を極小に（ALU → レジスタ → ステートマシン）
 - 生成 Verilog は **人が読める**こと
-- MyOsProject 等の消費者は、このリポジトリを **サブモジュール / プロジェクト参照 / NuGet** のいずれかで取り込む
+- 消費者は **プロジェクト参照を推奨**（submodule / 必要なら NuGet）。C# コンパイルの恩恵は参照経路が本線

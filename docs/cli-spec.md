@@ -2,6 +2,15 @@
 
 `SharpHdl.Cli` が提供するコマンドの契約（実装は人間）。
 
+## 位置づけ（重要）
+
+CLI は **補助**。examples のデモ・Quick Start・CI 向けの薄い出口。
+
+本線は消費者が Core / Emit を参照し、自分の `Module` を C# で書いて Emitter を呼ぶこと（[consumers.md](consumers.md)）。  
+名前だけの `emit` では、C# コンパイルの恩恵はほぼ SharpHdl 側のビルド時に使い切り済み。
+
+将来、DLL＋型名で消費者アセンブリを読み込む形に広げてもよい（その場合も、コンパイルは消費者の `dotnet build` が本丸）。
+
 ## コマンド
 
 ### emit
@@ -12,12 +21,12 @@ dotnet run --project src/SharpHdl.Cli -- emit <input> -o <output.v> [options]
 
 | 引数 | 意味 |
 |------|------|
-| `input` | 記述の入口（例: アセンブリ名、または examples パス）。実装で決める |
+| `input` | 既知 example のキー（実装で決める。例: `alu` / `simple-ram`） |
 | `-o` | 出力 Verilog パス |
-| `--top Name` | トップモジュール名 |
+| `--top Name` | トップモジュール名（任意） |
 | `--sv` | （将来）SystemVerilog |
 
-**完了条件**: 終了コード 0 でファイルが書かれ、Verilator がパースできる。
+**完了条件（補助）**: 終了コード 0 でファイルが書かれる。Verilator パースは任意〜回帰。
 
 ### list（任意）
 
@@ -27,14 +36,14 @@ dotnet run --project src/SharpHdl.Cli -- emit <input> -o <output.v> [options]
 
 ツールバージョン表示。
 
-## 入力の形態（実装選択）
+## 入力の形態（v0.1）
 
-次のいずれか（または両方）:
+**推奨**: `examples/` 相当の Module をリポジトリ内に置き、CLI は既知一覧から選んでインスタンス化・emit。
 
-1. **ライブラリ内の Module 型を指定**してインスタンス化・emit  
-2. **スクリプト的な C# ファイル**を読み込み（高度・後回し）  
+後回し:
 
-v0.1 推奨: 例は `examples/` に Module クラスとして置き、CLI は既知一覧から選ぶ。
+- スクリプト的な `.cs` のその場コンパイル  
+- 任意 DLL＋型名（本線が通ってから検討）
 
 ## エラー
 

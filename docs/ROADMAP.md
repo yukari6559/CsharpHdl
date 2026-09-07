@@ -15,7 +15,7 @@
 | 1 | ALU を生成（StringBuilder でも可） | [phase-1](guides/phase-1-alu.md) | 1〜2 週 |
 | 2 | AST + DSL + Emitter | [phase-2](guides/phase-2-dsl.md) | 2〜4 週 |
 | 3 | Mem・階層・CPU 向け部品 | [phase-3](guides/phase-3-cpu-ready.md) | 3〜6 週 |
-| 4 | CLI・パッケージ・消費者連携 | [phase-4](guides/phase-4-tooling.md) | 1〜2 週 |
+| 4 | 消費者参照（本線）・CLI 補助・必要なら pack | [phase-4](guides/phase-4-tooling.md) | 1〜2 週 |
 
 ## マイルストーン
 
@@ -24,7 +24,7 @@
 | G0 | 手で書いた Verilog と同等の ALU を C# から出力 |
 | G1 | `Module` DSL で ALU / カウンタ |
 | G2 | 1R1W メモリ + 階層モジュール |
-| G3 | `dotnet pack` またはプロジェクト参照で MyOsProject から利用 |
+| G3 | プロジェクト参照で MyOsProject（等）から自前 Module を emit（pack は任意） |
 | G4 | examples が Verilator で通る |
 
 ## やらないこと（初期 Phase 0–4）

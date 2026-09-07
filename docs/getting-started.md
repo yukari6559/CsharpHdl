@@ -20,13 +20,17 @@ OS 自作（MyOsProject）とはフォルダもリポジトリも別です。先
 
 ## 成果物のイメージ（完成時）
 
+本線は **他プロジェクトから Core / Emit を参照**し、自分の `Module` を書いて Emitter で `.v` を出すこと（[consumers.md](consumers.md)）。  
+C# の型チェックや幅エラーは、そのビルド時に効く。
+
 ```bash
-# 例（CLI はあなたが実装）
-dotnet run --project src/SharpHdl.Cli -- emit examples/alu/Alu.cs -o out/generated/alu.v
+# 補助: リポジトリ内 examples を CLI で吐く（デモ用）
+dotnet run --project src/SharpHdl.Cli -- emit alu -o out/generated/alu.v
 ```
 
-生成された `alu.v` を Verilator / yosys に渡す。
+生成された `.v` を Verilator / yosys に渡す。
 
 ## 次
 
-→ [guides/phase-0-foundation.md](guides/phase-0-foundation.md)
+→ [guides/phase-0-foundation.md](guides/phase-0-foundation.md)  
+Phase 4 付近なら → [guides/phase-4-tooling.md](guides/phase-4-tooling.md) / [consumers.md](consumers.md)

@@ -27,6 +27,6 @@ SharpHdl.Tests --→ SharpHdl.Emit ----→ SharpHdl.Core
 |--------|------|
 | Core | Module, Signal, Comb, Seq |
 | Emit | `EmitVerilog(Module) → string` |
-| Cli | emit コマンド |
+| Cli | examples 等の補助 emit（本線は消費者からのライブラリ参照） |
 | examples | 消費者向けサンプル。製品 ISA は置かない |
 | out/ | 生成物。コミットしない |

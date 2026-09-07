@@ -1,5 +1,17 @@
 # 統合ログ
 
+## 2026-09-07 — Phase 4 方針: 消費者参照が本線
+
+### 実施
+- [x] docs / README: 本線＝ProjectReference＋自前 Module、CLI は補助
+- [x] `consumers.md` / `cli-spec.md` / `phase-4-tooling.md` を同方針に更新
+- [x] README Quick Start を本線に合わせる
+
+### 残り
+- [ ] MyOs（等）から参照して自前 Module を emit
+- [ ] CLI emit（examples・最小）
+- [ ] pack は必要になったら
+
 ## 2026-09-07 — Phase 3 Mem（1R1W）emit 完了
 
 ### 実施

@@ -32,7 +32,7 @@
 | [guides/phase-2-dsl.md](guides/phase-2-dsl.md) | DSL + Emitter |
 | [guides/phase-2-how-to-think.md](guides/phase-2-how-to-think.md) | Phase 2 の考え方・小さな課題とヒント（コードなし） |
 | [guides/phase-3-cpu-ready.md](guides/phase-3-cpu-ready.md) | CPU 向け機能（Mem / 階層） |
-| [guides/phase-4-tooling.md](guides/phase-4-tooling.md) | CLI・パッケージ化・消費者連携 |
+| [guides/phase-4-tooling.md](guides/phase-4-tooling.md) | 消費者参照（本線）・CLI 補助・pack |
 
 ## 長期計画
 

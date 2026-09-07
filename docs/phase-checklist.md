@@ -21,6 +21,7 @@
 - [x] 階層モジュール
 
 ## Phase 4
-- [ ] CLI emit
-- [ ] プロジェクト参照または pack
-- [ ] consumers.md の手順で MyOs から接続できる
+- [ ] consumers.md のプロジェクト参照で自前 Module を emit（本線）
+- [x] README Quick Start が本線と一致
+- [ ] CLI emit（examples 補助・最小で可）
+- [ ] pack は必要になったら
