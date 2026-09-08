@@ -43,6 +43,11 @@ public class Signal : Expr
 		else
 			throw new Exception();
 	}
+	public Expr Slice(uint msb, uint lsb)
+	{
+		SliceExpr sliceExpr = new(msb,lsb,this);
+		return sliceExpr;
+	}
 }
 
 public class In : Signal
@@ -62,4 +67,17 @@ public class Out : Signal
 	}
 	public static Out UInt(uint width, string name)
 		=> new Out(width, name, SignalDirection.Output);
+}
+
+public class SliceExpr : Expr
+{
+	public uint LSB{get;private set;}
+	public uint MSB{get;private set;}
+	public Expr Expr{get;private set;}
+	public SliceExpr(uint msb, uint lsb, Expr expr)
+	{
+		MSB = msb;
+		LSB = lsb;
+		Expr = expr;
+	}
 }

@@ -30,6 +30,8 @@ public static class ExprExtension
 				return signal.Width;
 			case OpExpr opExpr:
 				return opExpr.Left.GetWidth();
+			case SliceExpr sliceExpr:
+				return sliceExpr.MSB - sliceExpr.LSB + 1;
 		}
 		return null;
 	}

@@ -276,6 +276,10 @@ public static class VerilogEmitter
 			OpExpr opExpr = (OpExpr)expr;
 			return emitExpr(opExpr.Left) + " " + opExpr.Op.ToCustomString() + " " + emitExpr(opExpr.Right);
 		}
+		else if(expr is SliceExpr sliceExpr)
+		{
+			return emitExpr(sliceExpr.Expr) + $"[{sliceExpr.MSB}:{sliceExpr.LSB}]";
+		}
 		else
 		{
 			throw new Exception();
