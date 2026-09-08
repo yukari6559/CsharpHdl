@@ -94,4 +94,11 @@ public class Module
 			throw new WidthMismatchException();
 		Stmts.Add(new MemStmt(clk, depth, width, we, addr, wdata, rdata));
 	}
+
+	public void Mem(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1)
+	{
+		if (!(we.Width == 1) || !(wdata.Width == width) || !(rdata0.Width == width) || !(rdata1.Width == width) || !(depth >= 1) || !(raddr0.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(raddr1.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(waddr.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(clk.Width == 1))
+			throw new WidthMismatchException();
+		Stmts.Add(new Mem2R1WStmt(clk, depth, width, we, waddr, wdata, raddr0, rdata0, raddr1, rdata1));
+	}
 }

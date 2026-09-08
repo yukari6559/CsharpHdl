@@ -290,6 +290,63 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestRegFile2R1WModuleStmt()
+	{
+		RegFile2R1W rf = new();
+		rf.Describe();
+		List<Stmt> stmts = rf.GetStmts().ToList();
+
+		Assert.Single(stmts);
+		Mem2R1WStmt mem = Assert.IsType<Mem2R1WStmt>(stmts[0]);
+		Assert.Equal(32u, mem.Depth);
+		Assert.Equal(64u, mem.Width);
+		Assert.Equal(rf.Clk, mem.Clk);
+		Assert.Equal(rf.We, mem.We);
+		Assert.Equal(rf.Waddr, mem.Waddr);
+		Assert.Equal(rf.Wdata, mem.Wdata);
+		Assert.Equal(rf.Raddr0, mem.Raddr0);
+		Assert.Equal(rf.Rdata0, mem.Rdata0);
+		Assert.Equal(rf.Raddr1, mem.Raddr1);
+		Assert.Equal(rf.Rdata1, mem.Rdata1);
+	}
+
+	[Fact]
+	public void TestRegFile2R1WModuleEmitter_EmitsAsyncReads()
+	{
+		RegFile2R1W rf = new();
+		rf.Describe();
+		var verilog = VerilogEmitter.Emitter(rf, nameof(RegFile2R1W));
+
+		const string expected =
+			"module RegFile2R1W(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire we,\n" +
+			"\tinput wire [4:0] waddr,\n" +
+			"\tinput wire [63:0] wdata,\n" +
+			"\tinput wire [4:0] raddr0,\n" +
+			"\toutput wire [63:0] rdata0,\n" +
+			"\tinput wire [4:0] raddr1,\n" +
+			"\toutput wire [63:0] rdata1\n" +
+			");\n" +
+			"reg [63:0] mem [0:31];\n" +
+			"always @(posedge clk) begin\n" +
+			"\tif (we) mem[waddr] <= wdata;\n" +
+			"end\n" +
+			"assign rdata0 = mem[raddr0];\n" +
+			"assign rdata1 = mem[raddr1];\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestMem2R1W_WidthMismatch_Throws()
+	{
+		BadMem2R1WWidthModule module = new();
+		Assert.Throws<WidthMismatchException>(module.DescribeRaddr1Mismatch);
+	}
+
+	[Fact]
 	public void TestWidth64PassModule_PortsAre64()
 	{
 		Width64Pass mod = new();

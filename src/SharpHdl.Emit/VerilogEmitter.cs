@@ -93,6 +93,15 @@ public static class VerilogEmitter
 				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
 				verilogsb.Append($"end\n");
 			}
+			if (item is Mem2R1WStmt mem2R1WStmt)
+			{
+				verilogsb.Append($"reg [{mem2R1WStmt.Width - 1}:0] mem [0:{mem2R1WStmt.Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {mem2R1WStmt.Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({mem2R1WStmt.We.Name}) mem[{mem2R1WStmt.Waddr.Name}] <= {mem2R1WStmt.Wdata.Name};\n");
+				verilogsb.Append($"end\n");
+				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
+				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
+			}
 			if(item is AssignStmt)
 			{
 				AssignStmt assignStmt = (AssignStmt)item;
@@ -207,6 +216,15 @@ public static class VerilogEmitter
 				verilogsb.Append($"\tif ({((MemStmt)item).We.Name}) mem[{((MemStmt)item).Addr.Name}] <= {((MemStmt)item).Wdata.Name};\n");
 				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
 				verilogsb.Append($"end\n");
+			}
+			if (item is Mem2R1WStmt mem2R1WStmt)
+			{
+				verilogsb.Append($"reg [{mem2R1WStmt.Width - 1}:0] mem [0:{mem2R1WStmt.Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {mem2R1WStmt.Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({mem2R1WStmt.We.Name}) mem[{mem2R1WStmt.Waddr.Name}] <= {mem2R1WStmt.Wdata.Name};\n");
+				verilogsb.Append($"end\n");
+				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
+				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
 			}
 			if(item is AssignStmt)
 			{

@@ -96,3 +96,30 @@ public class MemStmt : Stmt
 		Rdata = rdata;
 	}
 }
+
+public class Mem2R1WStmt : Stmt
+{
+	public In Clk{get; private set;}
+	public uint Depth{get; private set;}
+	public uint Width{get; private set;}
+	public In We{get; private set;}
+	public In Waddr{get; private set;}
+	public In Wdata{get; private set;}
+	public In Raddr0{get; private set;}
+	public Out Rdata0{get; private set;}
+	public In Raddr1{get; private set;}
+	public Out Rdata1{get; private set;}
+	public Mem2R1WStmt(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1)
+	{
+		Clk = clk;
+		Depth = depth;
+		Width = width;
+		We = we;
+		Waddr = waddr;
+		Wdata = wdata;
+		Raddr0 = raddr0;
+		Rdata0 = rdata0;
+		Raddr1 = raddr1;
+		Rdata1 = rdata1;
+	}
+}
