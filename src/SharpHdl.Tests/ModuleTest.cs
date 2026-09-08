@@ -289,6 +289,33 @@ public class ModuleTests
 		Assert.Equal(expected, verilog);
 	}
 
+	[Fact]
+	public void TestWidth64PassModule_PortsAre64()
+	{
+		Width64Pass mod = new();
+		List<Signal> ports = mod.GetPorts().ToList();
+		Assert.Equal(64u, ports[0].Width);
+		Assert.Equal(64u, ports[1].Width);
+	}
+
+	[Fact]
+	public void TestWidth64PassModuleEmitter_Emits63to0()
+	{
+		Width64Pass mod = new();
+		mod.Describe();
+		var verilog = VerilogEmitter.Emitter(mod, nameof(Width64Pass));
+
+		const string expected =
+			"module Width64Pass(\n" +
+			"\tinput wire [63:0] A,\n" +
+			"\toutput wire [63:0] Y\n" +
+			");\n" +
+			"\tassign Y = A;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;
