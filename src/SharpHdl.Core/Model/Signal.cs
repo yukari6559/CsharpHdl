@@ -43,11 +43,6 @@ public class Signal : Expr
 		else
 			throw new Exception();
 	}
-	public Expr Slice(uint msb, uint lsb)
-	{
-		SliceExpr sliceExpr = new(msb,lsb,this);
-		return sliceExpr;
-	}
 }
 
 public class In : Signal
@@ -78,6 +73,15 @@ public class SliceExpr : Expr
 	{
 		MSB = msb;
 		LSB = lsb;
+		Expr = expr;
+	}
+}
+
+public class ConcatExpr : Expr
+{
+	public Expr[] Expr{get;private set;}
+	public ConcatExpr(params Expr[] expr)
+	{
 		Expr = expr;
 	}
 }

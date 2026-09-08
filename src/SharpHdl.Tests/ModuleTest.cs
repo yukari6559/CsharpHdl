@@ -316,6 +316,77 @@ public class ModuleTests
 		Assert.Equal(expected, verilog);
 	}
 
+	[Fact]
+	public void TestSlice_GetWidth_IsInclusive()
+	{
+		In instr = In.UInt(32, "instr");
+		Assert.Equal(7u, instr.Slice(6, 0).GetWidth());
+		Assert.Equal(5u, instr.Slice(11, 7).GetWidth());
+	}
+
+	[Fact]
+	public void TestConcat_GetWidth_SumsParts()
+	{
+		In hi = In.UInt(16, "hi");
+		In lo = In.UInt(16, "lo");
+		Assert.Equal(32u, hi.Concat(lo).GetWidth());
+	}
+
+	[Fact]
+	public void TestSliceAssign_WidthMismatch_Throws()
+	{
+		BadSliceWidthModule module = new();
+		Assert.Throws<WidthMismatchException>(module.DescribeSliceMismatch);
+	}
+
+	[Fact]
+	public void TestDecodeSliceConcatModuleStmt()
+	{
+		DecodeSliceConcat mod = new();
+		mod.Describe();
+		List<Stmt> stmts = mod.GetStmts().ToList();
+		Assert.Equal(3, stmts.Count);
+
+		AssignStmt opcode = Assert.IsType<AssignStmt>(stmts[0]);
+		SliceExpr opcodeSlice = Assert.IsType<SliceExpr>(opcode.Expr);
+		Assert.Equal(6u, opcodeSlice.MSB);
+		Assert.Equal(0u, opcodeSlice.LSB);
+		Assert.Equal(mod.Instr, opcodeSlice.Expr);
+
+		AssignStmt rd = Assert.IsType<AssignStmt>(stmts[1]);
+		SliceExpr rdSlice = Assert.IsType<SliceExpr>(rd.Expr);
+		Assert.Equal(11u, rdSlice.MSB);
+		Assert.Equal(7u, rdSlice.LSB);
+
+		AssignStmt word = Assert.IsType<AssignStmt>(stmts[2]);
+		ConcatExpr concat = Assert.IsType<ConcatExpr>(word.Expr);
+		Assert.Equal(2, concat.Expr.Length);
+		Assert.IsType<SliceExpr>(concat.Expr[0]);
+		Assert.IsType<SliceExpr>(concat.Expr[1]);
+	}
+
+	[Fact]
+	public void TestDecodeSliceConcatModuleEmitter_EmitsPartSelectAndConcat()
+	{
+		DecodeSliceConcat mod = new();
+		mod.Describe();
+		var verilog = VerilogEmitter.Emitter(mod, nameof(DecodeSliceConcat));
+
+		const string expected =
+			"module DecodeSliceConcat(\n" +
+			"\tinput wire [31:0] instr,\n" +
+			"\toutput wire [6:0] opcode,\n" +
+			"\toutput wire [4:0] rd,\n" +
+			"\toutput wire [31:0] word\n" +
+			");\n" +
+			"\tassign opcode = instr[6:0];\n" +
+			"\tassign rd = instr[11:7];\n" +
+			"\tassign word = {instr[31:16], instr[15:0]};\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;

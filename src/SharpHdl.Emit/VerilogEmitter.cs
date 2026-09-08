@@ -280,6 +280,19 @@ public static class VerilogEmitter
 		{
 			return emitExpr(sliceExpr.Expr) + $"[{sliceExpr.MSB}:{sliceExpr.LSB}]";
 		}
+		else if(expr is ConcatExpr concatExpr)
+		{
+			string s = "{";
+			for(int i = 0; i < concatExpr.Expr.Count(); i++)
+			{
+				if(i == concatExpr.Expr.Count() - 1)
+					s += $"{emitExpr(concatExpr.Expr[i])}";
+				else
+					s += $"{emitExpr(concatExpr.Expr[i])}, ";
+			}
+			s += "}";
+			return s;
+		}
 		else
 		{
 			throw new Exception();
