@@ -8,7 +8,7 @@
   <PropertyGroup>
 	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   	<PackageId>SharpHdl.Emit</PackageId>
-	<Version>0.1.0</Version>
+	<Version>0.2.0</Version>
 	<Authors>araiguma</Authors>
 	<Description>Verilog emitter for SharpHdl.Core modules.</Description>
 	<PackageProjectUrl>https://github.com/yukari6559/CsharpHdl</PackageProjectUrl>

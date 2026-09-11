@@ -15,8 +15,8 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.1.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.1.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.2.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.2.0" />
 ```
 
 ```bash
