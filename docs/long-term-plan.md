@@ -3,7 +3,16 @@
 VSCode 上で HDL 記述から FPGA 書き込みまで一貫して行える環境を目指す長期計画です。  
 実装は人手主体とし、エージェントは明示的な指示があった場合のみコード変更を行います。
 
-関連: [ROADMAP.md](ROADMAP.md)（Phase 0–4）、[phase-checklist.md](phase-checklist.md)
+関連: [ROADMAP.md](ROADMAP.md)（Phase 0–4）、[phase-checklist.md](phase-checklist.md)、[tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md)
+
+拡張は **二つの軸** に分ける（混ぜない）:
+
+| 軸 | 中身 | 本ドキュメント |
+|----|------|----------------|
+| **記述自由度（DSL）** | 何を C# で書けるか（原語・時間モデル・定型 IF） | Phase A の続き + 下記「記述自由度の拡張」 |
+| **実装フロー（ツール）** | ピン・制約・合成・VSCode・書き込み | Phase B–H |
+
+消費者が Verilog を手元で合成するだけなら軸1を優先。FPGA 一気通貫が目標なら軸2も進める。
 
 ---
 
@@ -14,22 +23,30 @@ SharpHDL（リポジトリ名: CsharpHdl）は **C# → Verilog-2001** の早期
 | 領域 | 状態 |
 |------|------|
 | DSL（Comb/Seq/Switch） | 部分実装済み（[SharpHdl.Core](../src/SharpHdl.Core/)） |
-| Verilog 生成 | ALU/カウンタ対応（[VerilogEmitter.cs](../src/SharpHdl.Emit/VerilogEmitter.cs)） |
+| Mem / 階層 / Slice・Concat / 2R1W / wstrb | T2a–T2d 相当まで進捗（[tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md)） |
+| 符号拡張（T2e） | **未** |
+| Verilog 生成 | ALU/カウンタ/Mem 等（[VerilogEmitter.cs](../src/SharpHdl.Emit/VerilogEmitter.cs)） |
 | CLI | スタブ・未完成（[Program.cs](../src/SharpHdl.Cli/Program.cs)） |
 | Attribute / ピンアサイン | **未着手**（[dsl-spec.md](dsl-spec.md) に命名属性の言及のみ） |
 | Yosys / Vivado / Quartus | README 言及のみ、**統合なし** |
 | VSCode 拡張 | **未着手**（[ROADMAP.md](ROADMAP.md) では GUI も初期スコープ外） |
 
-既存ロードマップ（Phase 0–4, G0–G4）を **前提** とし、その先を Phase A–H として拡張します。
+既存ロードマップ（Phase 0–4, G0–G4）を **前提** とし、その先を **記述自由度（L1–L4）** と **ツール（Phase B–H）** として拡張します。
 
 ```mermaid
 flowchart LR
-    subgraph now [現状 Phase 2 途中]
+    subgraph now [現状]
         CSharp[C# Module DSL]
         Emit[VerilogEmitter]
         VFile[.v ファイル]
     end
-    subgraph future [目標]
+    subgraph dsl [記述自由度]
+        L1[制御・演算の穴埋め]
+        L2[時間・構造]
+        L3[定型 IF]
+        L4[静的検査]
+    end
+    subgraph future [実装フロー]
         VSCode[VSCode 拡張]
         Attr[Pin Attribute]
         GUI[Pin GUI]
@@ -38,6 +55,8 @@ flowchart LR
         Custom[自作合成エンジン]
     end
     CSharp --> Emit --> VFile
+    CSharp --> L1 --> L2 --> L3
+    L1 --> L4
     VFile -.->|"手動"| Backends
     CSharp --> Attr
     Attr <--> GUI
@@ -70,6 +89,7 @@ flowchart LR
 
 - `Mem`（1R1W 同期）、階層モジュール、スライス/連結（[guides/phase-3-cpu-ready.md](guides/phase-3-cpu-ready.md)）
 - 複数モジュールの連結出力
+- RV64 向け原語チケット T2（[tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md)）— T2a–T2d 完了、**T2e（符号拡張）がゲート**
 
 ### A3 — Phase 4（CLI・配布）
 
@@ -78,6 +98,56 @@ flowchart LR
 - Verilator パース確認（G4）
 
 **完了条件:** `dotnet test` 緑、`sharphdl emit --top Alu -o out/alu.v` が 0 終了、examples が Verilator で通る。
+
+---
+
+## 記述自由度の拡張（DSL 本線・T2 以降）
+
+**目的:** 消費者が DSL をフォークせず、CPU/SoC を書き続けられるように原語を足す。  
+**原則:** 一気に全部やらない。**消費者の痛みが出てから**足す。ISA 固有ロジックは消費者側。  
+**ゲート:** T2（とくに T2e）完了後に L1 以降を本格化。B–H（ツール）とは独立に進められる。
+
+### L1 — 組み合わせ・制御の穴埋め（優先してよい）
+
+- `If` / `Else`、比較、`^` / `~`、シフト
+- 左辺部分代入（`x[7:0] = …`）— T2b で後回しにした分
+- パラメータ／ジェネリック幅の整理
+
+→ 「小さなデータパス」から「普通の制御付きモジュール」へ。
+
+### L2 — 時間・構造モデル（必要になってから）
+
+- 複数クロック／リセット極性
+- generate 相当（繰り返しインスタンス）
+- FSM 用の状態型（任意 C# ではなく制約付き）
+- パイプライン段の **明示**（自動挿入はしない）
+
+→ SoC っぽい階層＋同期の書き方が広がる。
+
+### L3 — インタフェース原語（必要になってから）
+
+- valid/ready、AXI-lite 級の束、FIFO
+- クロックドメイン交差の定型
+
+→ 配線地獄を原語で減らし、「接続の自由度」が上がる（特定 ISA は入れない）。
+
+### L4 — 検証・意味論の安全網（L1 と並行）
+
+- Verilator 回帰（G4）を維持・拡大
+- 幅・駆動・組み合わせループ等の静的検査を強化
+
+→ 自由度を増やすほどここで縛らないと壊れやすい。
+
+### 意図的に後回し／やらない（記述自由度側）
+
+| やらない | 理由 |
+|----------|------|
+| 任意 C# の HLS 変換 | 制御不能・HDL ではない |
+| 暗黙クロック／暗黙の符号拡張 | バグの温床（[dsl-spec.md](dsl-spec.md) §6） |
+| パイプライン自動挿入 | 意図が読めなくなる |
+| SystemVerilog 高度機能の全対応 | スコープ膨張 |
+
+**完了の見方:** マイルストーンではなくチェックリスト。消費者チケットまたは具体的な書けない回路が出たら該当 L を切る。
 
 ---
 
@@ -379,7 +449,11 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    A[Phase A: DSL/CLI 完遂]
+    A[Phase A: DSL/CLI + T2]
+    L1[L1: 制御・演算]
+    L2[L2: 時間・構造]
+    L3[L3: 定型 IF]
+    L4[L4: 静的検査]
     B[Phase B: Attribute + sharphdl.json]
     C[Phase C: Constraint Emitter]
     D[Phase D: Backend 抽象化]
@@ -387,6 +461,9 @@ flowchart TB
     F[Phase F: Pin GUI 双方向]
     G[Phase G: E2E 統合]
     H[Phase H: 自作合成探究]
+    A --> L1 --> L2 --> L3
+    A --> L4
+    L1 --> L4
     A --> B --> C --> D
     D --> E
     B --> F
@@ -396,6 +473,8 @@ flowchart TB
     A --> H
     D --> H
 ```
+
+記述自由度（L）とツール（B–H）は **A 完了後に並行可能**。RISC-Sharp 線なら L を先に、FPGA 一気通貫線なら B 以降も進める。
 
 ---
 
@@ -419,6 +498,7 @@ flowchart TB
 | GUI ↔ ソース同期でフォーマット崩れ | Roslyn WorkspaceEdit + スナップショットテスト |
 | ベンダツールのライセンス/CI | CI は生成物検証のみ、合成はローカル |
 | Core が肥大化 | Metadata / Constraints / Backends / Synth をプロジェクト分割 |
+| DSL 原語の無秩序な増加 | L1–L4 とチケットで優先度を切る。ISA は消費者側。痛みが出てから足す |
 | 自作合成のスコープ膨張 | H1–H3 までを探究マイルストーン、bitstream は明示的 Optional |
 | エージェントによる意図しない本体変更 | 指示範囲を PR/コミットメッセージで明示、「テストのみ可」フラグ運用 |
 
@@ -426,16 +506,19 @@ flowchart TB
 
 ## 最初に着手すべき具体タスク（人手）
 
-1. Phase 2 チェックリスト残り（[phase-checklist.md](phase-checklist.md)）
-2. [pin-attribute-spec.md](pin-attribute-spec.md) の起草（フィールド一覧と 1 ボード例）
-3. `boards/` に最初のボード JSON を 1 枚追加
-4. [ROADMAP.md](ROADMAP.md) の Phase 5+ セクションと本計画の整合確認
+1. T2e（SignExtend / ZeroExtend）で RV64 向け原語チケットを閉じる（[tickets/riscv-sharp-requests.md](tickets/riscv-sharp-requests.md)）
+2. Phase 2 チェックリスト残り（[phase-checklist.md](phase-checklist.md)）— L1 と重なる項目はここで消化
+3. 消費者の「書けない」が出たら L1–L3 の該当項だけ切る（一括実装しない）
+4. [pin-attribute-spec.md](pin-attribute-spec.md) の起草（フィールド一覧と 1 ボード例）— ツール軸を進める場合
+5. `boards/` に最初のボード JSON を 1 枚追加
+6. [ROADMAP.md](ROADMAP.md) の Phase 5+ セクションと本計画の整合確認
 
 エージェントへの依頼例（本体に触れない場合）:
 
 - 「`docs/pin-attribute-spec.md` のドラフトを書いて」
 - 「Metadata の PinValidator ユニットテストだけ追加して（Core は触らない）」
 - 「Yosys ラッパの CLI 統合テスト用モックを Tests に追加」
+- 「T2e のテストと dsl-spec 更新だけやって」
 
 ---
 
@@ -443,4 +526,5 @@ flowchart TB
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.1 | 2026-09-11 | 記述自由度軸（L1–L4）を統合。ツール軸（B–H）と分離 |
 | 1.0 | 2026-09-02 | 初版（長期計画として docs に追加） |
