@@ -1,10 +1,5 @@
 # examples/alu
 
-Phase 1 のテキストビルダー試作。
+ALU の記述例です。消費者プロジェクトと同様に Core / Emit を参照して Emitter で Verilog を出します。
 
-```bash
-dotnet run --project src/SharpHdl.Cli -- emit alu
-# → out/generated/alu.v
-```
-
-`AluModule.cs` は暫定的に `SharpHdl.Cli` からコンパイルされています（csproj の `Compile Include`）。
+書き方の参考として `AluModule.cs` を置いています。実行用ホストはこのリポジトリには含みません（テストや消費者側の Program から emit してください）。

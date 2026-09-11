@@ -44,8 +44,6 @@ dotnet build CsharpHdl.slnx
 dotnet test CsharpHdl.slnx
 ```
 
-`SharpHdl.Cli` は任意のスタブです。本線はライブラリ参照です。
-
 ## 方針
 
 - 同期設計・明示的なクロック／リセット

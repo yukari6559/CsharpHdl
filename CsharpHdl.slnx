@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/SharpHdl.Cli/SharpHdl.Cli.csproj" />
     <Project Path="src/SharpHdl.Core/SharpHdl.Core.csproj" />
     <Project Path="src/SharpHdl.Emit/SharpHdl.Emit.csproj" />
     <Project Path="src/SharpHdl.Tests/SharpHdl.Tests.csproj" />

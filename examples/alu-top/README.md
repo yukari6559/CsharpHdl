@@ -6,7 +6,6 @@ Phase 3 の階層モジュール例。`AluTop` が子 `Alu` を1つインスタ�
 - `AluTopModule.cs` — 親モジュール（ポートを子に接続）
 
 ```bash
-# 将来の CLI 想定（現状は Tests から emit を確認）
 dotnet test src/SharpHdl.Tests --filter AluTop
 ```
 
