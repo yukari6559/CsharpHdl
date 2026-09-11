@@ -1,4 +1,23 @@
 # SharpHdl.Emit
 
-Verilog emitter を実装する場所。  
-仕様: ../../docs/verilog-emit-spec.md
+Verilog emitter for modules built with [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core).
+
+## Install
+
+```xml
+<PackageReference Include="SharpHdl.Core" Version="0.2.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.2.0" />
+```
+
+## Usage
+
+Call `VerilogEmitter.Emitter(module, moduleName)` (or the project’s emit entry points) after describing a `Module`, then write the returned string to a `.v` file.
+
+## Docs
+
+- Repository: https://github.com/yukari6559/CsharpHdl
+- Consumer guide: https://github.com/yukari6559/CsharpHdl/blob/main/docs/consumers.md
+
+## License
+
+MIT

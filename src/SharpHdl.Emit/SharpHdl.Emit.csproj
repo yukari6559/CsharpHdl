@@ -3,10 +3,12 @@
   <ItemGroup>
     <ProjectReference Include="..\SharpHdl.Core\SharpHdl.Core.csproj" />
 	<None Include="LICENSE.txt" Pack="true" PackagePath=""/>
+	<None Include="README.md" Pack="true" PackagePath=""/>
   </ItemGroup>
 
   <PropertyGroup>
 	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   	<PackageId>SharpHdl.Emit</PackageId>
 	<Version>0.2.0</Version>
 	<Authors>araiguma</Authors>
