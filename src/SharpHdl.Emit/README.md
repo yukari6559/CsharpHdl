@@ -5,8 +5,8 @@ Verilog emitter for modules built with [SharpHdl.Core](https://www.nuget.org/pac
 ## Install
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.2.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.2.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.2.1" />
+<PackageReference Include="SharpHdl.Emit" Version="0.2.1" />
 ```
 
 ## Usage

@@ -15,8 +15,8 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.2.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.2.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.2.1" />
+<PackageReference Include="SharpHdl.Emit" Version="0.2.1" />
 ```
 
 ```bash
@@ -34,12 +34,12 @@ dotnet build
    - Repository Owner: `yukari6559` / Repository: `CsharpHdl` / Workflow: `release-nuget.yml`  
    - Pattern 例: `SharpHdl.*`  
 2. `main` を公開したい状態にする  
-3. タグを打って push する（例: `0.2.0`）
+3. タグを打って push する（例: `0.2.1`）
 
 ```bash
 git push origin main
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
 `Release NuGet` workflow がテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
