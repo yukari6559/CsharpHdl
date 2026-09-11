@@ -1,7 +1,8 @@
 name: Release NuGet
 
 # タグ v1.2.3 を push すると SharpHdl.Core / Emit を pack して nuget.org へ公開する。
-# 事前にリポジトリ Secrets に NUGET_API_KEY を設定すること。
+# nuget.org の Trusted Publishing（OIDC）を使う。長期 API キーは不要。
+# ポリシーの Workflow File は release-nuget.yml、Repository は yukari6559/CsharpHdl。
 
 on:
   push:
@@ -13,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -43,19 +45,20 @@ jobs:
           dotnet pack src/SharpHdl.Emit/SharpHdl.Emit.csproj -c Release -o artifacts/nuget -p:Version=${{ steps.ver.outputs.version }} -p:PackageVersion=${{ steps.ver.outputs.version }}
           ls -la artifacts/nuget
 
+      - name: NuGet login (OIDC)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          # nuget.org のプロフィール名（メールではない）
+          user: araiguma
+
       - name: Push to nuget.org
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          if [ -z "$NUGET_API_KEY" ]; then
-            echo "Secret NUGET_API_KEY is not set"
-            exit 1
-          fi
           dotnet nuget push artifacts/nuget/SharpHdl.Core.*.nupkg \
             --source https://api.nuget.org/v3/index.json \
-            --api-key "$NUGET_API_KEY" \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --skip-duplicate
           dotnet nuget push artifacts/nuget/SharpHdl.Emit.*.nupkg \
             --source https://api.nuget.org/v3/index.json \
-            --api-key "$NUGET_API_KEY" \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --skip-duplicate
