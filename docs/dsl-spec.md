@@ -1,7 +1,7 @@
-# DSL 仕様 v0.1
+# DSL 仕様
 
-CsharpHdl が提供する **ハードウェア記述 API** の契約です。  
-実装のクラス名は変えてよいが、意味論はここに合わせる。
+CsharpHdl が提供するハードウェア記述 API の契約です。  
+実装の型名は変わり得ますが、意味論はこの文書に合わせます。
 
 ---
 
@@ -9,7 +9,7 @@ CsharpHdl が提供する **ハードウェア記述 API** の契約です。
 
 1. **明示的な時間**: 組み合わせ（`Comb`）と同期（`Seq`）を分ける  
 2. **幅が必須**: すべての信号にビット幅がある  
-3. **r0 のような暗黙魔法は DSL 側に持たない**（消費者が書く）  
+3. **ISA 固有の暗黙魔法は DSL に持たない**（例: レジスタ x0 のゼロ化は消費者側）  
 4. **1 モジュール = 1 Verilog module**  
 
 ---
@@ -18,16 +18,9 @@ CsharpHdl が提供する **ハードウェア記述 API** の契約です。
 
 | 型 | 意味 |
 |----|------|
-| `Module` | ハードウェアモジュール。ポートと内部論理を持つ |
-| `Signal` | ワイヤまたはレジスタの抽象 |
-| `In<T>` / `Out<T>` / `InOut<T>` | ポート |
-| `UIntN` / `Bits` | 符号なしビットベクタ（幅 N） |
-| `Clock` / `Reset` | クロック・リセット（Seq で使用） |
-
-幅の表し方（実装選択）:
-
-- `Signal.UInt(32, "pc")`  
-- または `UInt32` エイリアス + ポート属性  
+| `Module` | ポートと内部論理を持つハードウェアモジュール |
+| `Signal` / `In` / `Out` | 信号・ポート |
+| 幅付きベクタ | `In.UInt(width, name)` / `Out.UInt(width, name)` など |
 
 ---
 
@@ -41,7 +34,12 @@ public sealed class Alu : Module
     public In Op { get; } = In.UInt(2, "Op");
     public Out Y { get; } = Out.UInt(32, "Y");
 
-    protected override void Describe()
+    public Alu()
+    {
+        SetPorts([A, B, Op, Y]);
+    }
+
+    public override void Describe()
     {
         Comb(() =>
         {
@@ -57,92 +55,46 @@ public sealed class Alu : Module
 
 ---
 
-## 4. 文・演算（Phase 1〜2 で必須）
+## 4. 文・演算
 
 ### 組み合わせ `Comb`
 
-- 内部の代入は Verilog `assign` または `always_comb` 相当
+- 代入は Verilog `assign` または組み合わせブロック相当
 - 同一信号への複数駆動はエラー
 
 ### 同期 `Seq(clock, reset)`
 
 - 代入は非ブロッキング `<=`
-- リセット時の初期値を指定できること
+- リセット時の初期値を指定できる
 
-### 制御
+### 制御・演算
 
 | 構文 | 意味 |
 |------|------|
-| `If` / `Else` | 条件 |
 | `Switch` / `Case` | 多分岐 |
-| 算術 `+ -` | 幅は実装で定義（推奨: 左辺幅に合わせる） |
-| 論理 `& \| ^ ~` | ビット演算 |
-| 比較 `== != <` | 1 bit 結果 |
-| 連結 / スライス | **T2b**（下記）。メソッド API |
+| 算術 `+ -` | ビット演算（幅は左辺などに合わせる実装） |
+| 論理 `& \|` | ビット演算 |
+| `Slice(hi, lo)` | `x[hi:lo]`（両端 inclusive）。結果幅 `hi - lo + 1` |
+| `Concat(...)` | `{a, b, …}`（左が MSB）。結果幅は各幅の和 |
+| `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅 |
 
-### スライス / 連結（T2b）
+スライス・連結・拡張は **右辺向け**。インデックスは定数。幅不一致は例外になります。
 
-方針: **メソッド**（インデクサ＋レンジ型は採用しない）。
+### メモリ `Mem`
 
-| API（概念名） | 意味 | 結果幅 |
-|---------------|------|--------|
-| `Slice(hi, lo)` | Verilog の `x[hi:lo]`（両端 inclusive） | `hi - lo + 1` |
-| `Concat(a, b, …)` または 2 引数の入れ子 | Verilog の `{a, b, …}`（左が MSB） | 各オペランド幅の和 |
+- **1R1W:** 同期読み・同期書き。`addr` は読み書き共用  
+- **2R1W:** 同期書き + 組み合わせ読み（`raddr0/1`, `rdata0/1`）  
+- **1R1W + `wstrb`:** バイトイネーブル（`wstrb` 幅 = `width / 8`）  
 
-ルール:
+アドレス幅は `ceil(log2(depth))`。同一アドレスの読み書きは初版 **旧値読み**（バイパスなし）。
 
-- インデックスは **定数**（動的ビット選択は対象外）
-- `hi >= lo`、かつ元の幅に収まる（`hi < width`）。違反は幅系例外または引数例外
-- `Expr` / `GetWidth` で結果幅が分かるようにする
-- 代入は従来どおり左辺幅と一致
-- 初版は **右辺のみ**（`x[7:0] = …` のような部分代入左辺は後回し）
+### 階層
 
-呼び出しの置き場（実装選択）: `Expr` 拡張メソッド、または `Signal` 上のメソッド。どちらでも意味論は上表に合わせる。
-
-### 符号拡張 / ゼロ拡張（T2e）
-
-| API | 意味 | 結果幅 |
-|-----|------|--------|
-| `SignExtend(toWidth)` | 符号ビット複製で幅を広げる | `toWidth` |
-| `ZeroExtend(toWidth)` | 上位を 0 埋め | `toWidth` |
-
-ルール:
-
-- 元幅が `GetWidth()` で分かること。`toWidth >= srcWidth`（縮小は例外）
-- 右辺のみ。emit は複製連結（`$signed` は使わない）
-- `toWidth == srcWidth` のときは内側式のみ
-- LB/LBU や即値フィールド切り出しは消費者側（`Slice` + Extend）
-
-### メモリ `Mem`（Phase 3 / T2c / T2d）
-
-- **1R1W:** 同期読み・同期書き（既存）。`addr` は読み書き共用
-- **2R1W オーバーロード:** 同期書き + **非同期（組み合わせ）読み**。ポートは `we` / `waddr` / `wdata` + `raddr0`/`rdata0` + `raddr1`/`rdata1`
-- **1R1W + `wstrb`（T2d）:** バイトイネーブル。`wstrb` 幅 = `width / 8`（`width % 8 == 0`）。`we && wstrb[i]` のときだけバイト `i` を更新。2R1W には付けない。LB/SB デコードは消費者側
-- アドレス幅はすべて `ceil(log2(depth))`。データ幅は `width`
-- 同一アドレスの読み書きは初版 **旧値読み**（バイパスなし）。x0 ゼロ化は消費者側
+子モジュールをインスタンス化し、ポート接続する。子は別 `module` として emit されます。
 
 ---
 
-## 5. 階層
-
-```csharp
-public sealed class Top : Module
-{
-    readonly Alu _alu = new();
-
-    protected override void Describe()
-    {
-        // ポート接続 API（実装者が設計）
-        Connect(_alu.A, someSignal);
-    }
-}
-```
-
-子モジュールは別 `module` として emit されること。
-
----
-
-## 6. 禁止・非対応（v0.1）
+## 5. 禁止・非対応
 
 | 禁止 | 理由 |
 |------|------|
@@ -153,15 +105,7 @@ public sealed class Top : Module
 
 ---
 
-## 7. 名前付け
+## 6. 名前付け
 
-- Verilog 識別子にそのまま出せる名前（ASCII、予約語回避）
-- モジュール名はクラス名、または属性で上書き
-
----
-
-## 改版履歴
-
-| 版 | 日付 | 変更 |
-|----|------|------|
-| 0.1 | 2026-08-12 | 初版 |
+- Verilog 識別子として使える名前（ASCII、予約語回避）
+- モジュール名の既定はクラス名

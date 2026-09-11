@@ -1,80 +1,57 @@
 # CsharpHdl — C# で書くハードウェア記述（→ Verilog）
 
-**C# で回路を記述し、Verilog / SystemVerilog を生成する**ための独立ツールキットです。  
-特定の OS や CPU プロジェクトに依存しません。FPGA・TinyTapeOut・MPW・学習用 SoC など、別件でも使えます。
+C# の DSL で同期回路を記述し、人が読める Verilog を生成するライブラリです。  
+特定の OS・CPU・ISA には依存しません。
 
-実装は人間が行います。このリポジトリには仕様とガイドを置きます。
+| できること | できないこと |
+|------------|--------------|
+| Reg / Wire / Comb / Seq、Mem、階層、スライス・拡張など | 任意の C# を HLS する |
+| nuget.org から参照して消費者側で Module を書く | GC / CLR を回路化する |
 
-## できること / できないこと
-
-| できる | できない |
-|--------|----------|
-| C# DSL で Reg / Wire / Comb / Seq を書く | 普通の C# アプリをそのまま FPGA に載せる |
-| Verilog を生成して yosys / Vivado / TT に渡す | GC・CLR を回路化する |
-| 複数プロジェクトからライブラリ参照 | 「魔法の HLS」で任意 C# を高速化 |
+**現状:** RV64 向けの基本原語（64bit 幅、Slice/Concat、2R1W Mem、バイト書き、Sign/Zero 拡張）まで。  
+**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit)（例: `0.1.0`）
 
 ```
-C# HDL 記述（このプロジェクト）
+C# Module（消費者プロジェクト）
         ↓ emit
    Verilog
         ↓
-  シミュレーション / FPGA / TinyTapeOut / MPW
+  シミュレーション / FPGA / その他
 ```
 
-## まず読む
+## Quick Start
 
-1. [docs/INDEX.md](docs/INDEX.md)
-2. [docs/getting-started.md](docs/getting-started.md)
-3. [docs/guides/phase-0-foundation.md](docs/guides/phase-0-foundation.md)
+1. PackageReference（詳細: [docs/consumers.md](docs/consumers.md)）
 
-## 利用者の例
-
-| 利用者 | 使い方 |
-|--------|--------|
-| **MyOsProject** | SimpleRISC CPU を C# HDL で書き、生成 Verilog を `rtl/generated/` へ |
-| 別の学習 CPU | 同じ DSL で別 ISA のコアを書く |
-| TinyTapeOut 提出 | 縮小コアだけを記述して公式ラッパーに接続 |
-| 周辺 IP | UART / タイマー等をモジュールとして再利用 |
-
-## リポジトリ構成
-
-```
-CsharpHdl/
-├── CsharpHdl.slnx        # ソリューション（.NET 10）
-├── docs/                 # 仕様・ガイド（日本語）
-├── src/
-│   ├── SharpHdl.Core/    # AST・DSL API（あなたが実装）
-│   ├── SharpHdl.Emit/    # Verilog emitter（あなたが実装）
-│   ├── SharpHdl.Cli/     # 生成 CLI
-│   └── SharpHdl.Tests/
-├── examples/             # ALU・blink 等の記述例
-└── out/generated/        # 生成物の出力先（gitignore）
+```xml
+<PackageReference Include="SharpHdl.Core" Version="0.1.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.1.0" />
 ```
 
-## ビルド
+2. 自分の `Module` を書く（参考: [`examples/`](examples/)）  
+3. `VerilogEmitter` で `.v` を出力する  
+
+## ドキュメント
+
+- [docs/INDEX.md](docs/INDEX.md)
+- [docs/getting-started.md](docs/getting-started.md)
+- [docs/dsl-spec.md](docs/dsl-spec.md)
+
+## このリポジトリをビルドする
 
 ```bash
-cd CsharpHdl
 dotnet build CsharpHdl.slnx
 dotnet test CsharpHdl.slnx
-dotnet run --project src/SharpHdl.Cli -- --version
 ```
 
-## Quick Start（本線）
-
-回路は **消費者側の C#** に書く。CLI だけで `.v` を吐くのはデモ用。
-
-1. [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) を **nuget.org** から PackageReference（手順: [docs/consumers.md](docs/consumers.md)）。版は公開中の最新（例: `0.1.0`） 
-2. 自分の `Module` を記述する（書き方の参考: `examples/`）  
-3. Program またはテストから Emitter を呼び、`.v` を出力する  
-4. 生成 Verilog をシミュレーション / FPGA / TinyTapeOut へ  
-
-補助 CLI（examples 再生成など）: [docs/cli-spec.md](docs/cli-spec.md)  
-消費者宿題: [docs/tickets/riscv-sharp-requests.md](docs/tickets/riscv-sharp-requests.md)
+`SharpHdl.Cli` は任意のスタブです。本線はライブラリ参照です。
 
 ## 方針
 
-- **同期設計・明示的なクロック／リセット**を前提にする
-- 最初は機能を極小に（ALU → レジスタ → ステートマシン）
-- 生成 Verilog は **人が読める**こと
-- 消費者は **nuget.org の PackageReference を推奨**（開発中のみ ProjectReference）。C# コンパイルの恩恵は参照経路が本線
+- 同期設計・明示的なクロック／リセット
+- 生成 Verilog は人が読めること
+- 消費者は nuget.org の PackageReference を推奨
+
+## License
+
+[MIT](LICENSE)

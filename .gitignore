@@ -8,3 +8,6 @@ obj/
 
 # Constella 連携（ローカル運用・LAN 設定含む）
 constella/
+
+# 内部計画・チケット（ローカル専用。公開リポには載せない）
+internal/
