@@ -353,6 +353,26 @@ public static class VerilogEmitter
 			s += "}";
 			return s;
 		}
+		else if(expr is SignExtendExpr signExtendExpr)
+		{
+			if(signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth() == 0)
+				return emitExpr(signExtendExpr.Expr);
+			else
+			{
+				string s = "{{" + $"{signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth()}{{" + $"{emitExpr(signExtendExpr.Expr)}[{signExtendExpr.Expr.GetWidth() - 1}]" + "}}, " + $"{emitExpr(signExtendExpr.Expr)}" + "}";
+				return s;
+			}
+		}
+		else if(expr is ZeroExtendExpr zeroExtendExpr)
+		{
+			if(zeroExtendExpr.GetWidth() - zeroExtendExpr.Expr.GetWidth() == 0)
+				return emitExpr(zeroExtendExpr.Expr);
+			else
+			{
+				string s = "{{" + $"{zeroExtendExpr.GetWidth() - zeroExtendExpr.Expr.GetWidth()}" + "{1'b0}}, " + $"{emitExpr(zeroExtendExpr.Expr)}}}";
+				return s;
+			}
+		}
 		else
 		{
 			throw new Exception();

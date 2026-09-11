@@ -501,6 +501,67 @@ public class ModuleTests
 		Assert.Equal(expected, verilog);
 	}
 
+	[Fact]
+	public void TestSignExtend_GetWidth_IsTarget()
+	{
+		In b = In.UInt(8, "b");
+		Assert.Equal(32u, b.SignExtend(32).GetWidth());
+	}
+
+	[Fact]
+	public void TestZeroExtend_GetWidth_IsTarget()
+	{
+		In b = In.UInt(8, "b");
+		Assert.Equal(32u, b.ZeroExtend(32).GetWidth());
+	}
+
+	[Fact]
+	public void TestExtend_Shrink_Throws()
+	{
+		BadExtendWidthModule module = new();
+		Assert.Throws<WidthMismatchException>(module.DescribeSignShrink);
+		Assert.Throws<WidthMismatchException>(module.DescribeZeroShrink);
+	}
+
+	[Fact]
+	public void TestExtendPassModuleStmt()
+	{
+		ExtendPass mod = new();
+		mod.Describe();
+		List<Stmt> stmts = mod.GetStmts().ToList();
+		Assert.Equal(2, stmts.Count);
+
+		AssignStmt signed = Assert.IsType<AssignStmt>(stmts[0]);
+		SignExtendExpr sext = Assert.IsType<SignExtendExpr>(signed.Expr);
+		Assert.Equal(32u, sext.Width);
+		Assert.Equal(mod.ByteIn, sext.Expr);
+
+		AssignStmt zero = Assert.IsType<AssignStmt>(stmts[1]);
+		ZeroExtendExpr zext = Assert.IsType<ZeroExtendExpr>(zero.Expr);
+		Assert.Equal(32u, zext.Width);
+		Assert.Equal(mod.ByteIn, zext.Expr);
+	}
+
+	[Fact]
+	public void TestExtendPassModuleEmitter_EmitsReplication()
+	{
+		ExtendPass mod = new();
+		mod.Describe();
+		var verilog = VerilogEmitter.Emitter(mod, nameof(ExtendPass));
+
+		const string expected =
+			"module ExtendPass(\n" +
+			"\tinput wire [7:0] byte_in,\n" +
+			"\toutput wire [31:0] signed_out,\n" +
+			"\toutput wire [31:0] zero_out\n" +
+			");\n" +
+			"\tassign signed_out = {{24{byte_in[7]}}, byte_in};\n" +
+			"\tassign zero_out = {{24{1'b0}}, byte_in};\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;

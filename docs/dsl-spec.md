@@ -96,9 +96,22 @@ public sealed class Alu : Module
 - `Expr` / `GetWidth` で結果幅が分かるようにする
 - 代入は従来どおり左辺幅と一致
 - 初版は **右辺のみ**（`x[7:0] = …` のような部分代入左辺は後回し）
-- 符号拡張は **T2e**（ここではやらない）
 
 呼び出しの置き場（実装選択）: `Expr` 拡張メソッド、または `Signal` 上のメソッド。どちらでも意味論は上表に合わせる。
+
+### 符号拡張 / ゼロ拡張（T2e）
+
+| API | 意味 | 結果幅 |
+|-----|------|--------|
+| `SignExtend(toWidth)` | 符号ビット複製で幅を広げる | `toWidth` |
+| `ZeroExtend(toWidth)` | 上位を 0 埋め | `toWidth` |
+
+ルール:
+
+- 元幅が `GetWidth()` で分かること。`toWidth >= srcWidth`（縮小は例外）
+- 右辺のみ。emit は複製連結（`$signed` は使わない）
+- `toWidth == srcWidth` のときは内側式のみ
+- LB/LBU や即値フィールド切り出しは消費者側（`Slice` + Extend）
 
 ### メモリ `Mem`（Phase 3 / T2c / T2d）
 

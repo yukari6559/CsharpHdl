@@ -28,6 +28,20 @@ public class Expr
 		SliceExpr sliceExpr = new(msb,lsb,this);
 		return sliceExpr;
 	}
+	public Expr SignExtend(uint width)
+	{
+		if(this.GetWidth() > width || this.GetWidth() == null)
+			throw new WidthMismatchException();
+		SignExtendExpr signExtendExpr = new(width, this);
+		return signExtendExpr;
+	}
+	public Expr ZeroExtend(uint width)
+	{
+		if(this.GetWidth() > width || this.GetWidth() == null)
+			throw new WidthMismatchException();
+		ZeroExtendExpr zeroExtendExpr = new(width, this);
+		return zeroExtendExpr;
+	}
 }
 
 public static class ExprExtension
@@ -51,7 +65,55 @@ public static class ExprExtension
 					len += (uint)item.GetWidth()!;
 				}
 				return len;
+			case SignExtendExpr signExtendExpr:
+				return signExtendExpr.Width;
+			case ZeroExtendExpr zeroExtendExpr:
+				return zeroExtendExpr.Width;
 		}
 		return null;
+	}
+}
+
+public class SliceExpr : Expr
+{
+	public uint LSB{get;private set;}
+	public uint MSB{get;private set;}
+	public Expr Expr{get;private set;}
+	public SliceExpr(uint msb, uint lsb, Expr expr)
+	{
+		MSB = msb;
+		LSB = lsb;
+		Expr = expr;
+	}
+}
+
+public class ConcatExpr : Expr
+{
+	public Expr[] Expr{get;private set;}
+	public ConcatExpr(params Expr[] expr)
+	{
+		Expr = expr;
+	}
+}
+
+public class SignExtendExpr : Expr
+{
+	public uint Width{get;private set;}
+	public Expr Expr{get;private set;}
+	public SignExtendExpr(uint width, Expr expr)
+	{
+		Width = width;
+		Expr = expr;
+	}
+}
+
+public class ZeroExtendExpr : Expr
+{
+	public uint Width{get;private set;}
+	public Expr Expr{get;private set;}
+	public ZeroExtendExpr(uint width, Expr expr)
+	{
+		Width = width;
+		Expr = expr;
 	}
 }
