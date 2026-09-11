@@ -100,10 +100,11 @@ public sealed class Alu : Module
 
 呼び出しの置き場（実装選択）: `Expr` 拡張メソッド、または `Signal` 上のメソッド。どちらでも意味論は上表に合わせる。
 
-### メモリ `Mem`（Phase 3 / T2c）
+### メモリ `Mem`（Phase 3 / T2c / T2d）
 
 - **1R1W:** 同期読み・同期書き（既存）。`addr` は読み書き共用
 - **2R1W オーバーロード:** 同期書き + **非同期（組み合わせ）読み**。ポートは `we` / `waddr` / `wdata` + `raddr0`/`rdata0` + `raddr1`/`rdata1`
+- **1R1W + `wstrb`（T2d）:** バイトイネーブル。`wstrb` 幅 = `width / 8`（`width % 8 == 0`）。`we && wstrb[i]` のときだけバイト `i` を更新。2R1W には付けない。LB/SB デコードは消費者側
 - アドレス幅はすべて `ceil(log2(depth))`。データ幅は `width`
 - 同一アドレスの読み書きは初版 **旧値読み**（バイパスなし）。x0 ゼロ化は消費者側
 

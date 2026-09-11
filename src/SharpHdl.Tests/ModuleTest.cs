@@ -290,6 +290,63 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestByteWriteRamModuleStmt()
+	{
+		ByteWriteRam ram = new();
+		ram.Describe();
+		List<Stmt> stmts = ram.GetStmts().ToList();
+
+		Assert.Single(stmts);
+		MemWstrbStmt mem = Assert.IsType<MemWstrbStmt>(stmts[0]);
+		Assert.Equal(256u, mem.Depth);
+		Assert.Equal(32u, mem.Width);
+		Assert.Equal(ram.Clk, mem.Clk);
+		Assert.Equal(ram.We, mem.We);
+		Assert.Equal(ram.Wstrb, mem.Wstrb);
+		Assert.Equal(ram.Addr, mem.Addr);
+		Assert.Equal(ram.Wdata, mem.Wdata);
+		Assert.Equal(ram.Rdata, mem.Rdata);
+	}
+
+	[Fact]
+	public void TestByteWriteRamModuleEmitter_EmitsByteEnables()
+	{
+		ByteWriteRam ram = new();
+		ram.Describe();
+		var verilog = VerilogEmitter.Emitter(ram, nameof(ByteWriteRam));
+
+		const string expected =
+			"module ByteWriteRam(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire we,\n" +
+			"\tinput wire [3:0] wstrb,\n" +
+			"\tinput wire [7:0] addr,\n" +
+			"\tinput wire [31:0] wdata,\n" +
+			"\toutput reg [31:0] rdata\n" +
+			");\n" +
+			"reg [31:0] mem [0:255];\n" +
+			"always @(posedge clk) begin\n" +
+			"\tif (we) begin\n" +
+			"\t\tif (wstrb[0]) mem[addr][7:0] <= wdata[7:0];\n" +
+			"\t\tif (wstrb[1]) mem[addr][15:8] <= wdata[15:8];\n" +
+			"\t\tif (wstrb[2]) mem[addr][23:16] <= wdata[23:16];\n" +
+			"\t\tif (wstrb[3]) mem[addr][31:24] <= wdata[31:24];\n" +
+			"\tend\n" +
+			"\trdata <= mem[addr];\n" +
+			"end\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestMemWstrb_WidthMismatch_Throws()
+	{
+		BadMemWstrbWidthModule module = new();
+		Assert.Throws<WidthMismatchException>(module.DescribeWstrbMismatch);
+	}
+
+	[Fact]
 	public void TestRegFile2R1WModuleStmt()
 	{
 		RegFile2R1W rf = new();

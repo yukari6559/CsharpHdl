@@ -123,3 +123,26 @@ public class Mem2R1WStmt : Stmt
 		Rdata1 = rdata1;
 	}
 }
+
+public class MemWstrbStmt : Stmt
+{
+	public In Clk{get;private set;}
+	public uint Depth{get;private set;}
+	public uint Width{get;private set;}
+	public In We{get;private set;}
+	public In Wstrb{get;private set;}
+	public In Addr{get;private set;}
+	public In Wdata{get;private set;}
+	public Out Rdata{get;private set;}
+	public MemWstrbStmt(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata)
+	{
+		Clk = clk;
+		Depth = depth;
+		Width = width;
+		We = we;
+		Wstrb = wstrb;
+		Addr = addr;
+		Wdata = wdata;
+		Rdata = rdata;
+	}
+}

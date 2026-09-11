@@ -38,9 +38,13 @@ public static class VerilogEmitter
 						regOuts.Add(sa.Signal);
 				}
 			}
-			if(item is MemStmt mem)
+			if(item is MemStmt memStmt)
 			{
-				regOuts.Add(mem.Rdata);
+				regOuts.Add(memStmt.Rdata);
+			}
+			if(item is MemWstrbStmt memWstrbStmt)
+			{
+				regOuts.Add(memWstrbStmt.Rdata);
 			}
 		}
 
@@ -101,6 +105,23 @@ public static class VerilogEmitter
 				verilogsb.Append($"end\n");
 				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
 				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
+			}
+			if(item is MemWstrbStmt memWstrbStmt)
+			{
+				verilogsb.Append($"reg [{memWstrbStmt.Width - 1}:0] mem [0:{memWstrbStmt.Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({memWstrbStmt.We.Name}) begin\n");
+				uint memLSB = 0;
+				uint memMSB = 7;
+				for(int i = 0; i < memWstrbStmt.Width / 8; i++)
+				{
+					verilogsb.Append($"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) mem[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
+					memLSB += 8;
+					memMSB += 8;
+				}
+				verilogsb.Append("\tend\n");
+				verilogsb.Append($"\t{memWstrbStmt.Rdata.Name} <= mem[{memWstrbStmt.Addr.Name}];\n");
+				verilogsb.Append($"end\n");
 			}
 			if(item is AssignStmt)
 			{
@@ -182,6 +203,10 @@ public static class VerilogEmitter
 			{
 				regOuts.Add(mem.Rdata);
 			}
+			if(item is MemWstrbStmt memWstrbStmt)
+			{
+				regOuts.Add(memWstrbStmt.Rdata);
+			}
 		}
 		for(int i = 0; i < signals.Count; i++)
 		{
@@ -225,6 +250,23 @@ public static class VerilogEmitter
 				verilogsb.Append($"end\n");
 				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
 				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
+			}
+			if(item is MemWstrbStmt memWstrbStmt)
+			{
+				verilogsb.Append($"reg [{memWstrbStmt.Width - 1}:0] mem [0:{memWstrbStmt.Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({memWstrbStmt.We.Name}) begin\n");
+				uint memLSB = 0;
+				uint memMSB = 7;
+				for(int i = 0; i < memWstrbStmt.Width / 8; i++)
+				{
+					verilogsb.Append($"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) mem[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
+					memLSB += 8;
+					memMSB += 8;
+				}
+				verilogsb.Append("\tend\n");
+				verilogsb.Append($"\t{memWstrbStmt.Rdata.Name} <= mem[{memWstrbStmt.Addr.Name}];\n");
+				verilogsb.Append($"end\n");
 			}
 			if(item is AssignStmt)
 			{
