@@ -9,7 +9,7 @@ C# の DSL で同期回路を記述し、人が読める Verilog を生成する
 | nuget.org から参照して消費者側で Module を書く | GC / CLR を回路化する |
 
 **現状:** RV64 向けの基本原語（64bit 幅、Slice/Concat、2R1W Mem、バイト書き、Sign/Zero 拡張）まで。  
-**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit)（例: `0.1.0`）
+**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit)（例: `0.1.0`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
 
 ```
 C# Module（消費者プロジェクト）

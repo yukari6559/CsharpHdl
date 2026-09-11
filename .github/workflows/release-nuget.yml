@@ -1,0 +1,61 @@
+name: Release NuGet
+
+# タグ v1.2.3 を push すると SharpHdl.Core / Emit を pack して nuget.org へ公開する。
+# 事前にリポジトリ Secrets に NUGET_API_KEY を設定すること。
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  pack-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Resolve version from tag
+        id: ver
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].+)?$ ]]; then
+            echo "Tag must look like v1.2.3 (got: $TAG)"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing version $VERSION"
+
+      - name: Test
+        run: dotnet test CsharpHdl.slnx -c Release --verbosity normal
+
+      - name: Pack
+        run: |
+          mkdir -p artifacts/nuget
+          dotnet pack src/SharpHdl.Core/SharpHdl.Core.csproj -c Release -o artifacts/nuget -p:Version=${{ steps.ver.outputs.version }} -p:PackageVersion=${{ steps.ver.outputs.version }}
+          dotnet pack src/SharpHdl.Emit/SharpHdl.Emit.csproj -c Release -o artifacts/nuget -p:Version=${{ steps.ver.outputs.version }} -p:PackageVersion=${{ steps.ver.outputs.version }}
+          ls -la artifacts/nuget
+
+      - name: Push to nuget.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "Secret NUGET_API_KEY is not set"
+            exit 1
+          fi
+          dotnet nuget push artifacts/nuget/SharpHdl.Core.*.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_API_KEY" \
+            --skip-duplicate
+          dotnet nuget push artifacts/nuget/SharpHdl.Emit.*.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_API_KEY" \
+            --skip-duplicate

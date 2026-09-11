@@ -26,6 +26,24 @@ dotnet build
 
 公開中の版は [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) を参照してください。
 
+### メンテナー向け: nuget.org への公開
+
+版の決定は人手、pack / push は CI です。
+
+1. GitHub リポジトリの Secrets に `NUGET_API_KEY`（nuget.org の API キー）を設定する  
+2. `main` を公開したい状態にする  
+3. タグを打って push する（例: `0.2.0`）
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+`Release NuGet` workflow がテスト → pack（タグの版）→ nuget.org へ push します。  
+同じ版は nuget.org 上で上書きできません。直すときは版を上げて新しいタグを付けてください。
+
+csproj の `<Version>` はローカル表示用です。タグ付きリリースでは workflow が `-p:Version=` で上書きします。揃えておくと分かりやすいです。
+
 ---
 
 ## プロジェクト参照（本リポジトリ開発・未公開版の試し用）
