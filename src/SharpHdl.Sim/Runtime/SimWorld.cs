@@ -10,11 +10,7 @@ public class SimWorld
 	
 	public void Set(Signal signal, ulong value)
 	{
-		ulong maxValue;
-		if(signal.Width == 64)
-			maxValue = ulong.MaxValue;
-		else
-			maxValue = (1UL << (int)signal.Width) - 1;
+		ulong maxValue = BitUtils.MakeMaskBit(signal.Width);
 		if (Values.ContainsKey(signal) && value <= maxValue)
 			Values[signal] = value;
 		else if(!Values.ContainsKey(signal))
