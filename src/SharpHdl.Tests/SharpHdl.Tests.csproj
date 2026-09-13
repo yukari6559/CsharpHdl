@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../SharpHdl.Sim/SharpHdl.Sim.csproj" />
     <ProjectReference Include="..\SharpHdl.Core\SharpHdl.Core.csproj" />
     <ProjectReference Include="..\SharpHdl.Emit\SharpHdl.Emit.csproj" />
   </ItemGroup>
