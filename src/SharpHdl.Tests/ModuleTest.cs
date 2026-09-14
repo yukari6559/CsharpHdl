@@ -474,9 +474,9 @@ public class ModuleTests
 
 		AssignStmt word = Assert.IsType<AssignStmt>(stmts[2]);
 		ConcatExpr concat = Assert.IsType<ConcatExpr>(word.Expr);
-		Assert.Equal(2, concat.Expr.Length);
-		Assert.IsType<SliceExpr>(concat.Expr[0]);
-		Assert.IsType<SliceExpr>(concat.Expr[1]);
+		Assert.Equal(2, concat.Exprs.Length);
+		Assert.IsType<SliceExpr>(concat.Exprs[0]);
+		Assert.IsType<SliceExpr>(concat.Exprs[1]);
 	}
 
 	[Fact]

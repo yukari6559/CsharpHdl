@@ -343,12 +343,12 @@ public static class VerilogEmitter
 		else if(expr is ConcatExpr concatExpr)
 		{
 			string s = "{";
-			for(int i = 0; i < concatExpr.Expr.Count(); i++)
+			for(int i = 0; i < concatExpr.Exprs.Count(); i++)
 			{
-				if(i == concatExpr.Expr.Count() - 1)
-					s += $"{emitExpr(concatExpr.Expr[i])}";
+				if(i == concatExpr.Exprs.Count() - 1)
+					s += $"{emitExpr(concatExpr.Exprs[i])}";
 				else
-					s += $"{emitExpr(concatExpr.Expr[i])}, ";
+					s += $"{emitExpr(concatExpr.Exprs[i])}, ";
 			}
 			s += "}";
 			return s;

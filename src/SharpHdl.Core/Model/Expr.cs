@@ -58,7 +58,7 @@ public static class ExprExtension
 				return sliceExpr.MSB - sliceExpr.LSB + 1;
 			case ConcatExpr concatExpr:
 				uint len = 0;
-				foreach(var item in concatExpr.Expr)
+				foreach(var item in concatExpr.Exprs)
 				{
 					if(item.GetWidth() == null)
 						return null;
@@ -89,10 +89,10 @@ public class SliceExpr : Expr
 
 public class ConcatExpr : Expr
 {
-	public Expr[] Expr{get;private set;}
+	public Expr[] Exprs{get;private set;}
 	public ConcatExpr(params Expr[] expr)
 	{
-		Expr = expr;
+		Exprs = expr;
 	}
 }
 
