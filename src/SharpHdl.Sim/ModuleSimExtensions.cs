@@ -29,7 +29,7 @@ public static class ModuleSimExtensions
 			else
 				throw new SimUnsupportedException();
 		}
-		//simSession.Settle();
+		simSession.Settle();
 		return simSession;
 	}
 }

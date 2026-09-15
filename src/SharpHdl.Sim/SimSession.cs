@@ -1,9 +1,10 @@
 using SharpHdl.Core.Model;
+using SharpHdl.Sim.Interp;
 using SharpHdl.Sim.Runtime;
 
 namespace SharpHdl.Sim;
 
-public class SimSession<T>
+public class SimSession<T> where T : Module
 {
 	public required T Module{get;init;}
 	public SimWorld simWorld = new();
@@ -17,7 +18,8 @@ public class SimSession<T>
 	}
 	public void Settle()
 	{
-		throw new NotImplementedException();
+		CombSettle combSettle = new();
+		combSettle.Settle(Module.GetStmts().ToList(), simWorld);
 	}
 	public void Advance(In clk)
 	{
