@@ -30,6 +30,10 @@ public static class ModuleSimExtensions
 			{
 				
 			}
+			else if(stmt is MemStmt)
+			{
+				
+			}
 			else
 				throw new SimUnsupportedException();
 		}

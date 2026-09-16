@@ -9,6 +9,7 @@ public class SeqAdvance
 	{
 		Dictionary<Signal, ulong> nextValues = new();
 		EvalExpr evalExpr = new();
+		ulong nextRdata;
 		foreach(var stmt in stmts)
 		{
 			if(stmt is SeqBlockStmt seqBlockStmt && seqBlockStmt.Clk == clk)
@@ -31,6 +32,15 @@ public class SeqAdvance
 			if(stmt is InstanceStmt instanceStmt)
 			{
 				Advance(instanceStmt.ChildModule.GetStmts().ToList(), simWorld, clk);
+			}
+			if(stmt is MemStmt memStmt && memStmt.Clk == clk)
+			{
+				nextRdata = (simWorld.memState[memStmt.Rdata])[evalExpr.Eval(memStmt.Addr, simWorld)];
+				nextValues[memStmt.Rdata] = nextRdata;
+				if(evalExpr.Eval(memStmt.We, simWorld) == 1)
+				{
+					simWorld.memState[memStmt.Rdata][evalExpr.Eval(memStmt.Addr, simWorld)] = evalExpr.Eval(memStmt.Wdata, simWorld);
+				}
 			}
 		}
 		foreach(var item in nextValues)

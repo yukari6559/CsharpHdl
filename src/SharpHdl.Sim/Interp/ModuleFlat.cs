@@ -12,11 +12,18 @@ public class ModuleFlat
 		{
 			simWorld.Values.Add(signal, 0);
 		}
-		foreach(InstanceStmt instanceStmt in module.GetStmts().OfType<InstanceStmt>())
+		foreach(var stmt in module.GetStmts())
 		{
-			foreach(var connection in instanceStmt.PortConnections)
+			if(stmt is InstanceStmt instanceStmt)
 			{
-				simWorld.alias.Add(connection.ChildPort, connection.ParentSignal);
+				foreach(var connection in instanceStmt.PortConnections)
+				{
+					simWorld.alias.Add(connection.ChildPort, connection.ParentSignal);
+				}
+			}
+			else if(stmt is MemStmt memStmt)
+			{
+				simWorld.memState[memStmt.Rdata] = new ulong[memStmt.Depth];
 			}
 		}
 		return simWorld;

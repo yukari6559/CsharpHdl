@@ -71,8 +71,24 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void Run_RejectsMemModule()
+	public void SimpleRam_SyncRead_WriteVisibleNextCycle()
 	{
-		Assert.Throws<SimUnsupportedException>(() => new SimpleRam().Run());
+		var ram = new SimpleRam().Run();
+
+		ram.Set(ram.Module.We, 1);
+		ram.Set(ram.Module.Addr, 3);
+		ram.Set(ram.Module.Wdata, 0xABu);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0u, ram.Get(ram.Module.Rdata));
+
+		ram.Set(ram.Module.We, 0);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0xABu, ram.Get(ram.Module.Rdata));
+	}
+
+	[Fact]
+	public void Run_RejectsMem2R1WModule()
+	{
+		Assert.Throws<SimUnsupportedException>(() => new RegFile2R1W().Run());
 	}
 }
