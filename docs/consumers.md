@@ -74,4 +74,4 @@ csproj の `<Version>` はローカル表示用です。タグ付きリリース
 3. Program またはテストから Emitter を呼び、`.v` を書く — または `Run` / `Settle` / `Advance` でシミュする  
 4. 生成物を自分のシミュレーション / FPGA フローへ渡す（emit 利用時）  
 
-書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` の現状は単一モジュールの Comb/Seq まで（Mem / 階層は後続）。
+書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は S1（Comb/Seq）＋ Instance / 1R1W まで。**S2 完了後**に MidiSynth 向け原語（M1–M5）が本線になる（内部 ROADMAP / tickets 参照）。
