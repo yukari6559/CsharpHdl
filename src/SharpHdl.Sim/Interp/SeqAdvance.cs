@@ -42,6 +42,13 @@ public class SeqAdvance
 					simWorld.memState[memStmt.Rdata][evalExpr.Eval(memStmt.Addr, simWorld)] = evalExpr.Eval(memStmt.Wdata, simWorld);
 				}
 			}
+			if(stmt is Mem2R1WStmt mem2R1WStmt && mem2R1WStmt.Clk == clk)
+			{
+				if(evalExpr.Eval(mem2R1WStmt.We, simWorld) == 1)
+				{
+					simWorld.memState[mem2R1WStmt.Rdata0][evalExpr.Eval(mem2R1WStmt.Waddr, simWorld)] = evalExpr.Eval(mem2R1WStmt.Wdata, simWorld);
+				}
+			}
 		}
 		foreach(var item in nextValues)
 		{

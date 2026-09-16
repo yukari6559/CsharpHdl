@@ -7,7 +7,8 @@ public class CombSettle
 {
 	public bool Settle(List<Stmt> stmts, SimWorld simWorld)
 	{
-		ulong beforeValue;
+		ulong beforeValue0;
+		ulong beforeValue1;
 		bool isUpdate = true;
 		bool isUpdateAll = false;
 		EvalExpr evalExpr = new();
@@ -18,9 +19,9 @@ public class CombSettle
 			{
 				if(stmt is AssignStmt assignStmt)
 				{
-					beforeValue = evalExpr.Eval(assignStmt.Signal, simWorld);
+					beforeValue0 = evalExpr.Eval(assignStmt.Signal, simWorld);
 					simWorld.Set(assignStmt.Signal, evalExpr.Eval(assignStmt.Expr, simWorld));
-					if(beforeValue != evalExpr.Eval(assignStmt.Signal, simWorld))
+					if(beforeValue0 != evalExpr.Eval(assignStmt.Signal, simWorld))
 					{
 						isUpdate = true;
 						isUpdateAll = true;
@@ -44,6 +45,18 @@ public class CombSettle
 				if(stmt is InstanceStmt instanceStmt)
 				{
 					if(Settle(instanceStmt.ChildModule.GetStmts().ToList(), simWorld))
+					{
+						isUpdate = true;
+						isUpdateAll = true;
+					}
+				}
+				if(stmt is Mem2R1WStmt mem2R1WStmt)
+				{
+					beforeValue0 = evalExpr.Eval(mem2R1WStmt.Rdata0, simWorld);
+					beforeValue1 = evalExpr.Eval(mem2R1WStmt.Rdata1, simWorld);
+					simWorld.Set(mem2R1WStmt.Rdata0, simWorld.memState[mem2R1WStmt.Rdata0][evalExpr.Eval(mem2R1WStmt.Raddr0, simWorld)]);
+					simWorld.Set(mem2R1WStmt.Rdata1, simWorld.memState[mem2R1WStmt.Rdata1][evalExpr.Eval(mem2R1WStmt.Raddr1, simWorld)]);
+					if(beforeValue0 != evalExpr.Eval(mem2R1WStmt.Rdata0, simWorld) || beforeValue1 != evalExpr.Eval(mem2R1WStmt.Rdata1, simWorld))
 					{
 						isUpdate = true;
 						isUpdateAll = true;

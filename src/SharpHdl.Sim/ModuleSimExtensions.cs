@@ -34,6 +34,10 @@ public static class ModuleSimExtensions
 			{
 				
 			}
+			else if(stmt is Mem2R1WStmt mem2R1WStmt)
+			{
+				
+			}
 			else
 				throw new SimUnsupportedException();
 		}

@@ -87,8 +87,48 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void Run_RejectsMem2R1WModule()
+	public void RegFile2R1W_WriteThenCombRead()
 	{
-		Assert.Throws<SimUnsupportedException>(() => new RegFile2R1W().Run());
+		var rf = new RegFile2R1W().Run();
+
+		rf.Set(rf.Module.Raddr0, 3);
+		rf.Set(rf.Module.Raddr1, 3);
+		rf.Settle();
+		Assert.Equal(0u, rf.Get(rf.Module.Rdata0));
+		Assert.Equal(0u, rf.Get(rf.Module.Rdata1));
+
+		rf.Set(rf.Module.We, 1);
+		rf.Set(rf.Module.Waddr, 3);
+		rf.Set(rf.Module.Wdata, 0x1122334455667788UL);
+		rf.Advance(rf.Module.Clk);
+		Assert.Equal(0x1122334455667788UL, rf.Get(rf.Module.Rdata0));
+		Assert.Equal(0x1122334455667788UL, rf.Get(rf.Module.Rdata1));
+	}
+
+	[Fact]
+	public void RegFile2R1W_DualReadPorts()
+	{
+		var rf = new RegFile2R1W().Run();
+
+		rf.Set(rf.Module.We, 1);
+		rf.Set(rf.Module.Waddr, 1);
+		rf.Set(rf.Module.Wdata, 10);
+		rf.Advance(rf.Module.Clk);
+		rf.Set(rf.Module.Waddr, 2);
+		rf.Set(rf.Module.Wdata, 20);
+		rf.Advance(rf.Module.Clk);
+
+		rf.Set(rf.Module.We, 0);
+		rf.Set(rf.Module.Raddr0, 1);
+		rf.Set(rf.Module.Raddr1, 2);
+		rf.Settle();
+		Assert.Equal(10u, rf.Get(rf.Module.Rdata0));
+		Assert.Equal(20u, rf.Get(rf.Module.Rdata1));
+	}
+
+	[Fact]
+	public void Run_RejectsMemWstrbModule()
+	{
+		Assert.Throws<SimUnsupportedException>(() => new ByteWriteRam().Run());
 	}
 }
