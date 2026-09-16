@@ -49,6 +49,24 @@ public class SeqAdvance
 					simWorld.memState[mem2R1WStmt.Rdata0][evalExpr.Eval(mem2R1WStmt.Waddr, simWorld)] = evalExpr.Eval(mem2R1WStmt.Wdata, simWorld);
 				}
 			}
+			if(stmt is MemWstrbStmt memWstrbStmt && memWstrbStmt.Clk == clk)
+			{
+				nextRdata = simWorld.memState[memWstrbStmt.Rdata][evalExpr.Eval(memWstrbStmt.Addr, simWorld)];
+				if(evalExpr.Eval(memWstrbStmt.We, simWorld) == 1)
+				{
+					var word = simWorld.memState[memWstrbStmt.Rdata][evalExpr.Eval(memWstrbStmt.Addr,simWorld)];
+					for(int i = 0; i < memWstrbStmt.Width / 8; i++)
+					{
+						if(((evalExpr.Eval(memWstrbStmt.Wstrb, simWorld) >> i) & 1) == 1)
+						{
+							ulong mask = 0xFFul << (8*i);
+							word = (word & ~mask) | (evalExpr.Eval(memWstrbStmt.Wdata,simWorld) & mask);
+						}
+					}
+					simWorld.memState[memWstrbStmt.Rdata][evalExpr.Eval(memWstrbStmt.Addr,simWorld)] = word;
+				}
+				nextValues[memWstrbStmt.Rdata] = nextRdata; 
+			}
 		}
 		foreach(var item in nextValues)
 		{

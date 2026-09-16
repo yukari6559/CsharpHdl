@@ -31,6 +31,10 @@ public class ModuleFlat
 				simWorld.memState[mem2R1WStmt.Rdata0] = arr;
 				simWorld.memState[mem2R1WStmt.Rdata1] = arr;
 			}
+			else if(stmt is MemWstrbStmt memWstrbStmt)
+			{
+				simWorld.memState[memWstrbStmt.Rdata] = new ulong[memWstrbStmt.Depth];
+			}
 		}
 		return simWorld;
 	}

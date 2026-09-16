@@ -38,6 +38,10 @@ public static class ModuleSimExtensions
 			{
 				
 			}
+			else if(stmt is MemWstrbStmt memWstrbStmt)
+			{
+				
+			}
 			else
 				throw new SimUnsupportedException();
 		}

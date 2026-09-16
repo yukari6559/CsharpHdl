@@ -127,8 +127,44 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void Run_RejectsMemWstrbModule()
+	public void ByteWriteRam_SyncRead_FullStrobe()
 	{
-		Assert.Throws<SimUnsupportedException>(() => new ByteWriteRam().Run());
+		var ram = new ByteWriteRam().Run();
+
+		ram.Set(ram.Module.We, 1);
+		ram.Set(ram.Module.Wstrb, 0xF);
+		ram.Set(ram.Module.Addr, 1);
+		ram.Set(ram.Module.Wdata, 0xAABBCCDDu);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0u, ram.Get(ram.Module.Rdata));
+
+		ram.Set(ram.Module.We, 0);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0xAABBCCDDu, ram.Get(ram.Module.Rdata));
+	}
+
+	[Fact]
+	public void ByteWriteRam_PartialStrobe_UpdatesOnlySelectedBytes()
+	{
+		var ram = new ByteWriteRam().Run();
+
+		ram.Set(ram.Module.We, 1);
+		ram.Set(ram.Module.Wstrb, 0xF);
+		ram.Set(ram.Module.Addr, 2);
+		ram.Set(ram.Module.Wdata, 0xAABBCCDDu);
+		ram.Advance(ram.Module.Clk);
+		ram.Set(ram.Module.We, 0);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0xAABBCCDDu, ram.Get(ram.Module.Rdata));
+
+		ram.Set(ram.Module.We, 1);
+		ram.Set(ram.Module.Wstrb, 0x1);
+		ram.Set(ram.Module.Wdata, 0x00000011u);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0xAABBCCDDu, ram.Get(ram.Module.Rdata));
+
+		ram.Set(ram.Module.We, 0);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0xAABBCC11u, ram.Get(ram.Module.Rdata));
 	}
 }
