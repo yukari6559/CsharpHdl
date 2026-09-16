@@ -12,17 +12,21 @@ public static class ModuleSimExtensions
 		SimSession<T> simSession = new(){Module = module};
 		module.Describe();
 		simSession.simWorld = moduleFlat.Build(module);
-		foreach(var stmts in module.GetStmts())
+		foreach(var stmt in module.GetStmts())
 		{
-			if(stmts is AssignStmt)
+			if(stmt is AssignStmt)
 			{
 				
 			}
-			else if(stmts is SwitchStmt)
+			else if(stmt is SwitchStmt)
 			{
 				
 			}
-			else if(stmts is SeqBlockStmt)
+			else if(stmt is SeqBlockStmt)
+			{
+				
+			}
+			else if(stmt is InstanceStmt)
 			{
 				
 			}

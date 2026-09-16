@@ -12,6 +12,13 @@ public class ModuleFlat
 		{
 			simWorld.Values.Add(signal, 0);
 		}
+		foreach(InstanceStmt instanceStmt in module.GetStmts().OfType<InstanceStmt>())
+		{
+			foreach(var connection in instanceStmt.PortConnections)
+			{
+				simWorld.alias.Add(connection.ChildPort, connection.ParentSignal);
+			}
+		}
 		return simWorld;
 	}
 }

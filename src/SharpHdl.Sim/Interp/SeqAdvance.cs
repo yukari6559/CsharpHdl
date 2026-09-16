@@ -28,6 +28,10 @@ public class SeqAdvance
 					}
 				}
 			}
+			if(stmt is InstanceStmt instanceStmt)
+			{
+				Advance(instanceStmt.ChildModule.GetStmts().ToList(), simWorld, clk);
+			}
 		}
 		foreach(var item in nextValues)
 		{

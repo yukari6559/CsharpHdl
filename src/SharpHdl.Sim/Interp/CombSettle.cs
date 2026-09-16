@@ -41,6 +41,14 @@ public class CombSettle
 						}
 					}
 				}
+				if(stmt is InstanceStmt instanceStmt)
+				{
+					if(Settle(instanceStmt.ChildModule.GetStmts().ToList(), simWorld))
+					{
+						isUpdate = true;
+						isUpdateAll = true;
+					}
+				}
 			}
 		}
 		return isUpdateAll;
