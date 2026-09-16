@@ -23,10 +23,15 @@ public class SimSession<T> where T : Module
 	}
 	public void Advance(In clk)
 	{
-		throw new NotImplementedException();
+		SeqAdvance seqAdvance = new();
+		seqAdvance.Advance(Module.GetStmts().ToList(), simWorld, clk);
+		Settle();
 	}
 	public void Advance(In clk, int n)
 	{
-		throw new NotImplementedException();
+		for(int i = 0; i < n; i++)
+		{
+			Advance(clk);
+		}
 	}
 }
