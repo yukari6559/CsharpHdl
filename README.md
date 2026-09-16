@@ -8,15 +8,13 @@ C# の DSL で同期回路を記述し、人が読める Verilog を生成する
 | Reg / Wire / Comb / Seq、Mem、階層、スライス・拡張など | 任意の C# を HLS する |
 | nuget.org から参照して消費者側で Module を書く | GC / CLR を回路化する |
 
-**現状:** RV64 向けの基本原語（64bit 幅、Slice/Concat、2R1W Mem、バイト書き、Sign/Zero 拡張）まで。  
-**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit)（例: `0.2.1`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
+**現状:** RV64 向けの基本原語（64bit 幅、Slice/Concat、2R1W Mem、バイト書き、Sign/Zero 拡張）まで。C# 回路シミュ（Comb/Seq）は `SharpHdl.Sim`。  
+**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) / [SharpHdl.Sim](https://www.nuget.org/packages/SharpHdl.Sim)（例: `0.3.0`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
 
 ```
 C# Module（消費者プロジェクト）
-        ↓ emit
-   Verilog
-        ↓
-  シミュレーション / FPGA / その他
+        ↓ emit / または SharpHdl.Sim
+   Verilog または C# テスト
 ```
 
 ## Quick Start
@@ -24,12 +22,14 @@ C# Module（消費者プロジェクト）
 1. PackageReference（詳細: [docs/consumers.md](docs/consumers.md)）
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.2.1" />
-<PackageReference Include="SharpHdl.Emit" Version="0.2.1" />
+<PackageReference Include="SharpHdl.Core" Version="0.3.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.3.0" />
+<!-- 回路を xUnit 等で回すとき -->
+<PackageReference Include="SharpHdl.Sim" Version="0.3.0" />
 ```
 
 2. 自分の `Module` を書く（参考: [`examples/`](examples/)）  
-3. `VerilogEmitter` で `.v` を出力する  
+3. `VerilogEmitter` で `.v` を出す、または `module.Run()` でシミュする  
 
 ## ドキュメント
 

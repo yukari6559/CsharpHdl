@@ -1,13 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../SharpHdl.Core/SharpHdl.Core.csproj" />
+    <None Include="LICENSE.txt" Pack="true" PackagePath=""/>
+    <None Include="README.md" Pack="true" PackagePath=""/>
+  </ItemGroup>
 
   <PropertyGroup>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageId>SharpHdl.Sim</PackageId>
+    <Version>0.3.0</Version>
+    <Authors>araiguma</Authors>
+    <Description>C# cycle simulation for SharpHdl.Core modules (Run/Settle/Advance).</Description>
+    <PackageProjectUrl>https://github.com/yukari6559/CsharpHdl</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yukari6559/CsharpHdl</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>hdl;verilog;csharp;fpga;rtl;simulation</PackageTags>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="../SharpHdl.Core/SharpHdl.Core.csproj" />
-  </ItemGroup>
 
 </Project>

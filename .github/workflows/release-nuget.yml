@@ -1,6 +1,6 @@
 name: Release NuGet
 
-# タグ v1.2.3 を push すると SharpHdl.Core / Emit を pack して nuget.org へ公開する。
+# タグ v1.2.3 を push すると SharpHdl.Core / Emit / Sim を pack して nuget.org へ公開する。
 # nuget.org の Trusted Publishing（OIDC）を使う。長期 API キーは不要。
 # ポリシーの Workflow File は release-nuget.yml、Repository は yukari6559/CsharpHdl。
 
@@ -43,6 +43,7 @@ jobs:
           mkdir -p artifacts/nuget
           dotnet pack src/SharpHdl.Core/SharpHdl.Core.csproj -c Release -o artifacts/nuget -p:Version=${{ steps.ver.outputs.version }} -p:PackageVersion=${{ steps.ver.outputs.version }}
           dotnet pack src/SharpHdl.Emit/SharpHdl.Emit.csproj -c Release -o artifacts/nuget -p:Version=${{ steps.ver.outputs.version }} -p:PackageVersion=${{ steps.ver.outputs.version }}
+          dotnet pack src/SharpHdl.Sim/SharpHdl.Sim.csproj -c Release -o artifacts/nuget -p:Version=${{ steps.ver.outputs.version }} -p:PackageVersion=${{ steps.ver.outputs.version }}
           ls -la artifacts/nuget
 
       - name: NuGet login (OIDC)
@@ -59,6 +60,10 @@ jobs:
             --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --skip-duplicate
           dotnet nuget push artifacts/nuget/SharpHdl.Emit.*.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+            --skip-duplicate
+          dotnet nuget push artifacts/nuget/SharpHdl.Sim.*.nupkg \
             --source https://api.nuget.org/v3/index.json \
             --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --skip-duplicate
