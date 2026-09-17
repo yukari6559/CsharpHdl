@@ -10,7 +10,7 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>SharpHdl.Sim</PackageId>
-    <Version>0.3.5</Version>
+    <Version>0.3.6</Version>
     <Authors>araiguma</Authors>
     <Description>C# cycle simulation for SharpHdl.Core modules (Run/Settle/Advance).</Description>
     <PackageProjectUrl>https://github.com/yukari6559/CsharpHdl</PackageProjectUrl>
