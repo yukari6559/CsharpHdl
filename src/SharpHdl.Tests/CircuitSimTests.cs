@@ -203,4 +203,30 @@ public class CircuitSimTests
 		ram.Advance(ram.Module.Clk);
 		Assert.Equal(0xABu, ram.Get(ram.Module.Rdata));
 	}
+
+	[Fact]
+	public void AdvanceWhile_StopsWhenConditionMet()
+	{
+		var c = new Counter().Run();
+		c.Set(c.Module.Rst, 1);
+		c.Advance(c.Module.Clk);
+		c.Set(c.Module.Rst, 0);
+		c.Set(c.Module.Step, 1);
+
+		c.AdvanceWhile(c.Module.Clk, 16, s => s.Get(s.Module.Count) != 5);
+		Assert.Equal(5u, c.Get(c.Module.Count));
+	}
+
+	[Fact]
+	public void AdvanceWhile_ThrowsWhenMaxCyclesExceeded()
+	{
+		var c = new Counter().Run();
+		c.Set(c.Module.Rst, 1);
+		c.Advance(c.Module.Clk);
+		c.Set(c.Module.Rst, 0);
+		c.Set(c.Module.Step, 1);
+
+		Assert.Throws<InvalidOperationException>(() =>
+			c.AdvanceWhile(c.Module.Clk, 3, s => s.Get(s.Module.Count) != 100));
+	}
 }

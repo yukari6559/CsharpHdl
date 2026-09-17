@@ -27,6 +27,17 @@ public class SimSession<T> where T : Module
 		seqAdvance.Advance(Module.GetStmts().ToList(), simWorld, clk);
 		Settle();
 	}
+	public void AdvanceWhile(In clk, int maxCycles, Func<SimSession<T>, bool> cont)
+	{
+		int count = 0;
+		while(cont(this))
+		{
+			if(maxCycles <= count)
+				throw new InvalidOperationException("Max cycles exceeded");
+			Advance(clk);
+			count++;
+		}
+	}
 	public void Advance(In clk, int n)
 	{
 		for(int i = 0; i < n; i++)
