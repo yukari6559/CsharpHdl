@@ -12,7 +12,13 @@ public enum Op
 	Plus,
 	Minus,
 	And,
-	Or
+	Or,
+	Eq,
+	Neq,
+	Lt,
+	Gt,
+	Le,
+	Ge
 }
 
 public static class OpExtension
@@ -23,6 +29,12 @@ public static class OpExtension
 		Op.Minus => "-",
 		Op.And => "&",
 		Op.Or => "|",
+		Op.Eq => "==",
+		Op.Neq => "!=",
+		Op.Lt => "<",
+		Op.Gt => ">",
+		Op.Le => "<=",
+		Op.Ge => ">=",
 		_ => op.ToString()
 	};
 }

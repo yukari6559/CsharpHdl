@@ -31,6 +31,30 @@ public class EvalExpr
 			{
 				return (Eval(opExpr.Left, simWorld) | Eval(opExpr.Right, simWorld)) & MaskBit;
 			}
+			else if(opExpr.Op == Op.Eq)
+			{
+				return (Eval(opExpr.Left, simWorld) == Eval(opExpr.Right, simWorld)) ? 1u : 0u;
+			}
+			else if(opExpr.Op == Op.Neq)
+			{
+				return (Eval(opExpr.Left, simWorld) != Eval(opExpr.Right, simWorld)) ? 1u : 0u;
+			}
+			else if(opExpr.Op == Op.Lt)
+			{
+				return (Eval(opExpr.Left, simWorld) < Eval(opExpr.Right, simWorld)) ? 1u : 0u;
+			}
+			else if(opExpr.Op == Op.Gt)
+			{
+				return (Eval(opExpr.Left, simWorld) > Eval(opExpr.Right, simWorld)) ? 1u : 0u;
+			}
+			else if(opExpr.Op == Op.Le)
+			{
+				return (Eval(opExpr.Left, simWorld) <= Eval(opExpr.Right, simWorld)) ? 1u : 0u;
+			}
+			else if(opExpr.Op == Op.Ge)
+			{
+				return (Eval(opExpr.Left, simWorld) >= Eval(opExpr.Right, simWorld)) ? 1u : 0u;
+			}
 			else
 				throw new SimUnsupportedException();
 		}

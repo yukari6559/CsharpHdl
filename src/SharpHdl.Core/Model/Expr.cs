@@ -18,6 +18,30 @@ public class Expr
 	{
 		return new OpExpr(){Left = left,Right = right,Op = Op.Or};
 	}
+	public static OpExpr operator <(Expr left, Expr right)
+	{
+		return new OpExpr(){Left = left,Right = right,Op = Op.Lt};
+	}
+	public static OpExpr operator >(Expr left, Expr right)
+	{
+		return new OpExpr(){Left = left,Right = right,Op = Op.Gt};
+	}
+	public static OpExpr operator <=(Expr left, Expr right)
+	{
+		return new OpExpr(){Left = left,Right = right,Op = Op.Le};
+	}
+	public static OpExpr operator >=(Expr left, Expr right)
+	{
+		return new OpExpr(){Left = left,Right = right,Op = Op.Ge};
+	}
+	public Expr Eq(Expr right)
+	{
+		return new OpExpr(){Left = this, Right = right, Op = Op.Eq};
+	}
+	public Expr Neq(Expr right)
+	{
+		return new OpExpr(){Left = this, Right = right, Op = Op.Neq};
+	}
 	public Expr Concat(params Expr[] exprs)
 	{
 		Expr[] thisexprs = exprs.Prepend(this).ToArray();
@@ -53,7 +77,7 @@ public static class ExprExtension
 			case Signal signal:
 				return signal.Width;
 			case OpExpr opExpr:
-				return opExpr.Left.GetWidth();
+				return GetOpExprWidth(opExpr);
 			case SliceExpr sliceExpr:
 				return sliceExpr.MSB - sliceExpr.LSB + 1;
 			case ConcatExpr concatExpr:
@@ -71,6 +95,15 @@ public static class ExprExtension
 				return zeroExtendExpr.Width;
 		}
 		return null;
+	}
+	private static uint GetOpExprWidth(OpExpr opExpr)
+	{
+		if(opExpr.Op == Op.Eq || opExpr.Op == Op.Neq || opExpr.Op == Op.Lt || opExpr.Op == Op.Gt || opExpr.Op == Op.Le || opExpr.Op == Op.Ge)
+		{
+			return 1;
+		}
+		else
+			return (uint)opExpr.Left.GetWidth()!;
 	}
 }
 
