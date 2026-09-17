@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.3.4" />
-<PackageReference Include="SharpHdl.Emit" Version="0.3.4" />
-<PackageReference Include="SharpHdl.Sim" Version="0.3.4" />
+<PackageReference Include="SharpHdl.Core" Version="0.3.5" />
+<PackageReference Include="SharpHdl.Emit" Version="0.3.5" />
+<PackageReference Include="SharpHdl.Sim" Version="0.3.5" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -38,12 +38,12 @@ dotnet build
    - Repository Owner: `yukari6559` / Repository: `CsharpHdl` / Workflow: `release-nuget.yml`  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って push する（例: `0.3.4`）
+3. タグを打って push する（例: `0.3.5`）
 
 ```bash
 git push origin main
-git tag v0.3.4
-git push origin v0.3.4
+git tag v0.3.5
+git push origin v0.3.5
 ```
 
 `Release NuGet` workflow がテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
