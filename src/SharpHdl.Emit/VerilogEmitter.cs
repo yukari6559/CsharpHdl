@@ -172,6 +172,37 @@ public static class VerilogEmitter
 					beforeSignal = assignStmt.Signal;
 				}
 			}
+			if(item is IfStmt ifStmt) 
+			{
+				verilogsb.Append("always @(*) begin\n");
+				verilogsb.Append($"\tif ({emitExpr(ifStmt.Cond)}) begin\n");
+				foreach (var thenItem in ifStmt.Then)
+				{
+					if(thenItem is AssignStmt assignStmt)
+					{
+						verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
+					}
+					else
+						throw new NotSupportedException();
+				}
+				verilogsb.Append("\tend\n");
+				if(ifStmt.Else != null)
+				{
+					verilogsb.Append("\telse begin\n");
+					foreach (var elseItem in ifStmt.Else)
+					{
+						if(elseItem is AssignStmt assignStmt)
+						{
+							verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
+						}
+						else
+							throw new NotSupportedException();
+					}
+					verilogsb.Append("\tend\n");
+				}
+
+				verilogsb.Append("end\n");
+			}
 		}
 
 		verilogsb.Append("endmodule");
@@ -316,6 +347,37 @@ public static class VerilogEmitter
 					verilogsb.Append($"\t\t({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[i].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
 					beforeSignal = assignStmt.Signal;
 				}
+			}
+			if(item is IfStmt ifStmt) 
+			{
+				verilogsb.Append("always @(*) begin\n");
+				verilogsb.Append($"\tif ({emitExpr(ifStmt.Cond)}) begin\n");
+				foreach (var thenItem in ifStmt.Then)
+				{
+					if(thenItem is AssignStmt assignStmt)
+					{
+						verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
+					}
+					else
+						throw new NotSupportedException();
+				}
+				verilogsb.Append("\tend\n");
+				if(ifStmt.Else != null)
+				{
+					verilogsb.Append("\telse begin\n");
+					foreach (var elseItem in ifStmt.Else)
+					{
+						if(elseItem is AssignStmt assignStmt)
+						{
+							verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
+						}
+						else
+							throw new NotSupportedException();
+					}
+					verilogsb.Append("\tend\n");
+				}
+
+				verilogsb.Append("end\n");
 			}
 		}
 		verilogsb.Append("endmodule");
