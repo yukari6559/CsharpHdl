@@ -8,7 +8,7 @@ C# の DSL で同期回路を記述し、人が読める Verilog を生成する
 | Reg / Wire / Comb / Seq、Mem、階層、スライス・拡張など | 任意の C# を HLS する |
 | nuget.org から参照して消費者側で Module を書く | GC / CLR を回路化する |
 
-**現状:** RV64 向けの基本原語（64bit 幅、Slice/Concat、2R1W Mem、バイト書き、Sign/Zero 拡張）まで。C# 回路シミュ（Comb/Seq）は `SharpHdl.Sim`。  
+**現状:** RV64 向け原語（64bit・Slice/Concat・Mem・拡張）＋ `SharpHdl.Sim` **S2 完了**。比較（`Eq`/`Neq` 等）あり。次は `If`/`Else`（MidiSynth M1b）。  
 **配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) / [SharpHdl.Sim](https://www.nuget.org/packages/SharpHdl.Sim)（例: `0.3.6`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
 
 ```
