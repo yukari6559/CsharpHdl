@@ -62,6 +62,26 @@ public class CombSettle
 						isUpdateAll = true;
 					}
 				}
+				if(stmt is IfStmt ifStmt)
+				{
+					
+					if(evalExpr.Eval(ifStmt.Cond, simWorld) != 0)
+					{
+						if(Settle(ifStmt.Then, simWorld))
+						{
+							isUpdate = true;
+							isUpdateAll = true;
+						}
+					}
+					else if(ifStmt.Else != null)
+					{
+						if(Settle(ifStmt.Else, simWorld))
+						{
+							isUpdate = true;
+							isUpdateAll = true;
+						}
+					}
+				}
 			}
 		}
 		return isUpdateAll;
