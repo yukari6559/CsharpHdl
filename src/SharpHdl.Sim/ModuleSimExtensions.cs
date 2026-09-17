@@ -42,6 +42,10 @@ public static class ModuleSimExtensions
 			{
 				
 			}
+			else if(stmt is IfStmt)
+			{
+				
+			}
 			else
 				throw new SimUnsupportedException();
 		}
