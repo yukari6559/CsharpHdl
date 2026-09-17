@@ -146,3 +146,16 @@ public class MemWstrbStmt : Stmt
 		Rdata = rdata;
 	}
 }
+
+public class IfStmt : Stmt
+{
+	public Expr Cond{get; private set;}
+	public List<Stmt> Then{get; private set;}
+	public List<Stmt>? Else{get; private set;}
+	public IfStmt(Expr cond, List<Stmt> then, List<Stmt>? @else)
+	{
+		Cond = cond;
+		Then = then;
+		Else = @else;
+	}
+}

@@ -107,4 +107,21 @@ public class Module
 			throw new WidthMismatchException();
 		Stmts.Add(new MemWstrbStmt(clk, depth, width, we, wstrb, addr, wdata, rdata));
 	}
+	public void If(Expr cond, Action then, Action? @else = null)
+	{
+		CurrentWrite.CurrentModule = this;
+		List<Stmt> parent = CurrentWrite.CurrentStmts!;
+		List<Stmt> thenstmts = new ();
+		List<Stmt>? elsestmts = null;
+		CurrentWrite.CurrentStmts = thenstmts;
+		then.Invoke();
+		if(@else != null)
+		{
+			elsestmts = new();
+			CurrentWrite.CurrentStmts = elsestmts;
+			@else.Invoke();
+		}
+		parent.Add(new IfStmt(cond,thenstmts,elsestmts));
+		CurrentWrite.CurrentStmts = parent;
+	}
 }
