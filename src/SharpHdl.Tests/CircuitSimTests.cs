@@ -229,4 +229,22 @@ public class CircuitSimTests
 		Assert.Throws<InvalidOperationException>(() =>
 			c.AdvanceWhile(c.Module.Clk, 3, s => s.Get(s.Module.Count) != 100));
 	}
+
+	[Theory]
+	[InlineData(3u, 3u, 1u, 0u, 0u, 1u, 0u, 1u)]
+	[InlineData(2u, 5u, 0u, 1u, 1u, 1u, 0u, 0u)]
+	[InlineData(9u, 4u, 0u, 1u, 0u, 0u, 1u, 1u)]
+	public void CompareComb_Ops(uint a, uint b, uint eq, uint neq, uint lt, uint le, uint gt, uint ge)
+	{
+		var c = new CompareComb().Run();
+		c.Set(c.Module.A, a);
+		c.Set(c.Module.B, b);
+		c.Settle();
+		Assert.Equal(eq, c.Get(c.Module.Eq));
+		Assert.Equal(neq, c.Get(c.Module.Neq));
+		Assert.Equal(lt, c.Get(c.Module.Lt));
+		Assert.Equal(le, c.Get(c.Module.Le));
+		Assert.Equal(gt, c.Get(c.Module.Gt));
+		Assert.Equal(ge, c.Get(c.Module.Ge));
+	}
 }
