@@ -167,4 +167,40 @@ public class CircuitSimTests
 		ram.Advance(ram.Module.Clk);
 		Assert.Equal(0xAABBCC11u, ram.Get(ram.Module.Rdata));
 	}
+
+	[Fact]
+	public void LoadMem_Words_ThenPeekAndPoke()
+	{
+		var ram = new SimpleRam().Run();
+		ram.LoadMem(ram.Module.Rdata, new ulong[] { 0x10, 0x20, 0x30 });
+
+		Assert.Equal(0x10u, ram.PeekMem(ram.Module.Rdata, 0));
+		Assert.Equal(0x20u, ram.PeekMem(ram.Module.Rdata, 1));
+		Assert.Equal(0x30u, ram.PeekMem(ram.Module.Rdata, 2));
+		Assert.Equal(0u, ram.PeekMem(ram.Module.Rdata, 3));
+
+		ram.PokeMem(ram.Module.Rdata, 1, 0x99);
+		Assert.Equal(0x99u, ram.PeekMem(ram.Module.Rdata, 1));
+	}
+
+	[Fact]
+	public void LoadMem_Bytes_LittleEndian()
+	{
+		var ram = new SimpleRam().Run();
+		ram.LoadMem(ram.Module.Rdata, new byte[] { 0x78, 0x56, 0x34, 0x12 });
+		Assert.Equal(0x12345678u, ram.PeekMem(ram.Module.Rdata, 0));
+	}
+
+	[Fact]
+	public void LoadMem_Words_VisibleAfterSyncRead()
+	{
+		var ram = new SimpleRam().Run();
+		ram.LoadMem(ram.Module.Rdata, new ulong[] { 0xABu });
+		Assert.Equal(0u, ram.Get(ram.Module.Rdata));
+
+		ram.Set(ram.Module.We, 0);
+		ram.Set(ram.Module.Addr, 0);
+		ram.Advance(ram.Module.Clk);
+		Assert.Equal(0xABu, ram.Get(ram.Module.Rdata));
+	}
 }
