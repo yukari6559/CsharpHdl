@@ -247,4 +247,34 @@ public class CircuitSimTests
 		Assert.Equal(gt, c.Get(c.Module.Gt));
 		Assert.Equal(ge, c.Get(c.Module.Ge));
 	}
+
+	[Theory]
+	[InlineData(3u, 3u, 10u, 20u, 10u)]
+	[InlineData(2u, 5u, 10u, 20u, 20u)]
+	public void IfMuxComb_SelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)
+	{
+		var m = new IfMuxComb().Run();
+		m.Set(m.Module.SelA, selA);
+		m.Set(m.Module.SelB, selB);
+		m.Set(m.Module.C, cVal);
+		m.Set(m.Module.D, dVal);
+		m.Settle();
+		Assert.Equal(expected, m.Get(m.Module.Y));
+	}
+
+	[Fact]
+	public void IfThenOnlyComb_AssignsWhenTrue_KeepsPriorWhenFalse()
+	{
+		var m = new IfThenOnlyComb().Run();
+		m.Set(m.Module.A, 1);
+		m.Set(m.Module.B, 2);
+		m.Set(m.Module.C, 9);
+		m.Settle();
+		Assert.Equal(0u, m.Get(m.Module.Y));
+
+		m.Set(m.Module.A, 4);
+		m.Set(m.Module.B, 4);
+		m.Settle();
+		Assert.Equal(9u, m.Get(m.Module.Y));
+	}
 }

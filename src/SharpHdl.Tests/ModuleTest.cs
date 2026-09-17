@@ -562,6 +562,33 @@ public class ModuleTests
 		Assert.Equal(expected, verilog);
 	}
 
+	[Fact]
+	public void TestIfMuxCombModuleEmitter_EmitsAlwaysIfElse()
+	{
+		IfMuxComb mod = new();
+		mod.Describe();
+		var verilog = VerilogEmitter.Emitter(mod, nameof(IfMuxComb));
+
+		Assert.Contains("always @(*) begin", verilog, StringComparison.Ordinal);
+		Assert.Contains("if (SelA == SelB) begin", verilog, StringComparison.Ordinal);
+		Assert.Contains("Y = C;", verilog, StringComparison.Ordinal);
+		Assert.Contains("else begin", verilog, StringComparison.Ordinal);
+		Assert.Contains("Y = D;", verilog, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestIfThenOnlyCombModuleEmitter_OmitsElse()
+	{
+		IfThenOnlyComb mod = new();
+		mod.Describe();
+		var verilog = VerilogEmitter.Emitter(mod, nameof(IfThenOnlyComb));
+
+		Assert.Contains("always @(*) begin", verilog, StringComparison.Ordinal);
+		Assert.Contains("if (A == B) begin", verilog, StringComparison.Ordinal);
+		Assert.Contains("Y = C;", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("else begin", verilog, StringComparison.Ordinal);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;
