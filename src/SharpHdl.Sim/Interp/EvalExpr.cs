@@ -94,6 +94,10 @@ public class EvalExpr
 			else
 				return Eval(signExtendExpr.Expr, simWorld) | (BitUtils.MakeMaskBit((uint)signExtendExpr.GetWidth()!) & ~BitUtils.MakeMaskBit((uint)signExtendExpr.Expr.GetWidth()!));
 		}
+		else if(expr is ConstExpr constExpr)
+		{
+			return constExpr.Value & BitUtils.MakeMaskBit(constExpr.Width);
+		}
 		else
 			throw new SimUnsupportedException();
 	}
