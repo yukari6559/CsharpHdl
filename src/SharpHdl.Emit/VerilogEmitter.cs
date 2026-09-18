@@ -435,6 +435,20 @@ public static class VerilogEmitter
 				return s;
 			}
 		}
+		else if(expr is ConstExpr constExpr)
+		{
+			ulong masked;
+			if(constExpr.Width != 64)
+			{
+				masked = constExpr.Value & ((1UL << (int)constExpr.Width) - 1);
+			}
+			else if(constExpr.Width == 64)
+				masked = constExpr.Value;
+			else
+				throw new WidthMismatchException();
+			string s = $"{constExpr.Width}'d{masked}";
+			return s;
+		}
 		else
 		{
 			throw new Exception();
