@@ -222,12 +222,20 @@ public static class VerilogEmitter
 			{
 				SwitchStmt switchStmt = (SwitchStmt)item;
 				Signal? beforeSignal = null;
-				AssignStmt assignStmt = assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
+				AssignStmt assignStmt;
+				if(switchStmt.Cases == null)
+					throw new Exception("Switch emit: Cases is null.");
+				if(switchStmt.Cases.Count == 0)
+					throw new Exception("Switch emit: Cases must not be empty.");
 				for(int i = 0; i < switchStmt.Cases.Count; i++)
 				{
+					if(switchStmt.Cases[i].Stmts.Count != 1)
+						throw new Exception($"Switch emit: case {i} (value {switchStmt.Cases[i].Value}) must contain exactly one statement, got {switchStmt.Cases[i].Stmts.Count}.");
+					if(switchStmt.Cases[i].Stmts[0] is not AssignStmt)
+						throw new Exception($"Switch emit: case {i} (value {switchStmt.Cases[i].Value}) must be a single AssignStmt.");
 					assignStmt = (AssignStmt)switchStmt.Cases[i].Stmts[0];
 					if (i != 0 && beforeSignal != assignStmt.Signal)
-						throw new Exception();
+						throw new Exception($"Switch emit: all cases must assign the same signal (case 0: {beforeSignal!.Name}, case {i}: {assignStmt.Signal.Name}).");
 					else if (i == 0)
 					{
 						verilogsb.Append($"\tassign {assignStmt.Signal.Name} = ({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[0].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
