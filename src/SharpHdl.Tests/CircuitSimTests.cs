@@ -277,4 +277,19 @@ public class CircuitSimTests
 		m.Settle();
 		Assert.Equal(9u, m.Get(m.Module.Y));
 	}
+
+	[Theory]
+	[InlineData(0u, 10u, 0u)]
+	[InlineData(3u, 13u, 1u)]
+	[InlineData(250u, 4u, 0u)]
+	public void ConstComb_LitSumCompareAndMask(uint a, uint expectedSum, uint expectedIsThree)
+	{
+		var m = new ConstComb().Run();
+		m.Set(m.Module.A, a);
+		m.Settle();
+		Assert.Equal(5u, m.Get(m.Module.Lit));
+		Assert.Equal(expectedSum, m.Get(m.Module.Sum));
+		Assert.Equal(expectedIsThree, m.Get(m.Module.IsThree));
+		Assert.Equal(44u, m.Get(m.Module.Masked));
+	}
 }
