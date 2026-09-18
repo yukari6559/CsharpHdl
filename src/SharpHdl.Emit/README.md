@@ -13,6 +13,8 @@ Verilog emitter for modules built with [SharpHdl.Core](https://www.nuget.org/pac
 
 Call `VerilogEmitter.Emitter(module, moduleName)` (or the project’s emit entry points) after describing a `Module`, then write the returned string to a `.v` file.
 
+Comb emit shape (current): `Switch` → continuous `assign` ternary (`output wire`); `If` → `always @(*)` procedural assigns (`output reg` on driven outs).
+
 ## Docs
 
 - Repository: https://github.com/yukari6559/CsharpHdl
