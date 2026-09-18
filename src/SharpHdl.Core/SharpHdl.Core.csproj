@@ -8,7 +8,7 @@
 	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<PackageId>SharpHdl.Core</PackageId>
-	<Version>0.3.7</Version>
+	<Version>0.3.8</Version>
 	<Authors>araiguma</Authors>
 	<Description>C# DSL for describing synchronous hardware (AST and Module API).</Description>
 	<PackageProjectUrl>https://github.com/yukari6559/CsharpHdl</PackageProjectUrl>

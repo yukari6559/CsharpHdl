@@ -8,8 +8,8 @@ C# の DSL で同期回路を記述し、人が読める Verilog を生成する
 | Reg / Wire / Comb / Seq、Mem、階層、スライス・拡張など | 任意の C# を HLS する |
 | nuget.org から参照して消費者側で Module を書く | GC / CLR を回路化する |
 
-**現状:** RV64 向け原語＋ `SharpHdl.Sim` **S2 完了**。比較と Comb `If`/`Else`（M1a/M1b）あり。次は定数／ローカル線など（MidiSynth M3/M4）。  
-**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) / [SharpHdl.Sim](https://www.nuget.org/packages/SharpHdl.Sim)（例: `0.3.7`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
+**現状:** RV64 向け原語＋ Sim S2。比較・`If`/`Else`・幅付き定数 `Const.UInt`（M1–M3）あり。次はローカル線（M4）または Emitter リファクタ。  
+**配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) / [SharpHdl.Sim](https://www.nuget.org/packages/SharpHdl.Sim)（例: `0.3.8`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
 
 ```
 C# Module（消費者プロジェクト）
@@ -22,10 +22,10 @@ C# Module（消費者プロジェクト）
 1. PackageReference（詳細: [docs/consumers.md](docs/consumers.md)）
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.3.7" />
-<PackageReference Include="SharpHdl.Emit" Version="0.3.7" />
+<PackageReference Include="SharpHdl.Core" Version="0.3.8" />
+<PackageReference Include="SharpHdl.Emit" Version="0.3.8" />
 <!-- 回路を xUnit 等で回すとき -->
-<PackageReference Include="SharpHdl.Sim" Version="0.3.7" />
+<PackageReference Include="SharpHdl.Sim" Version="0.3.8" />
 ```
 
 2. 自分の `Module` を書く（参考: [`examples/`](examples/)）  
