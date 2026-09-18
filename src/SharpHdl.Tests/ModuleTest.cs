@@ -186,6 +186,42 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestSwitchEmit_EmptyCases_Throws()
+	{
+		BadSwitchEmitModule module = new();
+		module.DescribeEmptyCases();
+		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		Assert.Contains("Cases must not be empty", ex.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestSwitchEmit_EmptyCaseBody_Throws()
+	{
+		BadSwitchEmitModule module = new();
+		module.DescribeEmptyCaseBody();
+		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		Assert.Contains("exactly one statement", ex.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestSwitchEmit_MultiAssignCase_Throws()
+	{
+		BadSwitchEmitModule module = new();
+		module.DescribeMultiAssignCase();
+		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		Assert.Contains("exactly one statement", ex.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestSwitchEmit_SignalMismatch_Throws()
+	{
+		BadSwitchEmitModule module = new();
+		module.DescribeSignalMismatch();
+		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		Assert.Contains("same signal", ex.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void TestAluTopModuleStmt()
 	{
 		AluTop top = new();
