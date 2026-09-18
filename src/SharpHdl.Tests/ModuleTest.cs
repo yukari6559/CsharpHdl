@@ -569,6 +569,8 @@ public class ModuleTests
 		mod.Describe();
 		var verilog = VerilogEmitter.Emitter(mod, nameof(IfMuxComb));
 
+		Assert.Contains("output reg [7:0] Y", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("output wire [7:0] Y", verilog, StringComparison.Ordinal);
 		Assert.Contains("always @(*) begin", verilog, StringComparison.Ordinal);
 		Assert.Contains("if (SelA == SelB) begin", verilog, StringComparison.Ordinal);
 		Assert.Contains("Y = C;", verilog, StringComparison.Ordinal);
@@ -583,6 +585,8 @@ public class ModuleTests
 		mod.Describe();
 		var verilog = VerilogEmitter.Emitter(mod, nameof(IfThenOnlyComb));
 
+		Assert.Contains("output reg [7:0] Y", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("output wire [7:0] Y", verilog, StringComparison.Ordinal);
 		Assert.Contains("always @(*) begin", verilog, StringComparison.Ordinal);
 		Assert.Contains("if (A == B) begin", verilog, StringComparison.Ordinal);
 		Assert.Contains("Y = C;", verilog, StringComparison.Ordinal);
