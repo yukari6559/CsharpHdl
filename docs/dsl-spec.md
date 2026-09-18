@@ -59,8 +59,9 @@ public sealed class Alu : Module
 
 ### 組み合わせ `Comb`
 
-- 代入は Verilog `assign` または組み合わせブロック相当
+- 代入は Verilog の連続代入（`assign`）または組み合わせブロック相当
 - 同一信号への複数駆動はエラー
+- **Emit 形（現行）:** `Switch` → `assign` 三項連鎖（左辺は `output wire`）。`If` → `always @(*)` 手続代入（左辺は `output reg`）。単独の `Assign` は `assign` + `wire`
 
 ### 同期 `Seq(clock, reset)`
 
@@ -81,7 +82,7 @@ public sealed class Alu : Module
 | `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅 |
 
 **If と Switch:** 定数ラベルの一択（Op など）は `Switch`、真偽・比較の分岐は `If`。  
-`If` の Emit／Sim 初版は Comb と枝内代入が中心です。
+`If` の Emit／Sim は Comb と枝内代入が中心。Emit では上記のとおり Switch と If で Verilog の形が異なる（合成可能な wire/reg 対応）。
 
 スライス・連結・拡張は **右辺向け**。インデックスは定数。幅不一致は例外になります。
 
