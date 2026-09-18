@@ -18,35 +18,9 @@ public static class VerilogEmitter
 		List<Signal> signals = top.GetPorts().ToList();
 		List<Stmt> stmts = top.GetStmts().ToList();
 		List<InstanceStmt> instanceStmts = new();
-		HashSet<string> emitted = new();
 		HashSet<Signal> regOuts = new();
 
-		foreach(var item in  stmts)
-		{
-			if(item is InstanceStmt)
-			{
-				instanceStmts.Add((InstanceStmt)item);
-				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
-        			continue;
-				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
-			}
-			if(item is SeqBlockStmt seq)
-			{
-				foreach(var body in seq.Body)
-				{
-					if(body is SeqAssignStmt sa)
-						regOuts.Add(sa.Signal);
-				}
-			}
-			if(item is MemStmt memStmt)
-			{
-				regOuts.Add(memStmt.Rdata);
-			}
-			if(item is MemWstrbStmt memWstrbStmt)
-			{
-				regOuts.Add(memWstrbStmt.Rdata);
-			}
-		}
+		AddRegOuts(stmts, regOuts, instanceStmts, verilogsb);
 
 		verilogsb.Append($"module {topName}(\n");
 		for(int i = 0; i < signals.Count; i++)
@@ -220,25 +194,7 @@ public static class VerilogEmitter
 		HashSet<Signal> regOuts = new();
 		
 		verilogsb.Append($"module {moduleName}(\n");
-		foreach(var item in  stmts)
-		{
-			if(item is SeqBlockStmt seq)
-			{
-				foreach(var body in seq.Body)
-				{
-					if(body is SeqAssignStmt sa)
-						regOuts.Add(sa.Signal);
-				}
-			}
-			if(item is MemStmt mem)
-			{
-				regOuts.Add(mem.Rdata);
-			}
-			if(item is MemWstrbStmt memWstrbStmt)
-			{
-				regOuts.Add(memWstrbStmt.Rdata);
-			}
-		}
+		AddRegOuts(stmts, regOuts, null, verilogsb);
 		for(int i = 0; i < signals.Count; i++)
 		{
 			var item = signals[i];
@@ -454,4 +410,37 @@ public static class VerilogEmitter
 			throw new Exception();
 		}
 	}
+
+	public static HashSet<Signal> AddRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts, List<InstanceStmt>? instanceStmts, StringBuilder verilogsb)
+	{
+		HashSet<string> emitted = new();
+		foreach(var item in  stmts)
+		{
+			if(instanceStmts != null && item is InstanceStmt)
+			{
+				instanceStmts.Add((InstanceStmt)item);
+				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
+        			continue;
+				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
+			}
+			if(item is SeqBlockStmt seq)
+			{
+				foreach(var body in seq.Body)
+				{
+					if(body is SeqAssignStmt sa)
+						regOuts.Add(sa.Signal);
+				}
+			}
+			if(item is MemStmt memStmt)
+			{
+				regOuts.Add(memStmt.Rdata);
+			}
+			if(item is MemWstrbStmt memWstrbStmt)
+			{
+				regOuts.Add(memWstrbStmt.Rdata);
+			}
+		}
+		return regOuts;
+	}
+
 }
