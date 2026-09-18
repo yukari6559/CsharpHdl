@@ -20,7 +20,9 @@ public static class VerilogEmitter
 		List<InstanceStmt> instanceStmts = new();
 		HashSet<Signal> regOuts = new();
 
-		AddRegOuts(stmts, regOuts, instanceStmts, verilogsb);
+		CollectInstances(stmts, instanceStmts, verilogsb);
+
+		CollectRegOuts(stmts, regOuts);
 
 		verilogsb.Append($"module {topName}(\n");
 		
@@ -56,7 +58,7 @@ public static class VerilogEmitter
 		HashSet<Signal> regOuts = new();
 		
 		verilogsb.Append($"module {moduleName}(\n");
-		AddRegOuts(stmts, regOuts, null, verilogsb);
+		CollectRegOuts(stmts, regOuts);
 		
 		WireDefine(signals, verilogsb, regOuts);
 		
@@ -137,18 +139,10 @@ public static class VerilogEmitter
 		}
 	}
 
-	public static HashSet<Signal> AddRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts, List<InstanceStmt>? instanceStmts, StringBuilder verilogsb)
+	public static HashSet<Signal> CollectRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts)
 	{
-		HashSet<string> emitted = new();
 		foreach(var item in  stmts)
 		{
-			if(instanceStmts != null && item is InstanceStmt)
-			{
-				instanceStmts.Add((InstanceStmt)item);
-				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
-        			continue;
-				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
-			}
 			if(item is SeqBlockStmt seq)
 			{
 				foreach(var body in seq.Body)
@@ -318,4 +312,18 @@ public static class VerilogEmitter
 		}
 	}
 
+	public static void CollectInstances(List<Stmt> stmts, List<InstanceStmt> instanceStmts, StringBuilder verilogsb)
+	{
+		HashSet<string> emitted = new();
+		foreach(var item in stmts)
+		{
+			if(item is InstanceStmt)
+			{
+				instanceStmts.Add((InstanceStmt)item);
+				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
+					continue;
+				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
+			}
+		}
+	}
 }
