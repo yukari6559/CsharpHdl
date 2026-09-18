@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.3.7" />
-<PackageReference Include="SharpHdl.Emit" Version="0.3.7" />
-<PackageReference Include="SharpHdl.Sim" Version="0.3.7" />
+<PackageReference Include="SharpHdl.Core" Version="0.3.8" />
+<PackageReference Include="SharpHdl.Emit" Version="0.3.8" />
+<PackageReference Include="SharpHdl.Sim" Version="0.3.8" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -38,12 +38,12 @@ dotnet build
    - Repository Owner: `yukari6559` / Repository: `CsharpHdl` / Workflow: `release-nuget.yml`  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って push する（例: `0.3.7`）
+3. タグを打って push する（例: `0.3.8`）
 
 ```bash
 git push origin main
-git tag v0.3.7
-git push origin v0.3.7
+git tag v0.3.8
+git push origin v0.3.8
 ```
 
 `Release NuGet` workflow がテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
@@ -74,4 +74,4 @@ csproj の `<Version>` はローカル表示用です。タグ付きリリース
 3. Program またはテストから Emitter を呼び、`.v` を書く — または `Run` / `Settle` / `Advance` でシミュする  
 4. 生成物を自分のシミュレーション / FPGA フローへ渡す（emit 利用時）  
 
-書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較（M1a）と Comb **If/Else（M1b）** まで（`0.3.7`）。いまの本線は MidiSynth **M3/M4** など（内部 ROADMAP / tickets 参照）。
+書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Const.UInt（M3）** まで（`0.3.8`）。いまの本線は **M4** または refactor-emitter（内部 ROADMAP / tickets 参照）。
