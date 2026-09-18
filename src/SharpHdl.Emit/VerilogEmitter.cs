@@ -108,6 +108,22 @@ public static class VerilogEmitter
 			{
 				regOuts.Add(memWstrbStmt.Rdata);
 			}
+			if(item is IfStmt ifStmt)
+			{
+				foreach(var thenItem in ifStmt.Then)
+				{
+					if(thenItem is AssignStmt assignStmt)
+						regOuts.Add(assignStmt.Signal);
+				}
+				if(ifStmt.Else != null)
+				{
+					foreach(var elseItem in ifStmt.Else)
+					{
+						if(elseItem is AssignStmt assignStmt)
+							regOuts.Add(assignStmt.Signal);
+					}
+				}
+			}
 		}
 		return regOuts;
 	}
