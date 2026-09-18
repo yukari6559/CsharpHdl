@@ -13,60 +13,14 @@ public static class VerilogEmitter
 
 	public static string Emitter(Module top, string topName)
 	{
-		StringBuilder verilogsb = new();
-
-		List<Signal> signals = top.GetPorts().ToList();
-		List<Stmt> stmts = top.GetStmts().ToList();
 		List<InstanceStmt> instanceStmts = new();
-		HashSet<Signal> regOuts = new();
 
-		CollectInstances(stmts, instanceStmts, verilogsb);
-
-		CollectRegOuts(stmts, regOuts);
-
-		verilogsb.Append($"module {topName}(\n");
-		
-		WireDefine(signals, verilogsb, regOuts);
-
-		foreach(var item in instanceStmts)
-		{
-			verilogsb.Append($"\t{item.ChildModule.GetType().Name} {item.InstanceName} (\n");
-			for(int i = 0; i < item.PortConnections.Count; i++)
-			{
-				if(i == item.PortConnections.Count - 1)
-					verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name})");
-				else
-					verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name}),");
-			}
-			verilogsb.Append(");\n");
-		}
-
-		EmitModuleBody(stmts, verilogsb);
-
-		verilogsb.Append("endmodule");
-
-
-		return verilogsb.ToString();
+		return EmitOneModule(top, topName, instanceStmts);
 	}
 
 	public static string SingleModuleEmitter(Module module, string moduleName)
 	{
-		StringBuilder verilogsb = new();
-
-		List<Signal> signals = module.GetPorts().ToList();
-		List<Stmt> stmts = module.GetStmts().ToList(); 
-		HashSet<Signal> regOuts = new();
-		
-		verilogsb.Append($"module {moduleName}(\n");
-		CollectRegOuts(stmts, regOuts);
-		
-		WireDefine(signals, verilogsb, regOuts);
-		
-		EmitModuleBody(stmts, verilogsb);
-
-		verilogsb.Append("endmodule");
-
-		return verilogsb.ToString();
+		return EmitOneModule(module, moduleName, null);
 	}
 
 	public static string emitExpr(Expr expr)
@@ -325,5 +279,46 @@ public static class VerilogEmitter
 				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
 			}
 		}
+	}
+
+	public static string EmitOneModule(Module module, string moduleName, List<InstanceStmt>? instanceStmts)
+	{
+		StringBuilder verilogsb = new();
+
+		List<Signal> signals = module.GetPorts().ToList();
+		List<Stmt> stmts = module.GetStmts().ToList(); 
+		HashSet<Signal> regOuts = new();
+
+		if(instanceStmts != null)
+		{
+			CollectInstances(stmts, instanceStmts, verilogsb);
+		}
+
+		verilogsb.Append($"module {moduleName}(\n");
+		CollectRegOuts(stmts, regOuts);
+		
+		WireDefine(signals, verilogsb, regOuts);
+
+		if(instanceStmts != null)
+		{
+			foreach(var item in instanceStmts)
+			{
+				verilogsb.Append($"\t{item.ChildModule.GetType().Name} {item.InstanceName} (\n");
+				for(int i = 0; i < item.PortConnections.Count; i++)
+				{
+					if(i == item.PortConnections.Count - 1)
+						verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name})");
+					else
+						verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name}),");
+				}
+				verilogsb.Append(");\n");
+			}
+		}
+		
+		EmitModuleBody(stmts, verilogsb);
+
+		verilogsb.Append("endmodule");
+
+		return verilogsb.ToString();
 	}
 }
