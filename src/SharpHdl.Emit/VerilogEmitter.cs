@@ -23,30 +23,8 @@ public static class VerilogEmitter
 		AddRegOuts(stmts, regOuts, instanceStmts, verilogsb);
 
 		verilogsb.Append($"module {topName}(\n");
-		for(int i = 0; i < signals.Count; i++)
-		{
-			var item = signals[i];
-			if(item.Width == 1)
-			{
-				if(item.Direction == SignalDirection.Input)
-					verilogsb.Append($"\tinput wire {item.Name}");
-				else if(regOuts.Contains(item))
-					verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
-				else if (item.Direction == SignalDirection.Output)
-					verilogsb.Append($"\toutput wire {item.Name}");
-			}
-			else if(item.Direction == SignalDirection.Input)
-				verilogsb.Append($"\tinput wire [{item.Width - 1}:0] {item.Name}");
-			else if(regOuts.Contains(item))
-				verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
-			else if (item.Direction == SignalDirection.Output)
-				verilogsb.Append($"\toutput wire [{item.Width - 1}:0] {item.Name}");
-			if (i + 1 != signals.Count)
-				verilogsb.Append(",\n");
-			else
-				verilogsb.Append("\n");
-		}
-		verilogsb.Append(");\n");
+		
+		WireDefine(signals, verilogsb, regOuts);
 
 		foreach(var item in instanceStmts)
 		{
@@ -195,30 +173,9 @@ public static class VerilogEmitter
 		
 		verilogsb.Append($"module {moduleName}(\n");
 		AddRegOuts(stmts, regOuts, null, verilogsb);
-		for(int i = 0; i < signals.Count; i++)
-		{
-			var item = signals[i];
-			if(item.Width == 1)
-			{
-				if(item.Direction == SignalDirection.Input)
-					verilogsb.Append($"\tinput wire {item.Name}");
-				else if(regOuts.Contains(item))
-					verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
-				else if (item.Direction == SignalDirection.Output)
-					verilogsb.Append($"\toutput wire {item.Name}");
-			}
-			else if(item.Direction == SignalDirection.Input)
-				verilogsb.Append($"\tinput wire [{item.Width - 1}:0] {item.Name}");
-			else if(regOuts.Contains(item))
-				verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
-			else if (item.Direction == SignalDirection.Output)
-				verilogsb.Append($"\toutput wire [{item.Width - 1}:0] {item.Name}");
-			if (i + 1 != signals.Count)
-				verilogsb.Append(",\n");
-			else
-				verilogsb.Append("\n");
-		}
-		verilogsb.Append(");\n");
+		
+		WireDefine(signals, verilogsb, regOuts);
+		
 		foreach(var item in stmts)
 		{
 			if(item is MemStmt)
@@ -443,4 +400,31 @@ public static class VerilogEmitter
 		return regOuts;
 	}
 
+	public static void WireDefine(List<Signal> signals, StringBuilder verilogsb, HashSet<Signal> regOuts)
+	{
+		for(int i = 0; i < signals.Count; i++)
+		{
+			var item = signals[i];
+			if(item.Width == 1)
+			{
+				if(item.Direction == SignalDirection.Input)
+					verilogsb.Append($"\tinput wire {item.Name}");
+				else if(regOuts.Contains(item))
+					verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
+				else if (item.Direction == SignalDirection.Output)
+					verilogsb.Append($"\toutput wire {item.Name}");
+			}
+			else if(item.Direction == SignalDirection.Input)
+				verilogsb.Append($"\tinput wire [{item.Width - 1}:0] {item.Name}");
+			else if(regOuts.Contains(item))
+				verilogsb.Append($"\toutput reg [{item.Width - 1}:0] {item.Name}");
+			else if (item.Direction == SignalDirection.Output)
+				verilogsb.Append($"\toutput wire [{item.Width - 1}:0] {item.Name}");
+			if (i + 1 != signals.Count)
+				verilogsb.Append(",\n");
+			else
+				verilogsb.Append("\n");
+		}
+		verilogsb.Append(");\n");
+	}
 }
