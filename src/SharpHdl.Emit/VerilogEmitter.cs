@@ -15,12 +15,7 @@ public static class VerilogEmitter
 	{
 		List<InstanceStmt> instanceStmts = new();
 
-		return EmitOneModule(top, topName, instanceStmts);
-	}
-
-	public static string SingleModuleEmitter(Module module, string moduleName)
-	{
-		return EmitOneModule(module, moduleName, null);
+		return EmitOneModule(top, topName, instanceStmts, true);
 	}
 
 	public static string emitExpr(Expr expr)
@@ -276,12 +271,28 @@ public static class VerilogEmitter
 				instanceStmts.Add((InstanceStmt)item);
 				if (!emitted.Add(((InstanceStmt)item).ChildModule.GetType().Name))
 					continue;
-				verilogsb.Append(SingleModuleEmitter(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name));
+				verilogsb.Append(EmitOneModule(((InstanceStmt)item).ChildModule, ((InstanceStmt)item).ChildModule.GetType().Name, [], false));
 			}
 		}
 	}
 
-	public static string EmitOneModule(Module module, string moduleName, List<InstanceStmt>? instanceStmts)
+	public static void EmitInstanceLines(List<InstanceStmt> instanceStmts, StringBuilder verilogsb)
+	{
+		foreach(var item in instanceStmts)
+		{
+			verilogsb.Append($"\t{item.ChildModule.GetType().Name} {item.InstanceName} (\n");
+			for(int i = 0; i < item.PortConnections.Count; i++)
+			{
+				if(i == item.PortConnections.Count - 1)
+					verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name})");
+				else
+					verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name}),");
+			}
+			verilogsb.Append(");\n");
+		}
+	}
+
+	public static string EmitOneModule(Module module, string moduleName, List<InstanceStmt> instanceStmts, bool emitHierarchy)
 	{
 		StringBuilder verilogsb = new();
 
@@ -289,7 +300,7 @@ public static class VerilogEmitter
 		List<Stmt> stmts = module.GetStmts().ToList(); 
 		HashSet<Signal> regOuts = new();
 
-		if(instanceStmts != null)
+		if(emitHierarchy)
 		{
 			CollectInstances(stmts, instanceStmts, verilogsb);
 		}
@@ -299,20 +310,9 @@ public static class VerilogEmitter
 		
 		WireDefine(signals, verilogsb, regOuts);
 
-		if(instanceStmts != null)
+		if(emitHierarchy)
 		{
-			foreach(var item in instanceStmts)
-			{
-				verilogsb.Append($"\t{item.ChildModule.GetType().Name} {item.InstanceName} (\n");
-				for(int i = 0; i < item.PortConnections.Count; i++)
-				{
-					if(i == item.PortConnections.Count - 1)
-						verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name})");
-					else
-						verilogsb.Append($"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name}),");
-				}
-				verilogsb.Append(");\n");
-			}
+			EmitInstanceLines(instanceStmts, verilogsb);
 		}
 		
 		EmitModuleBody(stmts, verilogsb);
