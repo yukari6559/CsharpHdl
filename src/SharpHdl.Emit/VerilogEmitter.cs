@@ -39,123 +39,7 @@ public static class VerilogEmitter
 			verilogsb.Append(");\n");
 		}
 
-		foreach(var item in stmts)
-		{
-			if(item is MemStmt)
-			{
-				verilogsb.Append($"reg [{((MemStmt)item).Width - 1}:0] mem [0:{((MemStmt)item).Depth - 1}];\n");
-				verilogsb.Append($"always @(posedge {((MemStmt)item).Clk.Name}) begin\n");
-				verilogsb.Append($"\tif ({((MemStmt)item).We.Name}) mem[{((MemStmt)item).Addr.Name}] <= {((MemStmt)item).Wdata.Name};\n");
-				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
-				verilogsb.Append($"end\n");
-			}
-			if (item is Mem2R1WStmt mem2R1WStmt)
-			{
-				verilogsb.Append($"reg [{mem2R1WStmt.Width - 1}:0] mem [0:{mem2R1WStmt.Depth - 1}];\n");
-				verilogsb.Append($"always @(posedge {mem2R1WStmt.Clk.Name}) begin\n");
-				verilogsb.Append($"\tif ({mem2R1WStmt.We.Name}) mem[{mem2R1WStmt.Waddr.Name}] <= {mem2R1WStmt.Wdata.Name};\n");
-				verilogsb.Append($"end\n");
-				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
-				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
-			}
-			if(item is MemWstrbStmt memWstrbStmt)
-			{
-				verilogsb.Append($"reg [{memWstrbStmt.Width - 1}:0] mem [0:{memWstrbStmt.Depth - 1}];\n");
-				verilogsb.Append($"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
-				verilogsb.Append($"\tif ({memWstrbStmt.We.Name}) begin\n");
-				uint memLSB = 0;
-				uint memMSB = 7;
-				for(int i = 0; i < memWstrbStmt.Width / 8; i++)
-				{
-					verilogsb.Append($"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) mem[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
-					memLSB += 8;
-					memMSB += 8;
-				}
-				verilogsb.Append("\tend\n");
-				verilogsb.Append($"\t{memWstrbStmt.Rdata.Name} <= mem[{memWstrbStmt.Addr.Name}];\n");
-				verilogsb.Append($"end\n");
-			}
-			if(item is AssignStmt)
-			{
-				AssignStmt assignStmt = (AssignStmt)item;
-				Expr expr = assignStmt.Expr;
-				string s = emitExpr(expr);
-				verilogsb.Append($"\tassign {assignStmt.Signal.Name} = {s};\n");
-			}
-			if(item is SeqBlockStmt)
-			{
-				SeqBlockStmt seqBlock = (SeqBlockStmt)item;
-				verilogsb.Append($"\talways @(posedge {seqBlock.Clk.Name}) begin\n");
-				foreach(var bodyItem in seqBlock.Body)
-				{
-					if(bodyItem is SeqAssignStmt seqAssign)
-					{
-						verilogsb.Append($"\t\tif ({seqBlock.Reset.Name}) begin\n");
-						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
-						verilogsb.Append($"\t\tend else begin\n");
-						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {emitExpr(seqAssign.Expr)};\n");
-						verilogsb.Append($"\t\tend\n");
-					}
-				}
-				verilogsb.Append("\tend\n");
-			}
-			if(item is SwitchStmt)
-			{
-				SwitchStmt switchStmt = (SwitchStmt)item;
-				Signal? beforeSignal = null;
-				AssignStmt assignStmt = assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
-				for(int i = 0; i < switchStmt.Cases.Count; i++)
-				{
-					assignStmt = (AssignStmt)switchStmt.Cases[i].Stmts[0];
-					if (i != 0 && beforeSignal != assignStmt.Signal)
-						throw new Exception();
-					else if (i == 0)
-					{
-						verilogsb.Append($"\tassign {assignStmt.Signal.Name} = ({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[0].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
-						beforeSignal = assignStmt.Signal;
-						continue;
-					}
-					else if (i == switchStmt.Cases.Count - 1)
-					{
-						verilogsb.Append($"\t\t({emitExpr(assignStmt.Expr)});\n");
-						break;
-					}
-					verilogsb.Append($"\t\t({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[i].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
-					beforeSignal = assignStmt.Signal;
-				}
-			}
-			if(item is IfStmt ifStmt) 
-			{
-				verilogsb.Append("always @(*) begin\n");
-				verilogsb.Append($"\tif ({emitExpr(ifStmt.Cond)}) begin\n");
-				foreach (var thenItem in ifStmt.Then)
-				{
-					if(thenItem is AssignStmt assignStmt)
-					{
-						verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
-					}
-					else
-						throw new NotSupportedException();
-				}
-				verilogsb.Append("\tend\n");
-				if(ifStmt.Else != null)
-				{
-					verilogsb.Append("\telse begin\n");
-					foreach (var elseItem in ifStmt.Else)
-					{
-						if(elseItem is AssignStmt assignStmt)
-						{
-							verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
-						}
-						else
-							throw new NotSupportedException();
-					}
-					verilogsb.Append("\tend\n");
-				}
-
-				verilogsb.Append("end\n");
-			}
-		}
+		EmitModuleBody(stmts, verilogsb);
 
 		verilogsb.Append("endmodule");
 
@@ -176,123 +60,8 @@ public static class VerilogEmitter
 		
 		WireDefine(signals, verilogsb, regOuts);
 		
-		foreach(var item in stmts)
-		{
-			if(item is MemStmt)
-			{
-				verilogsb.Append($"reg [{((MemStmt)item).Width - 1}:0] mem [0:{((MemStmt)item).Depth - 1}];\n");
-				verilogsb.Append($"always @(posedge {((MemStmt)item).Clk.Name}) begin\n");
-				verilogsb.Append($"\tif ({((MemStmt)item).We.Name}) mem[{((MemStmt)item).Addr.Name}] <= {((MemStmt)item).Wdata.Name};\n");
-				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
-				verilogsb.Append($"end\n");
-			}
-			if (item is Mem2R1WStmt mem2R1WStmt)
-			{
-				verilogsb.Append($"reg [{mem2R1WStmt.Width - 1}:0] mem [0:{mem2R1WStmt.Depth - 1}];\n");
-				verilogsb.Append($"always @(posedge {mem2R1WStmt.Clk.Name}) begin\n");
-				verilogsb.Append($"\tif ({mem2R1WStmt.We.Name}) mem[{mem2R1WStmt.Waddr.Name}] <= {mem2R1WStmt.Wdata.Name};\n");
-				verilogsb.Append($"end\n");
-				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
-				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
-			}
-			if(item is MemWstrbStmt memWstrbStmt)
-			{
-				verilogsb.Append($"reg [{memWstrbStmt.Width - 1}:0] mem [0:{memWstrbStmt.Depth - 1}];\n");
-				verilogsb.Append($"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
-				verilogsb.Append($"\tif ({memWstrbStmt.We.Name}) begin\n");
-				uint memLSB = 0;
-				uint memMSB = 7;
-				for(int i = 0; i < memWstrbStmt.Width / 8; i++)
-				{
-					verilogsb.Append($"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) mem[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
-					memLSB += 8;
-					memMSB += 8;
-				}
-				verilogsb.Append("\tend\n");
-				verilogsb.Append($"\t{memWstrbStmt.Rdata.Name} <= mem[{memWstrbStmt.Addr.Name}];\n");
-				verilogsb.Append($"end\n");
-			}
-			if(item is AssignStmt)
-			{
-				AssignStmt assignStmt = (AssignStmt)item;
-				Expr expr = assignStmt.Expr;
-				string s = emitExpr(expr);
-				verilogsb.Append($"\tassign {assignStmt.Signal.Name} = {s};\n");
-			}
-			if(item is SeqBlockStmt)
-			{
-				SeqBlockStmt seqBlock = (SeqBlockStmt)item;
-				verilogsb.Append($"\talways @(posedge {seqBlock.Clk.Name}) begin\n");
-				foreach(var bodyItem in seqBlock.Body)
-				{
-					if(bodyItem is SeqAssignStmt seqAssign)
-					{
-						verilogsb.Append($"\t\tif ({seqBlock.Reset.Name}) begin\n");
-						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
-						verilogsb.Append($"\t\tend else begin\n");
-						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {emitExpr(seqAssign.Expr)};\n");
-						verilogsb.Append($"\t\tend\n");
-					}
-				}
-				verilogsb.Append("\tend\n");
-			}
-			if(item is SwitchStmt)
-			{
-				SwitchStmt switchStmt = (SwitchStmt)item;
-				Signal? beforeSignal = null;
-				AssignStmt assignStmt = assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
-				for(int i = 0; i < switchStmt.Cases.Count; i++)
-				{
-					assignStmt = (AssignStmt)switchStmt.Cases[i].Stmts[0];
-					if (i != 0 && beforeSignal != assignStmt.Signal)
-						throw new Exception();
-					else if (i == 0)
-					{
-						verilogsb.Append($"\tassign {assignStmt.Signal.Name} = ({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[0].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
-						beforeSignal = assignStmt.Signal;
-						continue;
-					}
-					else if (i == switchStmt.Cases.Count - 1)
-					{
-						verilogsb.Append($"\t\t({emitExpr(assignStmt.Expr)});\n");
-						break;
-					}
-					verilogsb.Append($"\t\t({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[i].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
-					beforeSignal = assignStmt.Signal;
-				}
-			}
-			if(item is IfStmt ifStmt) 
-			{
-				verilogsb.Append("always @(*) begin\n");
-				verilogsb.Append($"\tif ({emitExpr(ifStmt.Cond)}) begin\n");
-				foreach (var thenItem in ifStmt.Then)
-				{
-					if(thenItem is AssignStmt assignStmt)
-					{
-						verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
-					}
-					else
-						throw new NotSupportedException();
-				}
-				verilogsb.Append("\tend\n");
-				if(ifStmt.Else != null)
-				{
-					verilogsb.Append("\telse begin\n");
-					foreach (var elseItem in ifStmt.Else)
-					{
-						if(elseItem is AssignStmt assignStmt)
-						{
-							verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
-						}
-						else
-							throw new NotSupportedException();
-					}
-					verilogsb.Append("\tend\n");
-				}
+		EmitModuleBody(stmts, verilogsb);
 
-				verilogsb.Append("end\n");
-			}
-		}
 		verilogsb.Append("endmodule");
 
 		return verilogsb.ToString();
@@ -427,4 +196,126 @@ public static class VerilogEmitter
 		}
 		verilogsb.Append(");\n");
 	}
+
+	public static void EmitModuleBody(List<Stmt> stmts, StringBuilder verilogsb)
+	{
+		foreach(var item in stmts)
+		{
+			if(item is MemStmt)
+			{
+				verilogsb.Append($"reg [{((MemStmt)item).Width - 1}:0] mem [0:{((MemStmt)item).Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {((MemStmt)item).Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({((MemStmt)item).We.Name}) mem[{((MemStmt)item).Addr.Name}] <= {((MemStmt)item).Wdata.Name};\n");
+				verilogsb.Append($"\t{((MemStmt)item).Rdata.Name} <= mem[{((MemStmt)item).Addr.Name}];\n");
+				verilogsb.Append($"end\n");
+			}
+			if (item is Mem2R1WStmt mem2R1WStmt)
+			{
+				verilogsb.Append($"reg [{mem2R1WStmt.Width - 1}:0] mem [0:{mem2R1WStmt.Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {mem2R1WStmt.Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({mem2R1WStmt.We.Name}) mem[{mem2R1WStmt.Waddr.Name}] <= {mem2R1WStmt.Wdata.Name};\n");
+				verilogsb.Append($"end\n");
+				verilogsb.Append($"assign {mem2R1WStmt.Rdata0.Name} = mem[{mem2R1WStmt.Raddr0.Name}];\n");
+				verilogsb.Append($"assign {mem2R1WStmt.Rdata1.Name} = mem[{mem2R1WStmt.Raddr1.Name}];\n");
+			}
+			if(item is MemWstrbStmt memWstrbStmt)
+			{
+				verilogsb.Append($"reg [{memWstrbStmt.Width - 1}:0] mem [0:{memWstrbStmt.Depth - 1}];\n");
+				verilogsb.Append($"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
+				verilogsb.Append($"\tif ({memWstrbStmt.We.Name}) begin\n");
+				uint memLSB = 0;
+				uint memMSB = 7;
+				for(int i = 0; i < memWstrbStmt.Width / 8; i++)
+				{
+					verilogsb.Append($"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) mem[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
+					memLSB += 8;
+					memMSB += 8;
+				}
+				verilogsb.Append("\tend\n");
+				verilogsb.Append($"\t{memWstrbStmt.Rdata.Name} <= mem[{memWstrbStmt.Addr.Name}];\n");
+				verilogsb.Append($"end\n");
+			}
+			if(item is AssignStmt)
+			{
+				AssignStmt assignStmt = (AssignStmt)item;
+				Expr expr = assignStmt.Expr;
+				string s = emitExpr(expr);
+				verilogsb.Append($"\tassign {assignStmt.Signal.Name} = {s};\n");
+			}
+			if(item is SeqBlockStmt)
+			{
+				SeqBlockStmt seqBlock = (SeqBlockStmt)item;
+				verilogsb.Append($"\talways @(posedge {seqBlock.Clk.Name}) begin\n");
+				foreach(var bodyItem in seqBlock.Body)
+				{
+					if(bodyItem is SeqAssignStmt seqAssign)
+					{
+						verilogsb.Append($"\t\tif ({seqBlock.Reset.Name}) begin\n");
+						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
+						verilogsb.Append($"\t\tend else begin\n");
+						verilogsb.Append($"\t\t\t{seqAssign.Signal.Name} <= {emitExpr(seqAssign.Expr)};\n");
+						verilogsb.Append($"\t\tend\n");
+					}
+				}
+				verilogsb.Append("\tend\n");
+			}
+			if(item is SwitchStmt)
+			{
+				SwitchStmt switchStmt = (SwitchStmt)item;
+				Signal? beforeSignal = null;
+				AssignStmt assignStmt = assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
+				for(int i = 0; i < switchStmt.Cases.Count; i++)
+				{
+					assignStmt = (AssignStmt)switchStmt.Cases[i].Stmts[0];
+					if (i != 0 && beforeSignal != assignStmt.Signal)
+						throw new Exception();
+					else if (i == 0)
+					{
+						verilogsb.Append($"\tassign {assignStmt.Signal.Name} = ({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[0].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
+						beforeSignal = assignStmt.Signal;
+						continue;
+					}
+					else if (i == switchStmt.Cases.Count - 1)
+					{
+						verilogsb.Append($"\t\t({emitExpr(assignStmt.Expr)});\n");
+						break;
+					}
+					verilogsb.Append($"\t\t({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[i].Value}) ? ({emitExpr(assignStmt.Expr)}) :\n");
+					beforeSignal = assignStmt.Signal;
+				}
+			}
+			if(item is IfStmt ifStmt) 
+			{
+				verilogsb.Append("always @(*) begin\n");
+				verilogsb.Append($"\tif ({emitExpr(ifStmt.Cond)}) begin\n");
+				foreach (var thenItem in ifStmt.Then)
+				{
+					if(thenItem is AssignStmt assignStmt)
+					{
+						verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
+					}
+					else
+						throw new NotSupportedException();
+				}
+				verilogsb.Append("\tend\n");
+				if(ifStmt.Else != null)
+				{
+					verilogsb.Append("\telse begin\n");
+					foreach (var elseItem in ifStmt.Else)
+					{
+						if(elseItem is AssignStmt assignStmt)
+						{
+							verilogsb.Append($"\t\t{assignStmt.Signal.Name} = {emitExpr(assignStmt.Expr)};\n");
+						}
+						else
+							throw new NotSupportedException();
+					}
+					verilogsb.Append("\tend\n");
+				}
+
+				verilogsb.Append("end\n");
+			}
+		}
+	}
+
 }
