@@ -93,6 +93,8 @@ public static class ExprExtension
 				return signExtendExpr.Width;
 			case ZeroExtendExpr zeroExtendExpr:
 				return zeroExtendExpr.Width;
+			case ConstExpr constExpr:
+				return constExpr.Width;
 		}
 		return null;
 	}
@@ -148,5 +150,28 @@ public class ZeroExtendExpr : Expr
 	{
 		Width = width;
 		Expr = expr;
+	}
+}
+
+public static class Const
+{
+	public static Expr UInt(uint width, ulong value)
+	{
+		return new ConstExpr(width, value);
+	}
+}
+
+public class ConstExpr : Expr
+{
+	public uint Width {get; private set;}
+	public ulong Value {get;private set;}
+	public ConstExpr(uint width, ulong value)
+	{
+		if(width == 0 || width > 64)
+		{
+			throw new WidthMismatchException();
+		}
+		Width = width;
+		Value = value;
 	}
 }

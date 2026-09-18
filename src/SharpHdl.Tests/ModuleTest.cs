@@ -589,6 +589,20 @@ public class ModuleTests
 		Assert.DoesNotContain("else begin", verilog, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void TestConstCombModuleEmitter_EmitsSizedDecimals()
+	{
+		ConstComb mod = new();
+		mod.Describe();
+		var verilog = VerilogEmitter.Emitter(mod, nameof(ConstComb));
+
+		Assert.Contains("8'd5", verilog, StringComparison.Ordinal);
+		Assert.Contains("8'd10", verilog, StringComparison.Ordinal);
+		Assert.Contains("8'd3", verilog, StringComparison.Ordinal);
+		Assert.Contains("8'd44", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("8'd300", verilog, StringComparison.Ordinal);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;
