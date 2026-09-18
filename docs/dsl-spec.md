@@ -61,7 +61,7 @@ public sealed class Alu : Module
 
 - 代入は Verilog の連続代入（`assign`）または組み合わせブロック相当
 - 同一信号への複数駆動はエラー
-- **Emit 形（現行）:** `Switch` → `assign` 三項連鎖（左辺は `output wire`）。`If` → `always @(*)` 手続代入（左辺は `output reg`）。単独の `Assign` は `assign` + `wire`
+- **Emit 形（現行）:** `Switch` → `assign` 三項連鎖（左辺は `output wire`）。各 case は単一 Assign・同一左辺。**最終 case の式が default**（未一致時）。空／複数／非 Assign は emit エラー。`If` → `always @(*)` 手続代入（左辺は `output reg`）。単独の `Assign` は `assign` + `wire`
 
 ### 同期 `Seq(clock, reset)`
 
