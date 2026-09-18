@@ -223,8 +223,6 @@ public static class VerilogEmitter
 				SwitchStmt switchStmt = (SwitchStmt)item;
 				Signal? beforeSignal = null;
 				AssignStmt assignStmt;
-				if(switchStmt.Cases == null)
-					throw new Exception("Switch emit: Cases is null.");
 				if(switchStmt.Cases.Count == 0)
 					throw new Exception("Switch emit: Cases must not be empty.");
 				for(int i = 0; i < switchStmt.Cases.Count; i++)
