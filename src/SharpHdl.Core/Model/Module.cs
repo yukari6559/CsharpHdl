@@ -30,36 +30,28 @@ public class Module
 
 	public void Comb(Action action)
 	{
-		CurrentWrite.CurrentModule = this;
-		CurrentWrite.CurrentStmts = Stmts;
-		CurrentWrite.ModuleType = ModuleType.Comb;
+		CurrentWrite.Push(this, Stmts, ModuleType.Comb);
 		try
 		{
 			action.Invoke();
 		}
 		finally
 		{
-			CurrentWrite.CurrentModule = null;
-			CurrentWrite.CurrentStmts = null;
-			CurrentWrite.ModuleType = null;
+			CurrentWrite.Pop();
 		}
 	}
 
 	public void Seq(In clk, In reset, Action action)
 	{
-		CurrentWrite.CurrentModule = this;
 		List<Stmt> seqBlockStmts = new();
-		CurrentWrite.CurrentStmts = seqBlockStmts;
-		CurrentWrite.ModuleType = ModuleType.Seq;
+		CurrentWrite.Push(this, seqBlockStmts, ModuleType.Seq);
 		try
 		{
 			action.Invoke();
 		}
 		finally
 		{
-			CurrentWrite.CurrentModule = null;
-			CurrentWrite.CurrentStmts = null;
-			CurrentWrite.ModuleType = null;
+			CurrentWrite.Pop();
 		}
 		Stmts.Add(new SeqBlockStmt(clk, reset, seqBlockStmts));
 	}
@@ -109,19 +101,24 @@ public class Module
 	}
 	public void If(Expr cond, Action then, Action? @else = null)
 	{
-		CurrentWrite.CurrentModule = this;
 		List<Stmt> parent = CurrentWrite.CurrentStmts!;
 		List<Stmt> thenstmts = new ();
 		List<Stmt>? elsestmts = null;
 		CurrentWrite.CurrentStmts = thenstmts;
-		then.Invoke();
-		if(@else != null)
+		try
 		{
-			elsestmts = new();
-			CurrentWrite.CurrentStmts = elsestmts;
-			@else.Invoke();
+			then.Invoke();
+			if(@else != null)
+			{
+				elsestmts = new();
+				CurrentWrite.CurrentStmts = elsestmts;
+				@else.Invoke();
+			}
+			parent.Add(new IfStmt(cond,thenstmts,elsestmts));
 		}
-		parent.Add(new IfStmt(cond,thenstmts,elsestmts));
-		CurrentWrite.CurrentStmts = parent;
+		finally
+		{
+			CurrentWrite.CurrentStmts = parent;
+		}
 	}
 }
