@@ -101,19 +101,24 @@ public class Module
 	}
 	public void If(Expr cond, Action then, Action? @else = null)
 	{
-		CurrentWrite.CurrentModule = this;
 		List<Stmt> parent = CurrentWrite.CurrentStmts!;
 		List<Stmt> thenstmts = new ();
 		List<Stmt>? elsestmts = null;
 		CurrentWrite.CurrentStmts = thenstmts;
-		then.Invoke();
-		if(@else != null)
+		try
 		{
-			elsestmts = new();
-			CurrentWrite.CurrentStmts = elsestmts;
-			@else.Invoke();
+			then.Invoke();
+			if(@else != null)
+			{
+				elsestmts = new();
+				CurrentWrite.CurrentStmts = elsestmts;
+				@else.Invoke();
+			}
+			parent.Add(new IfStmt(cond,thenstmts,elsestmts));
 		}
-		parent.Add(new IfStmt(cond,thenstmts,elsestmts));
-		CurrentWrite.CurrentStmts = parent;
+		finally
+		{
+			CurrentWrite.CurrentStmts = parent;
+		}
 	}
 }
