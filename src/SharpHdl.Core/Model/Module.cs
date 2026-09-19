@@ -30,36 +30,28 @@ public class Module
 
 	public void Comb(Action action)
 	{
-		CurrentWrite.CurrentModule = this;
-		CurrentWrite.CurrentStmts = Stmts;
-		CurrentWrite.ModuleType = ModuleType.Comb;
+		CurrentWrite.Push(this, Stmts, ModuleType.Comb);
 		try
 		{
 			action.Invoke();
 		}
 		finally
 		{
-			CurrentWrite.CurrentModule = null;
-			CurrentWrite.CurrentStmts = null;
-			CurrentWrite.ModuleType = null;
+			CurrentWrite.Pop();
 		}
 	}
 
 	public void Seq(In clk, In reset, Action action)
 	{
-		CurrentWrite.CurrentModule = this;
 		List<Stmt> seqBlockStmts = new();
-		CurrentWrite.CurrentStmts = seqBlockStmts;
-		CurrentWrite.ModuleType = ModuleType.Seq;
+		CurrentWrite.Push(this, seqBlockStmts, ModuleType.Seq);
 		try
 		{
 			action.Invoke();
 		}
 		finally
 		{
-			CurrentWrite.CurrentModule = null;
-			CurrentWrite.CurrentStmts = null;
-			CurrentWrite.ModuleType = null;
+			CurrentWrite.Pop();
 		}
 		Stmts.Add(new SeqBlockStmt(clk, reset, seqBlockStmts));
 	}
