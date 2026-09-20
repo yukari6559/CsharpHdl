@@ -186,6 +186,22 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestNestedSwitchInIf_AttachesSwitchToThenList()
+	{
+		NestedSwitchInIf mod = new();
+		mod.Describe();
+		var root = mod.GetStmts().ToList();
+
+		Assert.Single(root);
+		var ifStmt = Assert.IsType<IfStmt>(root[0]);
+		Assert.DoesNotContain(root, s => s is SwitchStmt);
+
+		var thenSwitch = Assert.Single(ifStmt.Then.OfType<SwitchStmt>());
+		Assert.Equal(2, thenSwitch.Cases.Count);
+		Assert.Contains(ifStmt.Else!, s => s is AssignStmt);
+	}
+
+	[Fact]
 	public void TestSwitchEmit_EmptyCases_Throws()
 	{
 		BadSwitchEmitModule module = new();
