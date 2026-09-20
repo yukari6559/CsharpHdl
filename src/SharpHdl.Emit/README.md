@@ -15,6 +15,8 @@ Call `VerilogEmitter.Emitter(module, moduleName)` (or the project’s emit entry
 
 Comb emit shape (current): `Switch` → continuous `assign` ternary (`output wire`); `If` → `always @(*)` procedural assigns (`output reg` on driven outs).
 
+Mem array names: optional `name` on `Mem`; default `mem_{rdata}` (2R1W: `mem_{rdata0}`).
+
 ## Docs
 
 - Repository: https://github.com/yukari6559/CsharpHdl
