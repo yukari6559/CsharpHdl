@@ -94,6 +94,8 @@ public sealed class Alu : Module
 
 アドレス幅は `ceil(log2(depth))`。同一アドレスの読み書きは初版 **旧値読み**（バイパスなし）。
 
+**Emit 配列名:** optional 引数 `name`（省略可）。省略時は `mem_{rdata}`（2R1W は `mem_{rdata0}`）。明示時はその識別子を Verilog 配列に使う。
+
 ### 階層
 
 子モジュールをインスタンス化し、ポート接続する。子は別 `module` として emit されます。
