@@ -5,70 +5,69 @@ namespace SharpHdl.Sim.Interp;
 
 public class SeqAdvance
 {
-	public void Advance(List<Stmt> stmts, SimWorld simWorld, Signal clk)
+	public static void Advance(List<Stmt> stmts, SimWorld simWorld, Signal clk)
 	{
-		Dictionary<Signal, ulong> nextValues = new();
-		EvalExpr evalExpr = new();
+		Dictionary<Signal, ulong> nextValues = [];
 		ulong nextRdata;
-		foreach(var stmt in stmts)
+		foreach (Stmt stmt in stmts)
 		{
-			if(stmt is SeqBlockStmt seqBlockStmt && seqBlockStmt.Clk == clk)
+			if (stmt is SeqBlockStmt seqBlockStmt && seqBlockStmt.Clk == clk)
 			{
-				if(evalExpr.Eval(seqBlockStmt.Reset, simWorld) == 1)
+				if (EvalExpr.Eval(seqBlockStmt.Reset, simWorld) == 1)
 				{
-					foreach(SeqAssignStmt innerStmt in seqBlockStmt.Body)
+					foreach (SeqAssignStmt innerStmt in seqBlockStmt.Body.Cast<SeqAssignStmt>())
 					{
 						nextValues[innerStmt.Signal] = innerStmt.ResetValue;
 					}
 				}
-				else if(evalExpr.Eval(seqBlockStmt.Reset, simWorld) == 0)
+				else if (EvalExpr.Eval(seqBlockStmt.Reset, simWorld) == 0)
 				{
-					foreach(SeqAssignStmt innerStmt in seqBlockStmt.Body)
+					foreach (SeqAssignStmt innerStmt in seqBlockStmt.Body.Cast<SeqAssignStmt>())
 					{
-						nextValues[innerStmt.Signal] = evalExpr.Eval(innerStmt.Expr, simWorld);
+						nextValues[innerStmt.Signal] = EvalExpr.Eval(innerStmt.Expr, simWorld);
 					}
 				}
 			}
-			if(stmt is InstanceStmt instanceStmt)
+			if (stmt is InstanceStmt instanceStmt)
 			{
-				Advance(instanceStmt.ChildModule.GetStmts().ToList(), simWorld, clk);
+				Advance([.. instanceStmt.ChildModule.GetStmts()], simWorld, clk);
 			}
-			if(stmt is MemStmt memStmt && memStmt.Clk == clk)
+			if (stmt is MemStmt memStmt && memStmt.Clk == clk)
 			{
-				nextRdata = (simWorld.memState[memStmt.Rdata])[evalExpr.Eval(memStmt.Addr, simWorld)];
+				nextRdata = simWorld.MemState[memStmt.Rdata][EvalExpr.Eval(memStmt.Addr, simWorld)];
 				nextValues[memStmt.Rdata] = nextRdata;
-				if(evalExpr.Eval(memStmt.We, simWorld) == 1)
+				if (EvalExpr.Eval(memStmt.We, simWorld) == 1)
 				{
-					simWorld.memState[memStmt.Rdata][evalExpr.Eval(memStmt.Addr, simWorld)] = evalExpr.Eval(memStmt.Wdata, simWorld);
+					simWorld.MemState[memStmt.Rdata][EvalExpr.Eval(memStmt.Addr, simWorld)] = EvalExpr.Eval(memStmt.Wdata, simWorld);
 				}
 			}
-			if(stmt is Mem2R1WStmt mem2R1WStmt && mem2R1WStmt.Clk == clk)
+			if (stmt is Mem2R1WStmt mem2R1WStmt && mem2R1WStmt.Clk == clk)
 			{
-				if(evalExpr.Eval(mem2R1WStmt.We, simWorld) == 1)
+				if (EvalExpr.Eval(mem2R1WStmt.We, simWorld) == 1)
 				{
-					simWorld.memState[mem2R1WStmt.Rdata0][evalExpr.Eval(mem2R1WStmt.Waddr, simWorld)] = evalExpr.Eval(mem2R1WStmt.Wdata, simWorld);
+					simWorld.MemState[mem2R1WStmt.Rdata0][EvalExpr.Eval(mem2R1WStmt.Waddr, simWorld)] = EvalExpr.Eval(mem2R1WStmt.Wdata, simWorld);
 				}
 			}
-			if(stmt is MemWstrbStmt memWstrbStmt && memWstrbStmt.Clk == clk)
+			if (stmt is MemWstrbStmt memWstrbStmt && memWstrbStmt.Clk == clk)
 			{
-				nextRdata = simWorld.memState[memWstrbStmt.Rdata][evalExpr.Eval(memWstrbStmt.Addr, simWorld)];
-				if(evalExpr.Eval(memWstrbStmt.We, simWorld) == 1)
+				nextRdata = simWorld.MemState[memWstrbStmt.Rdata][EvalExpr.Eval(memWstrbStmt.Addr, simWorld)];
+				if (EvalExpr.Eval(memWstrbStmt.We, simWorld) == 1)
 				{
-					var word = simWorld.memState[memWstrbStmt.Rdata][evalExpr.Eval(memWstrbStmt.Addr,simWorld)];
-					for(int i = 0; i < memWstrbStmt.Width / 8; i++)
+					ulong word = simWorld.MemState[memWstrbStmt.Rdata][EvalExpr.Eval(memWstrbStmt.Addr, simWorld)];
+					for (int i = 0; i < memWstrbStmt.Width / 8; i++)
 					{
-						if(((evalExpr.Eval(memWstrbStmt.Wstrb, simWorld) >> i) & 1) == 1)
+						if (((EvalExpr.Eval(memWstrbStmt.Wstrb, simWorld) >> i) & 1) == 1)
 						{
-							ulong mask = 0xFFul << (8*i);
-							word = (word & ~mask) | (evalExpr.Eval(memWstrbStmt.Wdata,simWorld) & mask);
+							ulong mask = 0xFFul << (8 * i);
+							word = (word & ~mask) | (EvalExpr.Eval(memWstrbStmt.Wdata, simWorld) & mask);
 						}
 					}
-					simWorld.memState[memWstrbStmt.Rdata][evalExpr.Eval(memWstrbStmt.Addr,simWorld)] = word;
+					simWorld.MemState[memWstrbStmt.Rdata][EvalExpr.Eval(memWstrbStmt.Addr, simWorld)] = word;
 				}
-				nextValues[memWstrbStmt.Rdata] = nextRdata; 
+				nextValues[memWstrbStmt.Rdata] = nextRdata;
 			}
 		}
-		foreach(var item in nextValues)
+		foreach (KeyValuePair<Signal, ulong> item in nextValues)
 		{
 			simWorld.Set(item.Key, item.Value);
 		}

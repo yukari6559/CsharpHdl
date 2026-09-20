@@ -74,4 +74,4 @@ csproj の `<Version>` はローカル表示用です。タグ付きリリース
 3. Program またはテストから Emitter を呼び、`.v` を書く — または `Run` / `Settle` / `Advance` でシミュする  
 4. 生成物を自分のシミュレーション / FPGA フローへ渡す（emit 利用時）  
 
-書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Const.UInt（M3）** まで（`0.3.8`）。いまの本線は **M4** または refactor-emitter（内部 ROADMAP / tickets 参照）。
+書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）** まで（`0.3.8`）。いまの本線は **M4** または refactor-emitter（内部 ROADMAP / tickets 参照）。

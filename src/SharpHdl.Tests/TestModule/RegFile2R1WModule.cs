@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>T2c: 同期書き・非同期読みの 2R1W（depth 32 / width 64）。</summary>
 public sealed class RegFile2R1W : Module
 {

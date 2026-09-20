@@ -1,13 +1,14 @@
 using SharpHdl.Sim;
+using SharpHdl.Tests.TestModule;
 
 namespace SharpHdl.Tests;
 
 public class CircuitSimTests
 {
 	[Fact]
-	public void Counter_Resets_AndIncrements()
+	public void CounterResetsAndIncrements()
 	{
-		var c = new Counter().Run();
+		SimSession<Counter> c = new Counter().Run();
 
 		c.Set(c.Module.Rst, 1);
 		c.Advance(c.Module.Clk);
@@ -30,9 +31,9 @@ public class CircuitSimTests
 	[InlineData(1u, 5u, 3u, 2u)]
 	[InlineData(2u, 0xFFu, 0x0Fu, 0x0Fu)]
 	[InlineData(3u, 0xF0u, 0x0Fu, 0xFFu)]
-	public void Alu_Ops(uint op, uint a, uint b, uint expected)
+	public void AluOps(uint op, uint a, uint b, uint expected)
 	{
-		var alu = new Alu().Run();
+		SimSession<Alu> alu = new Alu().Run();
 		alu.Set(alu.Module.A, a);
 		alu.Set(alu.Module.B, b);
 		alu.Set(alu.Module.Op, op);
@@ -45,9 +46,9 @@ public class CircuitSimTests
 	[InlineData(1u, 5u, 3u, 2u)]
 	[InlineData(2u, 0xFFu, 0x0Fu, 0x0Fu)]
 	[InlineData(3u, 0xF0u, 0x0Fu, 0xFFu)]
-	public void AluTop_Ops_ThroughInstance(uint op, uint a, uint b, uint expected)
+	public void AluTopOpsThroughInstance(uint op, uint a, uint b, uint expected)
 	{
-		var top = new AluTop().Run();
+		SimSession<AluTop> top = new AluTop().Run();
 		top.Set(top.Module.A, a);
 		top.Set(top.Module.B, b);
 		top.Set(top.Module.Op, op);
@@ -56,9 +57,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void DualAluTop_IndependentInstances()
+	public void DualAluTopIndependentInstances()
 	{
-		var top = new DualAluTop().Run();
+		SimSession<DualAluTop> top = new DualAluTop().Run();
 		top.Set(top.Module.A0, 1);
 		top.Set(top.Module.B0, 2);
 		top.Set(top.Module.Op0, 0);
@@ -71,9 +72,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void SimpleRam_SyncRead_WriteVisibleNextCycle()
+	public void SimpleRamSyncReadWriteVisibleNextCycle()
 	{
-		var ram = new SimpleRam().Run();
+		SimSession<SimpleRam> ram = new SimpleRam().Run();
 
 		ram.Set(ram.Module.We, 1);
 		ram.Set(ram.Module.Addr, 3);
@@ -87,9 +88,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void RegFile2R1W_WriteThenCombRead()
+	public void RegFile2R1WWriteThenCombRead()
 	{
-		var rf = new RegFile2R1W().Run();
+		SimSession<RegFile2R1W> rf = new RegFile2R1W().Run();
 
 		rf.Set(rf.Module.Raddr0, 3);
 		rf.Set(rf.Module.Raddr1, 3);
@@ -106,9 +107,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void RegFile2R1W_DualReadPorts()
+	public void RegFile2R1WDualReadPorts()
 	{
-		var rf = new RegFile2R1W().Run();
+		SimSession<RegFile2R1W> rf = new RegFile2R1W().Run();
 
 		rf.Set(rf.Module.We, 1);
 		rf.Set(rf.Module.Waddr, 1);
@@ -127,9 +128,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void ByteWriteRam_SyncRead_FullStrobe()
+	public void ByteWriteRamSyncReadFullStrobe()
 	{
-		var ram = new ByteWriteRam().Run();
+		SimSession<ByteWriteRam> ram = new ByteWriteRam().Run();
 
 		ram.Set(ram.Module.We, 1);
 		ram.Set(ram.Module.Wstrb, 0xF);
@@ -144,9 +145,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void ByteWriteRam_PartialStrobe_UpdatesOnlySelectedBytes()
+	public void ByteWriteRamPartialStrobeUpdatesOnlySelectedBytes()
 	{
-		var ram = new ByteWriteRam().Run();
+		SimSession<ByteWriteRam> ram = new ByteWriteRam().Run();
 
 		ram.Set(ram.Module.We, 1);
 		ram.Set(ram.Module.Wstrb, 0xF);
@@ -169,9 +170,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void LoadMem_Words_ThenPeekAndPoke()
+	public void LoadMemWordsThenPeekAndPoke()
 	{
-		var ram = new SimpleRam().Run();
+		SimSession<SimpleRam> ram = new SimpleRam().Run();
 		ram.LoadMem(ram.Module.Rdata, new ulong[] { 0x10, 0x20, 0x30 });
 
 		Assert.Equal(0x10u, ram.PeekMem(ram.Module.Rdata, 0));
@@ -184,18 +185,18 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void LoadMem_Bytes_LittleEndian()
+	public void LoadMemBytesLittleEndian()
 	{
-		var ram = new SimpleRam().Run();
-		ram.LoadMem(ram.Module.Rdata, new byte[] { 0x78, 0x56, 0x34, 0x12 });
+		SimSession<SimpleRam> ram = new SimpleRam().Run();
+		ram.LoadMem(ram.Module.Rdata, [0x78, 0x56, 0x34, 0x12]);
 		Assert.Equal(0x12345678u, ram.PeekMem(ram.Module.Rdata, 0));
 	}
 
 	[Fact]
-	public void LoadMem_Words_VisibleAfterSyncRead()
+	public void LoadMemWordsVisibleAfterSyncRead()
 	{
-		var ram = new SimpleRam().Run();
-		ram.LoadMem(ram.Module.Rdata, new ulong[] { 0xABu });
+		SimSession<SimpleRam> ram = new SimpleRam().Run();
+		ram.LoadMem(ram.Module.Rdata, [0xABu]);
 		Assert.Equal(0u, ram.Get(ram.Module.Rdata));
 
 		ram.Set(ram.Module.We, 0);
@@ -205,9 +206,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void AdvanceWhile_StopsWhenConditionMet()
+	public void AdvanceWhileStopsWhenConditionMet()
 	{
-		var c = new Counter().Run();
+		SimSession<Counter> c = new Counter().Run();
 		c.Set(c.Module.Rst, 1);
 		c.Advance(c.Module.Clk);
 		c.Set(c.Module.Rst, 0);
@@ -218,15 +219,15 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void AdvanceWhile_ThrowsWhenMaxCyclesExceeded()
+	public void AdvanceWhileThrowsWhenMaxCyclesExceeded()
 	{
-		var c = new Counter().Run();
+		SimSession<Counter> c = new Counter().Run();
 		c.Set(c.Module.Rst, 1);
 		c.Advance(c.Module.Clk);
 		c.Set(c.Module.Rst, 0);
 		c.Set(c.Module.Step, 1);
 
-		Assert.Throws<InvalidOperationException>(() =>
+		_ = Assert.Throws<InvalidOperationException>(() =>
 			c.AdvanceWhile(c.Module.Clk, 3, s => s.Get(s.Module.Count) != 100));
 	}
 
@@ -234,9 +235,9 @@ public class CircuitSimTests
 	[InlineData(3u, 3u, 1u, 0u, 0u, 1u, 0u, 1u)]
 	[InlineData(2u, 5u, 0u, 1u, 1u, 1u, 0u, 0u)]
 	[InlineData(9u, 4u, 0u, 1u, 0u, 0u, 1u, 1u)]
-	public void CompareComb_Ops(uint a, uint b, uint eq, uint neq, uint lt, uint le, uint gt, uint ge)
+	public void CompareCombOps(uint a, uint b, uint eq, uint neq, uint lt, uint le, uint gt, uint ge)
 	{
-		var c = new CompareComb().Run();
+		SimSession<CompareComb> c = new CompareComb().Run();
 		c.Set(c.Module.A, a);
 		c.Set(c.Module.B, b);
 		c.Settle();
@@ -251,9 +252,9 @@ public class CircuitSimTests
 	[Theory]
 	[InlineData(3u, 3u, 10u, 20u, 10u)]
 	[InlineData(2u, 5u, 10u, 20u, 20u)]
-	public void IfMuxComb_SelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)
+	public void IfMuxCombSelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)
 	{
-		var m = new IfMuxComb().Run();
+		SimSession<IfMuxComb> m = new IfMuxComb().Run();
 		m.Set(m.Module.SelA, selA);
 		m.Set(m.Module.SelB, selB);
 		m.Set(m.Module.C, cVal);
@@ -263,9 +264,9 @@ public class CircuitSimTests
 	}
 
 	[Fact]
-	public void IfThenOnlyComb_AssignsWhenTrue_KeepsPriorWhenFalse()
+	public void IfThenOnlyCombAssignsWhenTrueKeepsPriorWhenFalse()
 	{
-		var m = new IfThenOnlyComb().Run();
+		SimSession<IfThenOnlyComb> m = new IfThenOnlyComb().Run();
 		m.Set(m.Module.A, 1);
 		m.Set(m.Module.B, 2);
 		m.Set(m.Module.C, 9);
@@ -282,12 +283,12 @@ public class CircuitSimTests
 	[InlineData(0u, 10u, 0u)]
 	[InlineData(3u, 13u, 1u)]
 	[InlineData(250u, 4u, 0u)]
-	public void ConstComb_LitSumCompareAndMask(uint a, uint expectedSum, uint expectedIsThree)
+	public void ConstCombLitSumCompareAndMask(uint a, uint expectedSum, uint expectedIsThree)
 	{
-		var m = new ConstComb().Run();
+		SimSession<ConstComb> m = new ConstComb().Run();
 		m.Set(m.Module.A, a);
 		m.Settle();
-		Assert.Equal(5u, m.Get(m.Module.Lit));
+		Assert.Equal(5u, m.Get(m.Module.Imm));
 		Assert.Equal(expectedSum, m.Get(m.Module.Sum));
 		Assert.Equal(expectedIsThree, m.Get(m.Module.IsThree));
 		Assert.Equal(44u, m.Get(m.Module.Masked));

@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>Slice 結果幅と左辺幅が合わないときの例外確認用。</summary>
 public sealed class BadSliceWidthModule : Module
 {

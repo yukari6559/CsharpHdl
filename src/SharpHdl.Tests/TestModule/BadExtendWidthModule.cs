@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>拡張先幅が元より狭いときの例外確認用。</summary>
 public sealed class BadExtendWidthModule : Module
 {

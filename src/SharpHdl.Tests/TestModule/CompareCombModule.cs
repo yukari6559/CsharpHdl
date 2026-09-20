@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 public sealed class CompareComb : Module
 {
 	public In A { get; } = In.UInt(8, "A");
