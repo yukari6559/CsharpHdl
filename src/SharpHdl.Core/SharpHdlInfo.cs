@@ -5,6 +5,6 @@ namespace SharpHdl.Core;
 /// </summary>
 public static class SharpHdlInfo
 {
-    public const string Name = "SharpHdl.Core";
-    public const string Version = "0.0.0";
+	public const string Name = "SharpHdl.Core";
+	public const string Version = "0.0.0";
 }

@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>T2b: Slice / Concat（命令フィールド切り出し＋連結）。</summary>
 public sealed class DecodeSliceConcat : Module
 {

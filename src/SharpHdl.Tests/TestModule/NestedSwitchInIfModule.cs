@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 public sealed class NestedSwitchInIf : Module
 {
 	public In En { get; } = In.UInt(1, "En");
@@ -17,14 +19,14 @@ public sealed class NestedSwitchInIf : Module
 	{
 		Comb(() =>
 		{
-			If(En.Eq(Const.UInt(1, 1)),
+			If(En.Eq(Lit.Bits(1, 1)),
 				then: () =>
 				{
 					Switch(Op,
 						(0, () => Y.Assign(A)),
 						(1, () => Y.Assign(B)));
 				},
-				@else: () => Y.Assign(Const.UInt(8, 0)));
+				@else: () => Y.Assign(Lit.Bits(8, 0)));
 		});
 	}
 }

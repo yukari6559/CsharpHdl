@@ -1,7 +1,8 @@
-namespace SharpHdl.Tests;
-
 using SharpHdl.Core.Model;
 using SharpHdl.Emit;
+using SharpHdl.Tests.TestModule;
+
+namespace SharpHdl.Tests;
 
 public class ModuleTests
 {
@@ -9,7 +10,7 @@ public class ModuleTests
 	public void TestModulePort()
 	{
 		TestModule1 testmodule1 = new();
-		List<Signal> signals = testmodule1.GetPorts().ToList();
+		List<Signal> signals = [.. testmodule1.GetPorts()];
 		Assert.Equal("Input", signals[0].Name);
 		Assert.Equal(1u, signals[0].Width);
 		Assert.Equal("Output", signals[1].Name);
@@ -31,36 +32,36 @@ public class ModuleTests
 	{
 		Alu alu = new();
 		alu.Describe();
-		List<Stmt> stmts = alu.GetStmts().ToList();
+		List<Stmt> stmts = [.. alu.GetStmts()];
 		SwitchStmt switchStmt = (SwitchStmt)stmts[0];
-		Assert.Equal(4,switchStmt.Cases.Count);
-		Assert.Equal(0u,switchStmt.Cases[0].Value);
+		Assert.Equal(4, switchStmt.Cases.Count);
+		Assert.Equal(0u, switchStmt.Cases[0].Value);
 		AssignStmt assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
-		Assert.Equal(alu.Y,assignStmt.Signal);
-		OpExpr opExpr  = (OpExpr) assignStmt.Expr;
-		Assert.Equal(Op.Plus,opExpr.Op);
-		Assert.Equal(1u,switchStmt.Cases[1].Value);
+		Assert.Equal(alu.Y, assignStmt.Signal);
+		OpExpr opExpr = (OpExpr)assignStmt.Expr;
+		Assert.Equal(Op.Plus, opExpr.Op);
+		Assert.Equal(1u, switchStmt.Cases[1].Value);
 		assignStmt = (AssignStmt)switchStmt.Cases[1].Stmts[0];
-		Assert.Equal(alu.Y,assignStmt.Signal);
-		opExpr  = (OpExpr) assignStmt.Expr;
-		Assert.Equal(Op.Minus,opExpr.Op);
-		Assert.Equal(2u,switchStmt.Cases[2].Value);
+		Assert.Equal(alu.Y, assignStmt.Signal);
+		opExpr = (OpExpr)assignStmt.Expr;
+		Assert.Equal(Op.Minus, opExpr.Op);
+		Assert.Equal(2u, switchStmt.Cases[2].Value);
 		assignStmt = (AssignStmt)switchStmt.Cases[2].Stmts[0];
-		Assert.Equal(alu.Y,assignStmt.Signal);
-		opExpr  = (OpExpr) assignStmt.Expr;
-		Assert.Equal(Op.And,opExpr.Op);
-		Assert.Equal(3u,switchStmt.Cases[3].Value);
+		Assert.Equal(alu.Y, assignStmt.Signal);
+		opExpr = (OpExpr)assignStmt.Expr;
+		Assert.Equal(Op.And, opExpr.Op);
+		Assert.Equal(3u, switchStmt.Cases[3].Value);
 		assignStmt = (AssignStmt)switchStmt.Cases[3].Stmts[0];
-		Assert.Equal(alu.Y,assignStmt.Signal);
-		opExpr  = (OpExpr) assignStmt.Expr;
-		Assert.Equal(Op.Or,opExpr.Op);
+		Assert.Equal(alu.Y, assignStmt.Signal);
+		opExpr = (OpExpr)assignStmt.Expr;
+		Assert.Equal(Op.Or, opExpr.Op);
 	}
 
 	[Fact]
-	public void TestAluModuleEmitter_EmitsPortFrame()
+	public void TestAluModuleEmitterEmitsPortFrame()
 	{
 		Alu alu = new();
-		var verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
+		string verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
 
 		const string expected =
 			"module Alu(\n" +
@@ -75,20 +76,20 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestTestModuleEmitter_EmitsSimpleModule()
+	public void TestTestModuleEmitterEmitsSimpleModule()
 	{
-		TestModule1 testModule1 = new ();
+		TestModule1 testModule1 = new();
 		testModule1.Describe();
-		var verilog = VerilogEmitter.Emitter(testModule1, nameof(TestModule1));
+		string verilog = VerilogEmitter.Emitter(testModule1, nameof(TestModule1));
 
 		const string expected =
 			"module TestModule1(\n" +
 			"\tinput wire Input,\n" +
 			"\toutput wire Output\n" +
 			");\n" +
-			"\tassign Output = Input;\n"+
+			"\tassign Output = Input;\n" +
 			"endmodule";
-		
+
 		Console.WriteLine(verilog);
 		Assert.Equal(expected, verilog);
 	}
@@ -98,13 +99,13 @@ public class ModuleTests
 	{
 		Counter counter = new();
 		counter.Describe();
-		List<Stmt> stmts = counter.GetStmts().ToList();
+		List<Stmt> stmts = [.. counter.GetStmts()];
 
-		Assert.Single(stmts);
+		_ = Assert.Single(stmts);
 		SeqBlockStmt block = (SeqBlockStmt)stmts[0];
 		Assert.Equal(counter.Clk, block.Clk);
 		Assert.Equal(counter.Rst, block.Reset);
-		Assert.Single(block.Body);
+		_ = Assert.Single(block.Body);
 
 		SeqAssignStmt assign = (SeqAssignStmt)block.Body[0];
 		Assert.Equal(counter.Count, assign.Signal);
@@ -116,32 +117,32 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestSeqAssign_OutsideSeq_Throws()
+	public void TestSeqAssignOutsideSeqThrows()
 	{
 		Counter counter = new();
-		Assert.Throws<Exception>(() => counter.Count.Assign(0, counter.Count));
+		_ = Assert.Throws<InvalidOperationException>(() => counter.Count.Assign(0, counter.Count));
 	}
 
 	[Fact]
-	public void TestCombAssign_WidthMismatch_Throws()
+	public void TestCombAssignWidthMismatchThrows()
 	{
 		BadWidthModule module = new();
-		Assert.Throws<WidthMismatchException>(module.DescribeCombMismatch);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeCombMismatch);
 	}
 
 	[Fact]
-	public void TestSeqAssign_WidthMismatch_Throws()
+	public void TestSeqAssignWidthMismatchThrows()
 	{
 		BadWidthModule module = new();
-		Assert.Throws<WidthMismatchException>(module.DescribeSeqMismatch);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeSeqMismatch);
 	}
 
 	[Fact]
-	public void TestCounterModuleEmitter_EmitsSeq()
+	public void TestCounterModuleEmitterEmitsSeq()
 	{
 		Counter counter = new();
 		counter.Describe();
-		var verilog = VerilogEmitter.Emitter(counter, nameof(Counter));
+		string verilog = VerilogEmitter.Emitter(counter, nameof(Counter));
 
 		const string expected =
 			"module Counter(\n" +
@@ -163,11 +164,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestAluModuleEmitter_EmitsAll()
+	public void TestAluModuleEmitterEmitsAll()
 	{
 		Alu alu = new();
 		alu.Describe();
-		var verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
+		string verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
 
 		const string expected =
 			"module Alu(\n" +
@@ -186,54 +187,54 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestNestedSwitchInIf_AttachesSwitchToThenList()
+	public void TestNestedSwitchInIfAttachesSwitchToThenList()
 	{
 		NestedSwitchInIf mod = new();
 		mod.Describe();
-		var root = mod.GetStmts().ToList();
+		List<Stmt> root = [.. mod.GetStmts()];
 
-		Assert.Single(root);
-		var ifStmt = Assert.IsType<IfStmt>(root[0]);
+		_ = Assert.Single(root);
+		IfStmt ifStmt = Assert.IsType<IfStmt>(root[0]);
 		Assert.DoesNotContain(root, s => s is SwitchStmt);
 
-		var thenSwitch = Assert.Single(ifStmt.Then.OfType<SwitchStmt>());
+		SwitchStmt thenSwitch = Assert.Single(ifStmt.Then.OfType<SwitchStmt>());
 		Assert.Equal(2, thenSwitch.Cases.Count);
 		Assert.Contains(ifStmt.Else!, s => s is AssignStmt);
 	}
 
 	[Fact]
-	public void TestSwitchEmit_EmptyCases_Throws()
+	public void TestSwitchEmitEmptyCasesThrows()
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeEmptyCases();
-		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("Cases must not be empty", ex.Message, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void TestSwitchEmit_EmptyCaseBody_Throws()
+	public void TestSwitchEmitEmptyCaseBodyThrows()
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeEmptyCaseBody();
-		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("exactly one statement", ex.Message, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void TestSwitchEmit_MultiAssignCase_Throws()
+	public void TestSwitchEmitMultiAssignCaseThrows()
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeMultiAssignCase();
-		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("exactly one statement", ex.Message, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void TestSwitchEmit_SignalMismatch_Throws()
+	public void TestSwitchEmitSignalMismatchThrows()
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeSignalMismatch();
-		var ex = Assert.Throws<Exception>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("same signal", ex.Message, StringComparison.Ordinal);
 	}
 
@@ -242,23 +243,23 @@ public class ModuleTests
 	{
 		AluTop top = new();
 		top.Describe();
-		List<Stmt> stmts = top.GetStmts().ToList();
+		List<Stmt> stmts = [.. top.GetStmts()];
 
-		Assert.Single(stmts);
+		_ = Assert.Single(stmts);
 		InstanceStmt instance = (InstanceStmt)stmts[0];
 		Assert.Equal("alu", instance.InstanceName);
-		Assert.IsType<Alu>(instance.ChildModule);
+		_ = Assert.IsType<Alu>(instance.ChildModule);
 		Assert.Equal(4, instance.PortConnections.Count);
 		Assert.Equal(top.A, instance.PortConnections[0].ParentSignal);
 		Assert.Equal(top.Y, instance.PortConnections[3].ParentSignal);
 	}
 
 	[Fact]
-	public void TestAluTopModuleEmitter_EmitsHierarchy()
+	public void TestAluTopModuleEmitterEmitsHierarchy()
 	{
 		AluTop top = new();
 		top.Describe();
-		var verilog = VerilogEmitter.Emitter(top, nameof(AluTop));
+		string verilog = VerilogEmitter.Emitter(top, nameof(AluTop));
 
 		const string expected =
 			"module Alu(\n" +
@@ -286,11 +287,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestDualAluTopEmitter_EmitsChildModuleOnce()
+	public void TestDualAluTopEmitterEmitsChildModuleOnce()
 	{
 		DualAluTop top = new();
 		top.Describe();
-		var verilog = VerilogEmitter.Emitter(top, nameof(DualAluTop));
+		string verilog = VerilogEmitter.Emitter(top, nameof(DualAluTop));
 
 		Assert.Equal(1, CountOccurrences(verilog, "module Alu("));
 		Assert.Contains("Alu alu0 (", verilog);
@@ -303,9 +304,9 @@ public class ModuleTests
 	{
 		SimpleRam ram = new();
 		ram.Describe();
-		List<Stmt> stmts = ram.GetStmts().ToList();
+		List<Stmt> stmts = [.. ram.GetStmts()];
 
-		Assert.Single(stmts);
+		_ = Assert.Single(stmts);
 		MemStmt mem = Assert.IsType<MemStmt>(stmts[0]);
 		Assert.Equal(256u, mem.Depth);
 		Assert.Equal(32u, mem.Width);
@@ -318,11 +319,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestSimpleRamModuleEmitter_EmitsMem()
+	public void TestSimpleRamModuleEmitterEmitsMem()
 	{
 		SimpleRam ram = new();
 		ram.Describe();
-		var verilog = VerilogEmitter.Emitter(ram, nameof(SimpleRam));
+		string verilog = VerilogEmitter.Emitter(ram, nameof(SimpleRam));
 
 		const string expected =
 			"module SimpleRam(\n" +
@@ -343,14 +344,14 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestNamedSimpleRamModuleEmitter_UsesExplicitArrayName()
+	public void TestNamedSimpleRamModuleEmitterUsesExplicitArrayName()
 	{
 		NamedSimpleRam ram = new();
 		ram.Describe();
-		var mem = Assert.IsType<MemStmt>(Assert.Single(ram.GetStmts()));
+		MemStmt mem = Assert.IsType<MemStmt>(Assert.Single(ram.GetStmts()));
 		Assert.Equal("dmem", mem.Name);
 
-		var verilog = VerilogEmitter.Emitter(ram, nameof(NamedSimpleRam));
+		string verilog = VerilogEmitter.Emitter(ram, nameof(NamedSimpleRam));
 		Assert.Contains("reg [31:0] dmem [0:255];", verilog, StringComparison.Ordinal);
 		Assert.Contains("dmem[addr] <= wdata;", verilog, StringComparison.Ordinal);
 		Assert.Contains("rdata <= dmem[addr];", verilog, StringComparison.Ordinal);
@@ -362,9 +363,9 @@ public class ModuleTests
 	{
 		ByteWriteRam ram = new();
 		ram.Describe();
-		List<Stmt> stmts = ram.GetStmts().ToList();
+		List<Stmt> stmts = [.. ram.GetStmts()];
 
-		Assert.Single(stmts);
+		_ = Assert.Single(stmts);
 		MemWstrbStmt mem = Assert.IsType<MemWstrbStmt>(stmts[0]);
 		Assert.Equal(256u, mem.Depth);
 		Assert.Equal(32u, mem.Width);
@@ -378,11 +379,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestByteWriteRamModuleEmitter_EmitsByteEnables()
+	public void TestByteWriteRamModuleEmitterEmitsByteEnables()
 	{
 		ByteWriteRam ram = new();
 		ram.Describe();
-		var verilog = VerilogEmitter.Emitter(ram, nameof(ByteWriteRam));
+		string verilog = VerilogEmitter.Emitter(ram, nameof(ByteWriteRam));
 
 		const string expected =
 			"module ByteWriteRam(\n" +
@@ -409,10 +410,10 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestMemWstrb_WidthMismatch_Throws()
+	public void TestMemWstrbWidthMismatchThrows()
 	{
 		BadMemWstrbWidthModule module = new();
-		Assert.Throws<WidthMismatchException>(module.DescribeWstrbMismatch);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeWstrbMismatch);
 	}
 
 	[Fact]
@@ -420,9 +421,9 @@ public class ModuleTests
 	{
 		RegFile2R1W rf = new();
 		rf.Describe();
-		List<Stmt> stmts = rf.GetStmts().ToList();
+		List<Stmt> stmts = [.. rf.GetStmts()];
 
-		Assert.Single(stmts);
+		_ = Assert.Single(stmts);
 		Mem2R1WStmt mem = Assert.IsType<Mem2R1WStmt>(stmts[0]);
 		Assert.Equal(32u, mem.Depth);
 		Assert.Equal(64u, mem.Width);
@@ -438,11 +439,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestRegFile2R1WModuleEmitter_EmitsAsyncReads()
+	public void TestRegFile2R1WModuleEmitterEmitsAsyncReads()
 	{
 		RegFile2R1W rf = new();
 		rf.Describe();
-		var verilog = VerilogEmitter.Emitter(rf, nameof(RegFile2R1W));
+		string verilog = VerilogEmitter.Emitter(rf, nameof(RegFile2R1W));
 
 		const string expected =
 			"module RegFile2R1W(\n" +
@@ -467,27 +468,27 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestMem2R1W_WidthMismatch_Throws()
+	public void TestMem2R1WWidthMismatchThrows()
 	{
 		BadMem2R1WWidthModule module = new();
-		Assert.Throws<WidthMismatchException>(module.DescribeRaddr1Mismatch);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeRaddr1Mismatch);
 	}
 
 	[Fact]
-	public void TestWidth64PassModule_PortsAre64()
+	public void TestWidth64PassModulePortsAre64()
 	{
 		Width64Pass mod = new();
-		List<Signal> ports = mod.GetPorts().ToList();
+		List<Signal> ports = [.. mod.GetPorts()];
 		Assert.Equal(64u, ports[0].Width);
 		Assert.Equal(64u, ports[1].Width);
 	}
 
 	[Fact]
-	public void TestWidth64PassModuleEmitter_Emits63to0()
+	public void TestWidth64PassModuleEmitterEmits63to0()
 	{
 		Width64Pass mod = new();
 		mod.Describe();
-		var verilog = VerilogEmitter.Emitter(mod, nameof(Width64Pass));
+		string verilog = VerilogEmitter.Emitter(mod, nameof(Width64Pass));
 
 		const string expected =
 			"module Width64Pass(\n" +
@@ -501,7 +502,7 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestSlice_GetWidth_IsInclusive()
+	public void TestSliceGetWidthIsInclusive()
 	{
 		In instr = In.UInt(32, "instr");
 		Assert.Equal(7u, instr.Slice(6, 0).GetWidth());
@@ -509,7 +510,7 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestConcat_GetWidth_SumsParts()
+	public void TestConcatGetWidthSumsParts()
 	{
 		In hi = In.UInt(16, "hi");
 		In lo = In.UInt(16, "lo");
@@ -517,10 +518,10 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestSliceAssign_WidthMismatch_Throws()
+	public void TestSliceAssignWidthMismatchThrows()
 	{
 		BadSliceWidthModule module = new();
-		Assert.Throws<WidthMismatchException>(module.DescribeSliceMismatch);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeSliceMismatch);
 	}
 
 	[Fact]
@@ -528,7 +529,7 @@ public class ModuleTests
 	{
 		DecodeSliceConcat mod = new();
 		mod.Describe();
-		List<Stmt> stmts = mod.GetStmts().ToList();
+		List<Stmt> stmts = [.. mod.GetStmts()];
 		Assert.Equal(3, stmts.Count);
 
 		AssignStmt opcode = Assert.IsType<AssignStmt>(stmts[0]);
@@ -545,16 +546,16 @@ public class ModuleTests
 		AssignStmt word = Assert.IsType<AssignStmt>(stmts[2]);
 		ConcatExpr concat = Assert.IsType<ConcatExpr>(word.Expr);
 		Assert.Equal(2, concat.Exprs.Length);
-		Assert.IsType<SliceExpr>(concat.Exprs[0]);
-		Assert.IsType<SliceExpr>(concat.Exprs[1]);
+		_ = Assert.IsType<SliceExpr>(concat.Exprs[0]);
+		_ = Assert.IsType<SliceExpr>(concat.Exprs[1]);
 	}
 
 	[Fact]
-	public void TestDecodeSliceConcatModuleEmitter_EmitsPartSelectAndConcat()
+	public void TestDecodeSliceConcatModuleEmitterEmitsPartSelectAndConcat()
 	{
 		DecodeSliceConcat mod = new();
 		mod.Describe();
-		var verilog = VerilogEmitter.Emitter(mod, nameof(DecodeSliceConcat));
+		string verilog = VerilogEmitter.Emitter(mod, nameof(DecodeSliceConcat));
 
 		const string expected =
 			"module DecodeSliceConcat(\n" +
@@ -572,25 +573,25 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestSignExtend_GetWidth_IsTarget()
+	public void TestSignExtendGetWidthIsTarget()
 	{
 		In b = In.UInt(8, "b");
 		Assert.Equal(32u, b.SignExtend(32).GetWidth());
 	}
 
 	[Fact]
-	public void TestZeroExtend_GetWidth_IsTarget()
+	public void TestZeroExtendGetWidthIsTarget()
 	{
 		In b = In.UInt(8, "b");
 		Assert.Equal(32u, b.ZeroExtend(32).GetWidth());
 	}
 
 	[Fact]
-	public void TestExtend_Shrink_Throws()
+	public void TestExtendShrinkThrows()
 	{
 		BadExtendWidthModule module = new();
-		Assert.Throws<WidthMismatchException>(module.DescribeSignShrink);
-		Assert.Throws<WidthMismatchException>(module.DescribeZeroShrink);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeSignShrink);
+		_ = Assert.Throws<WidthMismatchException>(module.DescribeZeroShrink);
 	}
 
 	[Fact]
@@ -598,7 +599,7 @@ public class ModuleTests
 	{
 		ExtendPass mod = new();
 		mod.Describe();
-		List<Stmt> stmts = mod.GetStmts().ToList();
+		List<Stmt> stmts = [.. mod.GetStmts()];
 		Assert.Equal(2, stmts.Count);
 
 		AssignStmt signed = Assert.IsType<AssignStmt>(stmts[0]);
@@ -613,11 +614,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestExtendPassModuleEmitter_EmitsReplication()
+	public void TestExtendPassModuleEmitterEmitsReplication()
 	{
 		ExtendPass mod = new();
 		mod.Describe();
-		var verilog = VerilogEmitter.Emitter(mod, nameof(ExtendPass));
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ExtendPass));
 
 		const string expected =
 			"module ExtendPass(\n" +
@@ -633,11 +634,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestIfMuxCombModuleEmitter_EmitsAlwaysIfElse()
+	public void TestIfMuxCombModuleEmitterEmitsAlwaysIfElse()
 	{
 		IfMuxComb mod = new();
 		mod.Describe();
-		var verilog = VerilogEmitter.Emitter(mod, nameof(IfMuxComb));
+		string verilog = VerilogEmitter.Emitter(mod, nameof(IfMuxComb));
 
 		Assert.Contains("output reg [7:0] Y", verilog, StringComparison.Ordinal);
 		Assert.DoesNotContain("output wire [7:0] Y", verilog, StringComparison.Ordinal);
@@ -649,11 +650,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestIfThenOnlyCombModuleEmitter_OmitsElse()
+	public void TestIfThenOnlyCombModuleEmitterOmitsElse()
 	{
 		IfThenOnlyComb mod = new();
 		mod.Describe();
-		var verilog = VerilogEmitter.Emitter(mod, nameof(IfThenOnlyComb));
+		string verilog = VerilogEmitter.Emitter(mod, nameof(IfThenOnlyComb));
 
 		Assert.Contains("output reg [7:0] Y", verilog, StringComparison.Ordinal);
 		Assert.DoesNotContain("output wire [7:0] Y", verilog, StringComparison.Ordinal);
@@ -664,11 +665,11 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestConstCombModuleEmitter_EmitsSizedDecimals()
+	public void TestConstCombModuleEmitterEmitsSizedDecimals()
 	{
 		ConstComb mod = new();
 		mod.Describe();
-		var verilog = VerilogEmitter.Emitter(mod, nameof(ConstComb));
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ConstComb));
 
 		Assert.Contains("8'd5", verilog, StringComparison.Ordinal);
 		Assert.Contains("8'd10", verilog, StringComparison.Ordinal);

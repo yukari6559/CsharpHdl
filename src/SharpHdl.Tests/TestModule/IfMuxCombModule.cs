@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 public sealed class IfMuxComb : Module
 {
 	public In SelA { get; } = In.UInt(8, "SelA");

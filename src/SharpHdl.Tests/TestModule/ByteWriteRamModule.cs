@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>T2d: 1R1W + バイトイネーブル（width 32 / wstrb 4）。</summary>
 public sealed class ByteWriteRam : Module
 {

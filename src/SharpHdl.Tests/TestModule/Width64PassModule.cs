@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>T2a: 幅 64 が UInt パラメータで自然に書けることの確認用。</summary>
 public sealed class Width64Pass : Module
 {

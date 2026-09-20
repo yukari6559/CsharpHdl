@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 public sealed class BadSwitchEmitModule : Module
 {
 	public In Op { get; } = In.UInt(2, "Op");
@@ -21,7 +23,8 @@ public sealed class BadSwitchEmitModule : Module
 	public void DescribeEmptyCaseBody()
 	{
 		Comb(() => Switch(Op,
-			(0, () => { }),
+			(0, () => { }
+		),
 			(1, () => Y.Assign(A))));
 	}
 
@@ -32,7 +35,8 @@ public sealed class BadSwitchEmitModule : Module
 			{
 				Y.Assign(A);
 				Y.Assign(B);
-			}),
+			}
+		),
 			(1, () => Y.Assign(A))));
 	}
 

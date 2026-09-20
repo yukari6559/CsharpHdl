@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 public sealed class SimpleRam : Module
 {
 	public In Clk { get; } = In.UInt(1, "clk");

@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>T2e: 8→32 の SignExtend / ZeroExtend。</summary>
 public sealed class ExtendPass : Module
 {

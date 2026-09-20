@@ -3,70 +3,67 @@ namespace SharpHdl.Core.Model;
 public static class CurrentWrite
 {
 	[ThreadStatic]
-	public static List<CurrentWriteData>? CurrentWriteDatas;
+	private static List<CurrentWriteData>? CurrentWriteDatas;
 	public static Module? CurrentModule
 	{
-		get
-		{
-			if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-				return null;
-			return CurrentWriteDatas[^1]._CurrentModule;
-		}
+		get => CurrentWriteDatas == null || CurrentWriteDatas.Count == 0 ? null : CurrentWriteDatas[^1].CurrentModule;
 		set
 		{
-			if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-				throw new Exception();
-			CurrentWriteDatas![^1]._CurrentModule = value;
+			if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
+			{
+				throw new InvalidOperationException();
+			}
+
+			CurrentWriteDatas[^1].CurrentModule = value;
 		}
 	}
 	public static List<Stmt>? CurrentStmts
 	{
-		get
-		{
-			if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-				return null;
-			return CurrentWriteDatas[^1]._CurrentStmts;
-		}
+		get => CurrentWriteDatas == null || CurrentWriteDatas.Count == 0 ? null : CurrentWriteDatas[^1].CurrentStmts;
 		set
 		{
-			if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-				throw new Exception();
-			CurrentWriteDatas![^1]._CurrentStmts = value;
+			if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
+			{
+				throw new InvalidOperationException();
+			}
+
+			CurrentWriteDatas[^1].CurrentStmts = value;
 		}
 	}
 	public static ModuleType? ModuleType
 	{
-		get
-		{
-			if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-				return null;
-			return CurrentWriteDatas[^1]._ModuleType;
-		}
+		get => CurrentWriteDatas == null || CurrentWriteDatas.Count == 0 ? null : CurrentWriteDatas[^1].ModuleType;
 		set
 		{
-			if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-				throw new Exception();
-			CurrentWriteDatas![^1]._ModuleType = value;
+			if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
+			{
+				throw new InvalidOperationException();
+			}
+
+			CurrentWriteDatas[^1].ModuleType = value;
 		}
 	}
 	public static void Push(Module module, List<Stmt> stmts, ModuleType moduleType)
 	{
-		CurrentWriteDatas ??= new();
-		CurrentWriteDatas.Add(new CurrentWriteData{_CurrentModule = module, _CurrentStmts = stmts, _ModuleType = moduleType});
+		CurrentWriteDatas ??= [];
+		CurrentWriteDatas.Add(new CurrentWriteData { CurrentModule = module, CurrentStmts = stmts, ModuleType = moduleType });
 	}
 	public static void Pop()
 	{
-		if(CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
-			throw new Exception();
+		if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
+		{
+			throw new InvalidOperationException();
+		}
+
 		CurrentWriteDatas.RemoveAt(CurrentWriteDatas.Count - 1);
 	}
 }
 
 public class CurrentWriteData
 {
-	public Module? _CurrentModule{get;set;}
-	public List<Stmt>? _CurrentStmts{get;set;}
-	public ModuleType? _ModuleType{get;set;}
+	public Module? CurrentModule { get; set; }
+	public List<Stmt>? CurrentStmts { get; set; }
+	public ModuleType? ModuleType { get; set; }
 }
 
 public enum ModuleType

@@ -1,5 +1,7 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 /// <summary>2R1W Mem の幅不一致確認用。</summary>
 public sealed class BadMem2R1WWidthModule : Module
 {

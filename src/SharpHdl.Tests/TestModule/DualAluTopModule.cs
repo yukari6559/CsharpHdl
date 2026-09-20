@@ -1,9 +1,11 @@
 using SharpHdl.Core.Model;
 
+namespace SharpHdl.Tests.TestModule;
+
 public sealed class DualAluTop : Module
 {
-	readonly Alu _alu0 = new();
-	readonly Alu _alu1 = new();
+	private readonly Alu _alu0 = new();
+	private readonly Alu _alu1 = new();
 
 	public In A0 { get; } = In.UInt(32, "A0");
 	public In B0 { get; } = In.UInt(32, "B0");
