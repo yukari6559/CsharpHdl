@@ -1,0 +1,6 @@
+{
+  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
+  "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
+  "dotnet.diagnostics.reportInformationAsHint": false,
+  "editor.showUnused": true
+}
