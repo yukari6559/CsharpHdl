@@ -58,20 +58,24 @@ public class Module
 
 	public void Switch(In op, params (uint value, Action action)[] casesParam)
 	{
-		CurrentWrite.CurrentModule = this;
-		CurrentWrite.CurrentStmts = Stmts;
-		List<Stmt> parent = CurrentWrite.CurrentStmts;
+		List<Stmt> parent = CurrentWrite.CurrentStmts!;
 		List<Case> cases = new();
-		foreach(var (value,action) in casesParam)
+		try
 		{
-			List<Stmt> branchstmts = new ();
-			cases.Add(new Case(value, branchstmts));
-			CurrentWrite.CurrentStmts = branchstmts;
-			action.Invoke();
+			foreach(var (value,action) in casesParam)
+			{
+				List<Stmt> branchstmts = new ();
+				cases.Add(new Case(value, branchstmts));
+				CurrentWrite.CurrentStmts = branchstmts;
+				action.Invoke();
+				CurrentWrite.CurrentStmts = parent;
+			}
+			parent.Add(new SwitchStmt(op,cases));
+		}
+		finally
+		{
 			CurrentWrite.CurrentStmts = parent;
 		}
-		parent.Add(new SwitchStmt(op,cases));
-		CurrentWrite.CurrentStmts = Stmts;
 	}
 
 	public void Instance(Module childModule, string instanceName, params (Signal ChildPort, Signal parentSignal)[] connections)
