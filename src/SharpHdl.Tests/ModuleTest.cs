@@ -314,6 +314,7 @@ public class ModuleTests
 		Assert.Equal(ram.Addr, mem.Addr);
 		Assert.Equal(ram.Wdata, mem.Wdata);
 		Assert.Equal(ram.Rdata, mem.Rdata);
+		Assert.Null(mem.Name);
 	}
 
 	[Fact]
@@ -331,14 +332,29 @@ public class ModuleTests
 			"\tinput wire [31:0] wdata,\n" +
 			"\toutput reg [31:0] rdata\n" +
 			");\n" +
-			"reg [31:0] mem [0:255];\n" +
+			"reg [31:0] mem_rdata [0:255];\n" +
 			"always @(posedge clk) begin\n" +
-			"\tif (we) mem[addr] <= wdata;\n" +
-			"\trdata <= mem[addr];\n" +
+			"\tif (we) mem_rdata[addr] <= wdata;\n" +
+			"\trdata <= mem_rdata[addr];\n" +
 			"end\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestNamedSimpleRamModuleEmitter_UsesExplicitArrayName()
+	{
+		NamedSimpleRam ram = new();
+		ram.Describe();
+		var mem = Assert.IsType<MemStmt>(Assert.Single(ram.GetStmts()));
+		Assert.Equal("dmem", mem.Name);
+
+		var verilog = VerilogEmitter.Emitter(ram, nameof(NamedSimpleRam));
+		Assert.Contains("reg [31:0] dmem [0:255];", verilog, StringComparison.Ordinal);
+		Assert.Contains("dmem[addr] <= wdata;", verilog, StringComparison.Ordinal);
+		Assert.Contains("rdata <= dmem[addr];", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("mem_rdata", verilog, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -358,6 +374,7 @@ public class ModuleTests
 		Assert.Equal(ram.Addr, mem.Addr);
 		Assert.Equal(ram.Wdata, mem.Wdata);
 		Assert.Equal(ram.Rdata, mem.Rdata);
+		Assert.Null(mem.Name);
 	}
 
 	[Fact]
@@ -376,15 +393,15 @@ public class ModuleTests
 			"\tinput wire [31:0] wdata,\n" +
 			"\toutput reg [31:0] rdata\n" +
 			");\n" +
-			"reg [31:0] mem [0:255];\n" +
+			"reg [31:0] mem_rdata [0:255];\n" +
 			"always @(posedge clk) begin\n" +
 			"\tif (we) begin\n" +
-			"\t\tif (wstrb[0]) mem[addr][7:0] <= wdata[7:0];\n" +
-			"\t\tif (wstrb[1]) mem[addr][15:8] <= wdata[15:8];\n" +
-			"\t\tif (wstrb[2]) mem[addr][23:16] <= wdata[23:16];\n" +
-			"\t\tif (wstrb[3]) mem[addr][31:24] <= wdata[31:24];\n" +
+			"\t\tif (wstrb[0]) mem_rdata[addr][7:0] <= wdata[7:0];\n" +
+			"\t\tif (wstrb[1]) mem_rdata[addr][15:8] <= wdata[15:8];\n" +
+			"\t\tif (wstrb[2]) mem_rdata[addr][23:16] <= wdata[23:16];\n" +
+			"\t\tif (wstrb[3]) mem_rdata[addr][31:24] <= wdata[31:24];\n" +
 			"\tend\n" +
-			"\trdata <= mem[addr];\n" +
+			"\trdata <= mem_rdata[addr];\n" +
 			"end\n" +
 			"endmodule";
 
@@ -417,6 +434,7 @@ public class ModuleTests
 		Assert.Equal(rf.Rdata0, mem.Rdata0);
 		Assert.Equal(rf.Raddr1, mem.Raddr1);
 		Assert.Equal(rf.Rdata1, mem.Rdata1);
+		Assert.Null(mem.Name);
 	}
 
 	[Fact]
@@ -437,12 +455,12 @@ public class ModuleTests
 			"\tinput wire [4:0] raddr1,\n" +
 			"\toutput wire [63:0] rdata1\n" +
 			");\n" +
-			"reg [63:0] mem [0:31];\n" +
+			"reg [63:0] mem_rdata0 [0:31];\n" +
 			"always @(posedge clk) begin\n" +
-			"\tif (we) mem[waddr] <= wdata;\n" +
+			"\tif (we) mem_rdata0[waddr] <= wdata;\n" +
 			"end\n" +
-			"assign rdata0 = mem[raddr0];\n" +
-			"assign rdata1 = mem[raddr1];\n" +
+			"assign rdata0 = mem_rdata0[raddr0];\n" +
+			"assign rdata1 = mem_rdata0[raddr1];\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);
