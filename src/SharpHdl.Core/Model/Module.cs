@@ -84,24 +84,24 @@ public class Module
 		Stmts.Add(new InstanceStmt(childModule, instanceName, portConnections));
 	}
 
-	public void Mem(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata)
+	public void Mem(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata, string? name = null)
 	{
 		if (!(we.Width == 1) || !(wdata.Width == width) || !(rdata.Width == width) || !(depth >= 1) || !(addr.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(clk.Width == 1))
 			throw new WidthMismatchException();
-		Stmts.Add(new MemStmt(clk, depth, width, we, addr, wdata, rdata));
+		Stmts.Add(new MemStmt(clk, depth, width, we, addr, wdata, rdata, name));
 	}
 
-	public void Mem(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1)
+	public void Mem(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1, string? name = null)
 	{
 		if (!(we.Width == 1) || !(wdata.Width == width) || !(rdata0.Width == width) || !(rdata1.Width == width) || !(depth >= 1) || !(raddr0.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(raddr1.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(waddr.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(clk.Width == 1))
 			throw new WidthMismatchException();
-		Stmts.Add(new Mem2R1WStmt(clk, depth, width, we, waddr, wdata, raddr0, rdata0, raddr1, rdata1));
+		Stmts.Add(new Mem2R1WStmt(clk, depth, width, we, waddr, wdata, raddr0, rdata0, raddr1, rdata1, name));
 	}
-	public void Mem(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata)
+	public void Mem(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata, string? name = null)
 	{
 		if (!(we.Width == 1) || !(width % 8 == 0) || !(wstrb.Width == width / 8) || !(wdata.Width == width) || !(rdata.Width == width) || !(depth >= 1) || !(addr.Width == (int)Math.Ceiling(Math.Log(depth, 2))) || !(clk.Width == 1))
 			throw new WidthMismatchException();
-		Stmts.Add(new MemWstrbStmt(clk, depth, width, we, wstrb, addr, wdata, rdata));
+		Stmts.Add(new MemWstrbStmt(clk, depth, width, we, wstrb, addr, wdata, rdata, name));
 	}
 	public void If(Expr cond, Action then, Action? @else = null)
 	{

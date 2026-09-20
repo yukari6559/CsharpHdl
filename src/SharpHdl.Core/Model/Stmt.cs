@@ -85,7 +85,8 @@ public class MemStmt : Stmt
 	public In Addr{get; private set;}
 	public In Wdata{get; private set;}
 	public Out Rdata{get; private set;}
-	public MemStmt(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata)
+	public string? Name{get; private set;}
+	public MemStmt(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata, string? name)
 	{
 		Clk = clk;
 		Depth = depth;
@@ -94,6 +95,7 @@ public class MemStmt : Stmt
 		Addr = addr;
 		Wdata = wdata;
 		Rdata = rdata;
+		Name = name;
 	}
 }
 
@@ -109,7 +111,8 @@ public class Mem2R1WStmt : Stmt
 	public Out Rdata0{get; private set;}
 	public In Raddr1{get; private set;}
 	public Out Rdata1{get; private set;}
-	public Mem2R1WStmt(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1)
+	public string? Name{get; private set;}
+	public Mem2R1WStmt(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1, string? name)
 	{
 		Clk = clk;
 		Depth = depth;
@@ -121,6 +124,7 @@ public class Mem2R1WStmt : Stmt
 		Rdata0 = rdata0;
 		Raddr1 = raddr1;
 		Rdata1 = rdata1;
+		Name = name;
 	}
 }
 
@@ -134,7 +138,8 @@ public class MemWstrbStmt : Stmt
 	public In Addr{get;private set;}
 	public In Wdata{get;private set;}
 	public Out Rdata{get;private set;}
-	public MemWstrbStmt(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata)
+	public string? Name{get; private set;}
+	public MemWstrbStmt(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata, string? name)
 	{
 		Clk = clk;
 		Depth = depth;
@@ -144,6 +149,7 @@ public class MemWstrbStmt : Stmt
 		Addr = addr;
 		Wdata = wdata;
 		Rdata = rdata;
+		Name = name;
 	}
 }
 
