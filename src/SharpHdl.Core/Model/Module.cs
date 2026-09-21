@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using SharpHdl.Core.Exceptions;
 
 namespace SharpHdl.Core.Model;
 

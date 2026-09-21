@@ -1,3 +1,5 @@
+using SharpHdl.Core.Exceptions;
+
 namespace SharpHdl.Core.Model;
 
 public abstract class Expr

@@ -1,3 +1,4 @@
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Emit;
 using SharpHdl.Tests.TestModule;
@@ -120,7 +121,7 @@ public class ModuleTests
 	public void TestSeqAssignOutsideSeqThrows()
 	{
 		Counter counter = new();
-		_ = Assert.Throws<InvalidOperationException>(() => counter.Count.Assign(0, counter.Count));
+		_ = Assert.Throws<DescribeContextException>(() => counter.Count.Assign(0, counter.Count));
 	}
 
 	[Fact]
@@ -207,7 +208,7 @@ public class ModuleTests
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeEmptyCases();
-		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		EmitException ex = Assert.Throws<EmitException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("Cases must not be empty", ex.Message, StringComparison.Ordinal);
 	}
 
@@ -216,7 +217,7 @@ public class ModuleTests
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeEmptyCaseBody();
-		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		EmitException ex = Assert.Throws<EmitException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("exactly one statement", ex.Message, StringComparison.Ordinal);
 	}
 
@@ -225,7 +226,7 @@ public class ModuleTests
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeMultiAssignCase();
-		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		EmitException ex = Assert.Throws<EmitException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("exactly one statement", ex.Message, StringComparison.Ordinal);
 	}
 
@@ -234,7 +235,7 @@ public class ModuleTests
 	{
 		BadSwitchEmitModule module = new();
 		module.DescribeSignalMismatch();
-		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
+		EmitException ex = Assert.Throws<EmitException>(() => VerilogEmitter.Emitter(module, nameof(BadSwitchEmitModule)));
 		Assert.Contains("same signal", ex.Message, StringComparison.Ordinal);
 	}
 

@@ -1,3 +1,4 @@
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Sim;
 using SharpHdl.Tests.TestModule;
 
@@ -227,7 +228,7 @@ public class CircuitSimTests
 		c.Set(c.Module.Rst, 0);
 		c.Set(c.Module.Step, 1);
 
-		_ = Assert.Throws<InvalidOperationException>(() =>
+		_ = Assert.Throws<SimException>(() =>
 			c.AdvanceWhile(c.Module.Clk, 3, s => s.Get(s.Module.Count) != 100));
 	}
 

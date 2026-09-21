@@ -1,3 +1,5 @@
+using SharpHdl.Core.Exceptions;
+
 namespace SharpHdl.Core.Model;
 
 public static class CurrentWrite
@@ -11,7 +13,7 @@ public static class CurrentWrite
 		{
 			if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
 			{
-				throw new InvalidOperationException();
+				throw new DescribeContextException();
 			}
 
 			CurrentWriteDatas[^1].CurrentModule = value;
@@ -24,7 +26,7 @@ public static class CurrentWrite
 		{
 			if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
 			{
-				throw new InvalidOperationException();
+				throw new DescribeContextException();
 			}
 
 			CurrentWriteDatas[^1].CurrentStmts = value;
@@ -37,7 +39,7 @@ public static class CurrentWrite
 		{
 			if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
 			{
-				throw new InvalidOperationException();
+				throw new DescribeContextException();
 			}
 
 			CurrentWriteDatas[^1].ModuleType = value;
@@ -52,7 +54,7 @@ public static class CurrentWrite
 	{
 		if (CurrentWriteDatas == null || CurrentWriteDatas.Count == 0)
 		{
-			throw new InvalidOperationException();
+			throw new DescribeContextException();
 		}
 
 		CurrentWriteDatas.RemoveAt(CurrentWriteDatas.Count - 1);

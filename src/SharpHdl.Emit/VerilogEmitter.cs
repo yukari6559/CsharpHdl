@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 
 namespace SharpHdl.Emit;
@@ -87,7 +88,7 @@ public static class VerilogEmitter
 		}
 		else
 		{
-			throw new InvalidOperationException();
+			throw new EmitException();
 		}
 	}
 
@@ -257,25 +258,25 @@ public static class VerilogEmitter
 				AssignStmt assignStmt;
 				if (switchStmt.Cases.Count == 0)
 				{
-					throw new InvalidOperationException("Switch emit: Cases must not be empty.");
+					throw new EmitException("Switch emit: Cases must not be empty.");
 				}
 
 				for (int i = 0; i < switchStmt.Cases.Count; i++)
 				{
 					if (switchStmt.Cases[i].Stmts.Count != 1)
 					{
-						throw new InvalidOperationException($"Switch emit: case {i} (value {switchStmt.Cases[i].Value}) must contain exactly one statement, got {switchStmt.Cases[i].Stmts.Count}.");
+						throw new EmitException($"Switch emit: case {i} (value {switchStmt.Cases[i].Value}) must contain exactly one statement, got {switchStmt.Cases[i].Stmts.Count}.");
 					}
 
 					if (switchStmt.Cases[i].Stmts[0] is not AssignStmt)
 					{
-						throw new InvalidOperationException($"Switch emit: case {i} (value {switchStmt.Cases[i].Value}) must be a single AssignStmt.");
+						throw new EmitException($"Switch emit: case {i} (value {switchStmt.Cases[i].Value}) must be a single AssignStmt.");
 					}
 
 					assignStmt = (AssignStmt)switchStmt.Cases[i].Stmts[0];
 					if (i != 0 && beforeSignal != assignStmt.Signal)
 					{
-						throw new InvalidOperationException($"Switch emit: all cases must assign the same signal (case 0: {beforeSignal!.Name}, case {i}: {assignStmt.Signal.Name}).");
+						throw new EmitException($"Switch emit: all cases must assign the same signal (case 0: {beforeSignal!.Name}, case {i}: {assignStmt.Signal.Name}).");
 					}
 					else if (i == 0)
 					{
@@ -300,7 +301,7 @@ public static class VerilogEmitter
 				{
 					_ = thenItem is AssignStmt assignStmt
 						? verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t{assignStmt.Signal.Name} = {EmitExpr(assignStmt.Expr)};\n")
-						: throw new NotSupportedException();
+						: throw new EmitException();
 				}
 				_ = verilogsb.Append("\tend\n");
 				if (ifStmt.Else != null)
@@ -310,7 +311,7 @@ public static class VerilogEmitter
 					{
 						_ = elseItem is AssignStmt assignStmt
 							? verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t{assignStmt.Signal.Name} = {EmitExpr(assignStmt.Expr)};\n")
-							: throw new NotSupportedException();
+							: throw new EmitException();
 					}
 					_ = verilogsb.Append("\tend\n");
 				}

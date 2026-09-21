@@ -1,3 +1,4 @@
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Sim.Interp;
 using SharpHdl.Sim.Runtime;
@@ -32,7 +33,7 @@ public class SimSession<T> where T : Module
 		{
 			if (maxCycles <= count)
 			{
-				throw new InvalidOperationException("Max cycles exceeded");
+				throw new SimException("Max cycles exceeded");
 			}
 
 			Advance(clk);
@@ -51,7 +52,7 @@ public class SimSession<T> where T : Module
 		_ = SimWorld.MemState.TryGetValue(keySignal, out ulong[]? currentMem);
 		if (currentMem == null)
 		{
-			throw new InvalidOperationException();
+			throw new SimException();
 		}
 
 		if (keySignal.Width % 8 != 0)
@@ -85,7 +86,7 @@ public class SimSession<T> where T : Module
 		_ = SimWorld.MemState.TryGetValue(keySignal, out ulong[]? value);
 		if (value == null)
 		{
-			throw new InvalidOperationException();
+			throw new SimException();
 		}
 
 		if (words.Length > value.Length)
@@ -102,7 +103,7 @@ public class SimSession<T> where T : Module
 	{
 		_ = SimWorld.MemState.TryGetValue(keySignal, out ulong[]? value);
 		return value == null
-			? throw new InvalidOperationException()
+			? throw new SimException()
 			: index < 0 || index >= value.Length ? throw new WidthMismatchException() : value[index];
 	}
 	public void PokeMem(Signal keySignal, int index, ulong value)
@@ -110,12 +111,12 @@ public class SimSession<T> where T : Module
 		_ = SimWorld.MemState.TryGetValue(keySignal, out ulong[]? currentValue);
 		if (currentValue == null)
 		{
-			throw new InvalidOperationException();
+			throw new SimException();
 		}
 
 		if (index < 0 || index >= currentValue.Length)
 		{
-			throw new WidthMismatchException();
+			throw new SimException();
 		}
 
 		currentValue[index] = value & BitUtils.MakeMaskBit(keySignal.Width);

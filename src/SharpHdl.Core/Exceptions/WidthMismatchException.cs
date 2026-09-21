@@ -1,4 +1,4 @@
-namespace SharpHdl.Core.Model;
+namespace SharpHdl.Core.Exceptions;
 
 public class WidthMismatchException : Exception
 {

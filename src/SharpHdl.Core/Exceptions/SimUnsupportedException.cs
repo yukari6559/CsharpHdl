@@ -1,4 +1,4 @@
-namespace SharpHdl.Sim;
+namespace SharpHdl.Core.Exceptions;
 
 public class SimUnsupportedException : Exception
 {
