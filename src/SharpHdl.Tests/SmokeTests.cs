@@ -1,5 +1,6 @@
 using SharpHdl.Core;
 using SharpHdl.Emit;
+using SharpHdl.Tests.TestModule;
 
 namespace SharpHdl.Tests;
 
@@ -12,10 +13,13 @@ public class SmokeTests
 	}
 
 	[Fact]
-	public void EmitPlaceholderContainsModule()
+	public void EmitRealModuleContainsModuleAndEndmodule()
 	{
-		string verilog = VerilogEmitter.EmitPlaceholder("Alu");
-		Assert.Contains("module Alu", verilog);
-		Assert.Contains("endmodule", verilog);
+		TestModule1 mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(TestModule1));
+		Assert.Contains("module TestModule1", verilog, StringComparison.Ordinal);
+		Assert.Contains("endmodule", verilog, StringComparison.Ordinal);
+		Assert.Contains("assign Output = Input", verilog, StringComparison.Ordinal);
 	}
 }
