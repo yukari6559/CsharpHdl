@@ -1,3 +1,4 @@
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 
 namespace SharpHdl.Sim.Runtime;

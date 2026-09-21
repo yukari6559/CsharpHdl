@@ -1,3 +1,5 @@
+using SharpHdl.Core.Exceptions;
+
 namespace SharpHdl.Core.Model;
 
 public enum SignalDirection
@@ -28,7 +30,7 @@ public class Signal : Expr
 		AssignStmt assignStmt = new(this, expr);
 		if (CurrentWrite.CurrentStmts == null)
 		{
-			throw new InvalidOperationException();
+			throw new DescribeContextException();
 		}
 
 		if (CurrentWrite.ModuleType == ModuleType.Comb)
@@ -37,7 +39,7 @@ public class Signal : Expr
 		}
 		else
 		{
-			throw new InvalidOperationException();
+			throw new DescribeContextException();
 		}
 	}
 
@@ -51,7 +53,7 @@ public class Signal : Expr
 		SeqAssignStmt assignStmt = new(this, next, resetValue);
 		if (CurrentWrite.CurrentStmts == null)
 		{
-			throw new InvalidOperationException();
+			throw new DescribeContextException();
 		}
 
 		if (CurrentWrite.ModuleType == ModuleType.Seq)
@@ -60,7 +62,7 @@ public class Signal : Expr
 		}
 		else
 		{
-			throw new InvalidOperationException();
+			throw new DescribeContextException();
 		}
 	}
 	public override uint GetWidth()
