@@ -1,5 +1,6 @@
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
+using SharpHdl.Core.Validate;
 using SharpHdl.Sim.Interp;
 
 namespace SharpHdl.Sim;
@@ -10,6 +11,7 @@ public static class ModuleSimExtensions
 	{
 		SimSession<T> simSession = new() { Module = module };
 		module.Describe();
+		CheckMultiDrive.Check([.. module.GetStmts()]);
 		simSession.SimWorld = ModuleFlat.Build(module);
 		foreach (Stmt stmt in module.GetStmts())
 		{
