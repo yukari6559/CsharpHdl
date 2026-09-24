@@ -27,6 +27,20 @@ public class CircuitSimTests
 		Assert.Equal(5u, c.Get(c.Module.Count));
 	}
 
+	[Fact]
+	public void SeqResetUlongResetsAboveUintMax()
+	{
+		SimSession<SeqResetUlong> s = new SeqResetUlong().Run();
+
+		s.Set(s.Module.Rst, 1);
+		s.Advance(s.Module.Clk);
+		Assert.Equal(0x1_0000_0000UL, s.Get(s.Module.Q));
+
+		s.Set(s.Module.Rst, 0);
+		s.Advance(s.Module.Clk);
+		Assert.Equal(0x1_0000_0001UL, s.Get(s.Module.Q));
+	}
+
 	[Theory]
 	[InlineData(0u, 1u, 2u, 3u)]
 	[InlineData(1u, 5u, 3u, 2u)]

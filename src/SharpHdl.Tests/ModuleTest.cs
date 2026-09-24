@@ -133,11 +133,50 @@ public class ModuleTests
 
 		SeqAssignStmt assign = (SeqAssignStmt)block.Body[0];
 		Assert.Equal(counter.Count, assign.Signal);
-		Assert.Equal(0u, assign.ResetValue);
+		Assert.Equal(0ul, assign.ResetValue);
 		OpExpr expr = (OpExpr)assign.Expr;
 		Assert.Equal(Op.Plus, expr.Op);
 		Assert.Equal(counter.Count, expr.Left);
 		Assert.Equal(counter.Step, expr.Right);
+	}
+
+	[Fact]
+	public void TestSeqResetUlongStoresUlongResetValue()
+	{
+		SeqResetUlong mod = new();
+		mod.Describe();
+		List<Stmt> stmts = [.. mod.GetStmts()];
+
+		_ = Assert.Single(stmts);
+		SeqBlockStmt block = (SeqBlockStmt)stmts[0];
+		SeqAssignStmt assign = (SeqAssignStmt)Assert.Single(block.Body);
+		Assert.Equal(mod.Q, assign.Signal);
+		Assert.Equal(0x1_0000_0000UL, assign.ResetValue);
+	}
+
+	[Fact]
+	public void TestSeqResetUlongEmitterEmitsWideDecimal()
+	{
+		SeqResetUlong mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(SeqResetUlong));
+
+		const string expected =
+			"module SeqResetUlong(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire rst,\n" +
+			"\toutput reg [63:0] q\n" +
+			");\n" +
+			"\talways @(posedge clk) begin\n" +
+			"\t\tif (rst) begin\n" +
+			"\t\t\tq <= 64'd4294967296;\n" +
+			"\t\tend else begin\n" +
+			"\t\t\tq <= q + 64'd1;\n" +
+			"\t\tend\n" +
+			"\tend\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
 	}
 
 	[Fact]
