@@ -59,7 +59,7 @@ public class Module
 	}
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:メンバーを static に設定します", Justification = "<保留中>")]
-	public void Switch(In op, params (uint value, Action action)[] casesParam)
+	public void Switch(Expr op, params (uint value, Action action)[] casesParam)
 	{
 		List<Stmt> parent = CurrentWrite.CurrentStmts!;
 		List<Case> cases = [];

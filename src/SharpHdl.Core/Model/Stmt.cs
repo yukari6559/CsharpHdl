@@ -17,9 +17,9 @@ public class AssignStmt(Signal signal, Expr expr) : Stmt
 	public Expr Expr { get; private set; } = expr;
 }
 
-public class SwitchStmt(Signal signal, List<Case> cases) : Stmt
+public class SwitchStmt(Expr expr, List<Case> cases) : Stmt
 {
-	public Signal Signal { get; private set; } = signal;
+	public Expr Expr { get; private set; } = expr;
 	public List<Case> Cases { get; private set; } = cases;
 }
 

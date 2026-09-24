@@ -43,6 +43,20 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0u, 10u)]
+	[InlineData(1u, 20u)]
+	[InlineData(2u, 30u)]
+	[InlineData(3u, 40u)]
+	[InlineData(5u, 20u)]
+	public void SwitchSliceSelSelectsByLowBits(uint instr, uint expected)
+	{
+		SimSession<SwitchSliceSel> m = new SwitchSliceSel().Run();
+		m.Set(m.Module.Instr, instr);
+		m.Settle();
+		Assert.Equal(expected, m.Get(m.Module.Y));
+	}
+
+	[Theory]
 	[InlineData(0u, 1u, 2u, 3u)]
 	[InlineData(1u, 5u, 3u, 2u)]
 	[InlineData(2u, 0xFFu, 0x0Fu, 0x0Fu)]

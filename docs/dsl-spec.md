@@ -73,7 +73,7 @@ public sealed class Alu : Module
 | 構文 | 意味 |
 |------|------|
 | `If` / `Else` | 述語分岐（`Eq` や比較など）。`If(cond, then: …, @else: …)`（`@else` 省略可） |
-| `Switch` / `Case` | セレクタと**定数**ケースの多分岐 |
+| `Switch` / `Case` | **セレクタは `Expr`**（`In`/`Signal`/Slice など）と**定数**ケースの多分岐 |
 | 比較 | `Eq`/`Neq` メソッドと `< <= > >=`（結果 1 bit）。`==`/`!=` は使わない |
 | 算術 `+ -` | ビット演算（幅は左辺などに合わせる実装） |
 | 論理 `& |` | ビット演算 |
@@ -81,7 +81,8 @@ public sealed class Alu : Module
 | `Concat(...)` | `{a, b, …}`（左が MSB）。結果幅は各幅の和 |
 | `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅 |
 
-**If と Switch:** 定数ラベルの一択（Op など）は `Switch`、真偽・比較の分岐は `If`。  
+**If と Switch:** 定数ラベルの一択（`Op` や `Instr.Slice(...)` など）は `Switch`、真偽・比較の分岐は `If`。  
+`Switch` のセレクタは `Expr`（旧 API の `In` 専用ではない）。case 値は定数のまま。  
 `If` の Emit／Sim は Comb と枝内代入が中心。Emit では上記のとおり Switch と If で Verilog の形が異なる（合成可能な wire/reg 対応）。
 
 スライス・連結・拡張は **右辺向け**。インデックスは定数。幅不一致は例外になります。
