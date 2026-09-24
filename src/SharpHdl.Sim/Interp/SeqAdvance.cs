@@ -1,3 +1,4 @@
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Sim.Runtime;
 
@@ -15,16 +16,30 @@ public class SeqAdvance
 			{
 				if (EvalExpr.Eval(seqBlockStmt.Reset, simWorld) == 1)
 				{
-					foreach (SeqAssignStmt innerStmt in seqBlockStmt.Body.Cast<SeqAssignStmt>())
+					foreach (Stmt innerStmt in seqBlockStmt.Body)
 					{
-						nextValues[innerStmt.Signal] = innerStmt.ResetValue;
+						if (innerStmt is SeqAssignStmt seqAssignStmt)
+						{
+							nextValues[seqAssignStmt.Signal] = seqAssignStmt.ResetValue;
+						}
+						else
+						{
+							throw new SimUnsupportedException();
+						}
 					}
 				}
 				else if (EvalExpr.Eval(seqBlockStmt.Reset, simWorld) == 0)
 				{
-					foreach (SeqAssignStmt innerStmt in seqBlockStmt.Body.Cast<SeqAssignStmt>())
+					foreach (Stmt innerStmt in seqBlockStmt.Body)
 					{
-						nextValues[innerStmt.Signal] = EvalExpr.Eval(innerStmt.Expr, simWorld);
+						if (innerStmt is SeqAssignStmt seqAssignStmt)
+						{
+							nextValues[seqAssignStmt.Signal] = EvalExpr.Eval(seqAssignStmt.Expr, simWorld);
+						}
+						else
+						{
+							throw new SimUnsupportedException();
+						}
 					}
 				}
 			}
