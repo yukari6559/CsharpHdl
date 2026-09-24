@@ -30,11 +30,11 @@ public class SeqBlockStmt(In clk, In reset, List<Stmt> body) : Stmt
 	public List<Stmt> Body { get; private set; } = body;
 }
 
-public class SeqAssignStmt(Signal signal, Expr expr, uint resetValue) : Stmt
+public class SeqAssignStmt(Signal signal, Expr expr, ulong resetValue) : Stmt
 {
 	public Signal Signal { get; private set; } = signal;
 	public Expr Expr { get; private set; } = expr;
-	public uint ResetValue { get; private set; } = resetValue;
+	public ulong ResetValue { get; private set; } = resetValue;
 }
 
 public class InstanceStmt(Module childModule, string instanceName, List<PortConnection> portConnections) : Stmt
