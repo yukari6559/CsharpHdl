@@ -232,6 +232,15 @@ public class CircuitSimTests
 			c.AdvanceWhile(c.Module.Clk, 3, s => s.Get(s.Module.Count) != 100));
 	}
 
+	[Fact]
+	public void SeqAdvanceNonAssignBodyThrowsSimUnsupported()
+	{
+		SimSession<SeqNestedIf> s = new SeqNestedIf().Run();
+		s.Set(s.Module.Rst, 0);
+		s.Set(s.Module.En, 1);
+		_ = Assert.Throws<SimUnsupportedException>(() => s.Advance(s.Module.Clk));
+	}
+
 	[Theory]
 	[InlineData(3u, 3u, 1u, 0u, 0u, 1u, 0u, 1u)]
 	[InlineData(2u, 5u, 0u, 1u, 1u, 1u, 0u, 0u)]
