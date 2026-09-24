@@ -35,6 +35,7 @@ public class ModuleTests
 		alu.Describe();
 		List<Stmt> stmts = [.. alu.GetStmts()];
 		SwitchStmt switchStmt = (SwitchStmt)stmts[0];
+		Assert.Same(alu.Op, switchStmt.Expr);
 		Assert.Equal(4, switchStmt.Cases.Count);
 		Assert.Equal(0u, switchStmt.Cases[0].Value);
 		AssignStmt assignStmt = (AssignStmt)switchStmt.Cases[0].Stmts[0];
@@ -56,6 +57,28 @@ public class ModuleTests
 		Assert.Equal(alu.Y, assignStmt.Signal);
 		opExpr = (OpExpr)assignStmt.Expr;
 		Assert.Equal(Op.Or, opExpr.Op);
+	}
+
+	[Fact]
+	public void TestSwitchSliceSelStoresSliceExpr()
+	{
+		SwitchSliceSel mod = new();
+		mod.Describe();
+		SwitchStmt switchStmt = Assert.IsType<SwitchStmt>(mod.GetStmts()[0]);
+		SliceExpr sel = Assert.IsType<SliceExpr>(switchStmt.Expr);
+		Assert.Equal(1u, sel.MSB);
+		Assert.Equal(0u, sel.LSB);
+		Assert.Same(mod.Instr, sel.Expr);
+	}
+
+	[Fact]
+	public void TestSwitchSliceSelEmitterUsesPartSelect()
+	{
+		SwitchSliceSel mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(SwitchSliceSel));
+		Assert.Contains("Instr[1:0]", verilog, StringComparison.Ordinal);
+		Assert.Contains("2'd0", verilog, StringComparison.Ordinal);
 	}
 
 	[Fact]
