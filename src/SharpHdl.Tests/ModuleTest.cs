@@ -201,6 +201,30 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestDualCombAssignThrowsMultiDrive()
+	{
+		BadMultiDriveModule module = new();
+		module.DescribeDualCombAssign();
+		_ = Assert.Throws<MultiDriveException>(() => VerilogEmitter.Emitter(module, nameof(BadMultiDriveModule)));
+	}
+
+	[Fact]
+	public void TestDualSeqAssignThrowsMultiDrive()
+	{
+		BadMultiDriveModule module = new();
+		module.DescribeDualSeqAssign();
+		_ = Assert.Throws<MultiDriveException>(() => VerilogEmitter.Emitter(module, nameof(BadMultiDriveModule)));
+	}
+
+	[Fact]
+	public void TestAssignAndSwitchThrowsMultiDrive()
+	{
+		BadMultiDriveModule module = new();
+		module.DescribeAssignAndSwitch();
+		_ = Assert.Throws<MultiDriveException>(() => VerilogEmitter.Emitter(module, nameof(BadMultiDriveModule)));
+	}
+
+	[Fact]
 	public void TestCounterModuleEmitterEmitsSeq()
 	{
 		Counter counter = new();

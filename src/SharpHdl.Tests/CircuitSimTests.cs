@@ -41,6 +41,14 @@ public class CircuitSimTests
 		Assert.Equal(0x1_0000_0001UL, s.Get(s.Module.Q));
 	}
 
+	[Fact]
+	public void DualCombAssignRunThrowsMultiDrive()
+	{
+		BadMultiDriveModule module = new();
+		module.DescribeDualCombAssign();
+		_ = Assert.Throws<MultiDriveException>(module.Run);
+	}
+
 	[Theory]
 	[InlineData(0u, 1u, 2u, 3u)]
 	[InlineData(1u, 5u, 3u, 2u)]

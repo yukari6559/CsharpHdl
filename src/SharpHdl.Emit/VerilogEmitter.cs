@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
+using SharpHdl.Core.Validate;
 
 namespace SharpHdl.Emit;
 
@@ -173,6 +174,7 @@ public static class VerilogEmitter
 
 	public static void EmitModuleBody(List<Stmt> stmts, StringBuilder verilogsb)
 	{
+		CheckMultiDrive.Check(stmts);
 		foreach (Stmt item in stmts)
 		{
 			if (item is MemStmt memStmt)
