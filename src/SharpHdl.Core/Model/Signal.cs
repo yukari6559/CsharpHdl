@@ -43,7 +43,7 @@ public class Signal : Expr
 		}
 	}
 
-	public void Assign(uint resetValue, Expr next)
+	public void Assign(ulong resetValue, Expr next)
 	{
 		if (next.GetWidth() != Width)
 		{
