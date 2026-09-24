@@ -275,7 +275,7 @@ public static class VerilogEmitter
 					}
 					else if (i == 0)
 					{
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tassign {assignStmt.Signal.Name} = ({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[0].Value}) ? ({EmitExpr(assignStmt.Expr)}) :\n");
+						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tassign {assignStmt.Signal.Name} = ({EmitExpr(switchStmt.Expr)} == {switchStmt.Expr.GetWidth()}'d{switchStmt.Cases[0].Value}) ? ({EmitExpr(assignStmt.Expr)}) :\n");
 						beforeSignal = assignStmt.Signal;
 						continue;
 					}
@@ -284,7 +284,7 @@ public static class VerilogEmitter
 						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t({EmitExpr(assignStmt.Expr)});\n");
 						break;
 					}
-					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t({switchStmt.Signal.Name} == {switchStmt.Signal.Width}'d{switchStmt.Cases[i].Value}) ? ({EmitExpr(assignStmt.Expr)}) :\n");
+					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t({EmitExpr(switchStmt.Expr)} == {switchStmt.Expr.GetWidth()}'d{switchStmt.Cases[i].Value}) ? ({EmitExpr(assignStmt.Expr)}) :\n");
 					beforeSignal = assignStmt.Signal;
 				}
 			}

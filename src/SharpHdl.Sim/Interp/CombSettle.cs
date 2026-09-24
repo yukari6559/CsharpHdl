@@ -30,7 +30,7 @@ public class CombSettle
 				{
 					foreach (Case caseItem in switchStmt.Cases)
 					{
-						if (EvalExpr.Eval(switchStmt.Signal, simWorld) == caseItem.Value)
+						if (EvalExpr.Eval(switchStmt.Expr, simWorld) == caseItem.Value)
 						{
 							if (Settle(caseItem.Stmts, simWorld))
 							{
