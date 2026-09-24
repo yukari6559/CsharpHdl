@@ -13,39 +13,7 @@ public static class ModuleSimExtensions
 		simSession.SimWorld = ModuleFlat.Build(module);
 		foreach (Stmt stmt in module.GetStmts())
 		{
-			if (stmt is AssignStmt)
-			{
-
-			}
-			else if (stmt is SwitchStmt)
-			{
-
-			}
-			else if (stmt is SeqBlockStmt)
-			{
-
-			}
-			else if (stmt is InstanceStmt)
-			{
-
-			}
-			else if (stmt is MemStmt)
-			{
-
-			}
-			else if (stmt is Mem2R1WStmt mem2R1WStmt)
-			{
-
-			}
-			else if (stmt is MemWstrbStmt memWstrbStmt)
-			{
-
-			}
-			else if (stmt is IfStmt)
-			{
-
-			}
-			else
+			if (!StmtSupport.IsSupportedTopLevel(stmt))
 			{
 				throw new SimUnsupportedException();
 			}
