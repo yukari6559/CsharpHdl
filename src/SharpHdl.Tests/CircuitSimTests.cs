@@ -326,6 +326,22 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0u, 0u, 10u, 20u, 30u, 30u)]
+	[InlineData(1u, 0u, 10u, 20u, 30u, 20u)]
+	[InlineData(1u, 1u, 10u, 20u, 30u, 10u)]
+	public void NestedIfCombSelectsByOuterAndInner(uint outer, uint inner, uint a, uint b, uint c, uint expected)
+	{
+		SimSession<NestedIfComb> m = new NestedIfComb().Run();
+		m.Set(m.Module.Outer, outer);
+		m.Set(m.Module.Inner, inner);
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.C, c);
+		m.Settle();
+		Assert.Equal(expected, m.Get(m.Module.Y));
+	}
+
+	[Theory]
 	[InlineData(0u, 10u, 0u)]
 	[InlineData(3u, 13u, 1u)]
 	[InlineData(250u, 4u, 0u)]
