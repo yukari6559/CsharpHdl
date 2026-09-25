@@ -737,6 +737,61 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestNestedIfCombStoresNestedIfInThen()
+	{
+		NestedIfComb mod = new();
+		mod.Describe();
+		List<Stmt> root = [.. mod.GetStmts()];
+
+		_ = Assert.Single(root);
+		IfStmt outer = Assert.IsType<IfStmt>(root[0]);
+		Assert.Same(mod.Outer, outer.Cond);
+		IfStmt inner = Assert.IsType<IfStmt>(Assert.Single(outer.Then));
+		Assert.Same(mod.Inner, inner.Cond);
+		AssignStmt thenAssign = Assert.IsType<AssignStmt>(Assert.Single(inner.Then));
+		Assert.Equal(mod.Y, thenAssign.Signal);
+		Assert.Equal(mod.A, thenAssign.Expr);
+		AssignStmt elseInner = Assert.IsType<AssignStmt>(Assert.Single(inner.Else!));
+		Assert.Equal(mod.B, elseInner.Expr);
+		AssignStmt elseOuter = Assert.IsType<AssignStmt>(Assert.Single(outer.Else!));
+		Assert.Equal(mod.C, elseOuter.Expr);
+	}
+
+	[Fact]
+	public void TestNestedIfCombModuleEmitterEmitsNestedAlwaysIf()
+	{
+		NestedIfComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(NestedIfComb));
+
+		const string expected =
+			"module NestedIfComb(\n" +
+			"\tinput wire Outer,\n" +
+			"\tinput wire Inner,\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire [7:0] C,\n" +
+			"\toutput reg [7:0] Y\n" +
+			");\n" +
+			"\talways @(*) begin\n" +
+			"\tif (Outer) begin\n" +
+			"\t\tif (Inner) begin\n" +
+			"\t\t\tY = A;\n" +
+			"\t\tend\n" +
+			"\t\telse begin\n" +
+			"\t\t\tY = B;\n" +
+			"\t\tend\n" +
+			"\tend\n" +
+			"\telse begin\n" +
+			"\t\tY = C;\n" +
+			"\tend\n" +
+			"\tend\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestIfThenOnlyCombModuleEmitterOmitsElse()
 	{
 		IfThenOnlyComb mod = new();
