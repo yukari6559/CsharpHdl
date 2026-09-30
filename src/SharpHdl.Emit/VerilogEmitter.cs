@@ -3,7 +3,6 @@ using System.Text;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Validate;
-using SharpHdl.Core.Walk;
 
 namespace SharpHdl.Emit;
 
@@ -160,61 +159,10 @@ public static class VerilogEmitter
 	public static void EmitModuleBody(List<Stmt> stmts, StringBuilder verilogsb)
 	{
 		CheckMultiDrive.Check(stmts);
-		EmitCombStmtHandler handler = new(verilogsb);
-		CombStmtDispatch.WalkComb(stmts, handler);
+		EmitBodyVisitor emitBodyVisitor = new(verilogsb);
 		foreach (Stmt item in stmts)
 		{
-			if (item is MemStmt memStmt)
-			{
-				string memName = $"mem_{memStmt.Rdata.Name}";
-				if (!string.IsNullOrEmpty(memStmt.Name))
-				{
-					memName = memStmt.Name;
-				}
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{memStmt.Width - 1}:0] {memName} [0:{memStmt.Depth - 1}];\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {memStmt.Clk.Name}) begin\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tif ({memStmt.We.Name}) {memName}[{memStmt.Addr.Name}] <= {memStmt.Wdata.Name};\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{memStmt.Rdata.Name} <= {memName}[{memStmt.Addr.Name}];\n");
-				_ = verilogsb.Append($"end\n");
-			}
-			if (item is MemWstrbStmt memWstrbStmt)
-			{
-				string memName = $"mem_{memWstrbStmt.Rdata.Name}";
-				if (!string.IsNullOrEmpty(memWstrbStmt.Name))
-				{
-					memName = memWstrbStmt.Name;
-				}
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{memWstrbStmt.Width - 1}:0] {memName} [0:{memWstrbStmt.Depth - 1}];\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tif ({memWstrbStmt.We.Name}) begin\n");
-				uint memLSB = 0;
-				uint memMSB = 7;
-				for (int i = 0; i < memWstrbStmt.Width / 8; i++)
-				{
-					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) {memName}[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
-					memLSB += 8;
-					memMSB += 8;
-				}
-				_ = verilogsb.Append("\tend\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{memWstrbStmt.Rdata.Name} <= {memName}[{memWstrbStmt.Addr.Name}];\n");
-				_ = verilogsb.Append($"end\n");
-			}
-			if (item is SeqBlockStmt seqBlock)
-			{
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\talways @(posedge {seqBlock.Clk.Name}) begin\n");
-				foreach (Stmt bodyItem in seqBlock.Body)
-				{
-					if (bodyItem is SeqAssignStmt seqAssign)
-					{
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({seqBlock.Reset.Name}) begin\n");
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
-						_ = verilogsb.Append("\t\tend else begin\n");
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t\t{seqAssign.Signal.Name} <= {EmitExpr(seqAssign.Expr)};\n");
-						_ = verilogsb.Append("\t\tend\n");
-					}
-				}
-				_ = verilogsb.Append("\tend\n");
-			}
+			item.Accept(emitBodyVisitor);
 		}
 	}
 
