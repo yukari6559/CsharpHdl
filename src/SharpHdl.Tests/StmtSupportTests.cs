@@ -1,6 +1,7 @@
 using System.Reflection;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
+using SharpHdl.Core.Model.Visitors;
 using SharpHdl.Sim;
 using SharpHdl.Sim.Interp;
 
@@ -10,6 +11,10 @@ public class StmtSupportTests
 {
 	private sealed class BogusStmt : Stmt
 	{
+		public override void Accept(IStmtVisitor stmtVisitor)
+		{
+			throw new SimUnsupportedException();
+		}
 	}
 
 	private sealed class ModuleWithUnknownTopStmt : Core.Model.Module

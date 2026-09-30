@@ -1,3 +1,5 @@
+using SharpHdl.Core.Model.Visitors;
+
 namespace SharpHdl.Core.Model;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:識別子はキーワードと同一にすることはできません", Justification = "<保留中>")]
@@ -6,45 +8,70 @@ public class Case(uint value, List<Stmt> stmts)
 	public uint Value { get; private set; } = value;
 	public List<Stmt> Stmts { get; private set; } = stmts;
 }
-public class Stmt
+public abstract class Stmt
 {
-
+	public abstract void Accept(IStmtVisitor stmtVisitor);
 }
 
-public class AssignStmt(Signal signal, Expr expr) : Stmt
+public sealed class AssignStmt(Signal signal, Expr expr) : Stmt
 {
 	public Signal Signal { get; private set; } = signal;
 	public Expr Expr { get; private set; } = expr;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitAssign(this);
+	}
 }
 
-public class SwitchStmt(Expr expr, List<Case> cases) : Stmt
+public sealed class SwitchStmt(Expr expr, List<Case> cases) : Stmt
 {
 	public Expr Expr { get; private set; } = expr;
 	public List<Case> Cases { get; private set; } = cases;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitSwitch(this);
+	}
 }
 
-public class SeqBlockStmt(In clk, In reset, List<Stmt> body) : Stmt
+public sealed class SeqBlockStmt(In clk, In reset, List<Stmt> body) : Stmt
 {
 	public In Clk { get; private set; } = clk;
 	public In Reset { get; private set; } = reset;
 	public List<Stmt> Body { get; private set; } = body;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitSeqBlock(this);
+	}
 }
 
-public class SeqAssignStmt(Signal signal, Expr expr, ulong resetValue) : Stmt
+public sealed class SeqAssignStmt(Signal signal, Expr expr, ulong resetValue) : Stmt
 {
 	public Signal Signal { get; private set; } = signal;
 	public Expr Expr { get; private set; } = expr;
 	public ulong ResetValue { get; private set; } = resetValue;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitSeqAssign(this);
+	}
 }
 
-public class InstanceStmt(Module childModule, string instanceName, List<PortConnection> portConnections) : Stmt
+public sealed class InstanceStmt(Module childModule, string instanceName, List<PortConnection> portConnections) : Stmt
 {
 	public Module ChildModule { get; private set; } = childModule;
 	public string InstanceName { get; private set; } = instanceName;
 	public List<PortConnection> PortConnections { get; private set; } = portConnections;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitInstance(this);
+	}
 }
 
-public class MemStmt(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata, string? name) : Stmt
+public sealed class MemStmt(In clk, uint depth, uint width, In we, In addr, In wdata, Out rdata, string? name) : Stmt
 {
 	public In Clk { get; private set; } = clk;
 	public uint Depth { get; private set; } = depth;
@@ -54,9 +81,14 @@ public class MemStmt(In clk, uint depth, uint width, In we, In addr, In wdata, O
 	public In Wdata { get; private set; } = wdata;
 	public Out Rdata { get; private set; } = rdata;
 	public string? Name { get; private set; } = name;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitMem(this);
+	}
 }
 
-public class Mem2R1WStmt(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1, string? name) : Stmt
+public sealed class Mem2R1WStmt(In clk, uint depth, uint width, In we, In waddr, In wdata, In raddr0, Out rdata0, In raddr1, Out rdata1, string? name) : Stmt
 {
 	public In Clk { get; private set; } = clk;
 	public uint Depth { get; private set; } = depth;
@@ -69,9 +101,14 @@ public class Mem2R1WStmt(In clk, uint depth, uint width, In we, In waddr, In wda
 	public In Raddr1 { get; private set; } = raddr1;
 	public Out Rdata1 { get; private set; } = rdata1;
 	public string? Name { get; private set; } = name;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitMem2R1W(this);
+	}
 }
 
-public class MemWstrbStmt(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata, string? name) : Stmt
+public sealed class MemWstrbStmt(In clk, uint depth, uint width, In we, In wstrb, In addr, In wdata, Out rdata, string? name) : Stmt
 {
 	public In Clk { get; private set; } = clk;
 	public uint Depth { get; private set; } = depth;
@@ -82,11 +119,21 @@ public class MemWstrbStmt(In clk, uint depth, uint width, In we, In wstrb, In ad
 	public In Wdata { get; private set; } = wdata;
 	public Out Rdata { get; private set; } = rdata;
 	public string? Name { get; private set; } = name;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitMemWstrb(this);
+	}
 }
 
-public class IfStmt(Expr cond, List<Stmt> then, List<Stmt>? @else) : Stmt
+public sealed class IfStmt(Expr cond, List<Stmt> then, List<Stmt>? @else) : Stmt
 {
 	public Expr Cond { get; private set; } = cond;
 	public List<Stmt> Then { get; private set; } = then;
 	public List<Stmt>? Else { get; private set; } = @else;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitIf(this);
+	}
 }
