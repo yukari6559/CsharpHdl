@@ -229,51 +229,6 @@ public static class VerilogEmitter
 		return verilogsb.ToString();
 	}
 
-	public static void EmitOneIf(StringBuilder verilogsb, Stmt stmt, int depth)
-	{
-		if (stmt is IfStmt ifStmt)
-		{
-			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}if ({EmitExpr(ifStmt.Cond)}) begin\n");
-
-			foreach (Stmt thenItem in ifStmt.Then)
-			{
-				if (thenItem is AssignStmt assignStmt)
-				{
-					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth + 1))}{assignStmt.Signal.Name} = {EmitExpr(assignStmt.Expr)};\n");
-				}
-				else if (thenItem is IfStmt)
-				{
-					EmitOneIf(verilogsb, thenItem, depth + 1);
-				}
-				else
-				{
-					throw new EmitException();
-				}
-			}
-			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}end\n");
-			if (ifStmt.Else != null)
-			{
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}else begin\n");
-				foreach (Stmt elseItem in ifStmt.Else)
-				{
-					if (elseItem is AssignStmt assignStmt)
-					{
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth + 1))}{assignStmt.Signal.Name} = {EmitExpr(assignStmt.Expr)};\n");
-					}
-					else if (elseItem is IfStmt)
-					{
-						EmitOneIf(verilogsb, elseItem, depth + 1);
-					}
-					else
-					{
-						throw new EmitException();
-					}
-				}
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}end\n");
-			}
-		}
-	}
-
 	public static void CollectIfRegOuts(Stmt stmt, HashSet<Signal> regOuts)
 	{
 		if (stmt is IfStmt ifStmt)

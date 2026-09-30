@@ -18,7 +18,8 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 	public void VisitIf(IfStmt ifStmt)
 	{
 		_ = verilogsb.Append("\talways @(*) begin\n");
-		VerilogEmitter.EmitOneIf(verilogsb, ifStmt, 1);
+		IfVisitor ifVisitor = new(verilogsb, 1);
+		ifStmt.Accept(ifVisitor);
 
 		_ = verilogsb.Append("\tend\n");
 	}
@@ -82,7 +83,7 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
-		throw new EmitException();
+		throw new EmitException("Module body emit: Seq assign must be inside a Seq block, not at module top level.");
 	}
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
