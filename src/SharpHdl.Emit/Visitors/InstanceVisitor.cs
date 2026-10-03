@@ -2,7 +2,7 @@ using System.Text;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Model.Visitors;
 
-namespace SharpHdl.Emit;
+namespace SharpHdl.Emit.Visitors;
 
 public class InstanceVisitor(StringBuilder verilogsb, List<InstanceStmt> instanceStmts) : IStmtVisitor
 {

@@ -3,6 +3,7 @@ using System.Text;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Validate;
+using SharpHdl.Emit.Visitors;
 
 namespace SharpHdl.Emit;
 

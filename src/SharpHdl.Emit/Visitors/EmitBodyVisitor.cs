@@ -4,7 +4,7 @@ using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Model.Visitors;
 
-namespace SharpHdl.Emit;
+namespace SharpHdl.Emit.Visitors;
 
 public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 {
