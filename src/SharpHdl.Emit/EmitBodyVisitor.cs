@@ -88,17 +88,11 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
 	{
+		SeqVisitor seqVisitor = new(verilogsb, seqBlockStmt.Reset);
 		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\talways @(posedge {seqBlockStmt.Clk.Name}) begin\n");
 		foreach (Stmt bodyItem in seqBlockStmt.Body)
 		{
-			if (bodyItem is SeqAssignStmt seqAssign)
-			{
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({seqBlockStmt.Reset.Name}) begin\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
-				_ = verilogsb.Append("\t\tend else begin\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t\t{seqAssign.Signal.Name} <= {VerilogEmitter.EmitExpr(seqAssign.Expr)};\n");
-				_ = verilogsb.Append("\t\tend\n");
-			}
+			bodyItem.Accept(seqVisitor);
 		}
 		_ = verilogsb.Append("\tend\n");
 	}
