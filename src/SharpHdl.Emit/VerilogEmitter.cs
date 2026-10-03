@@ -3,7 +3,7 @@ using System.Text;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Validate;
-using SharpHdl.Core.Walk;
+using SharpHdl.Emit.Visitors;
 
 namespace SharpHdl.Emit;
 
@@ -91,30 +91,10 @@ public static class VerilogEmitter
 
 	public static HashSet<Signal> CollectRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts)
 	{
+		RegOutVisitor regOutVisitor = new(regOuts);
 		foreach (Stmt item in stmts)
 		{
-			if (item is SeqBlockStmt seq)
-			{
-				foreach (Stmt body in seq.Body)
-				{
-					if (body is SeqAssignStmt sa)
-					{
-						_ = regOuts.Add(sa.Signal);
-					}
-				}
-			}
-			if (item is MemStmt memStmt)
-			{
-				_ = regOuts.Add(memStmt.Rdata);
-			}
-			if (item is MemWstrbStmt memWstrbStmt)
-			{
-				_ = regOuts.Add(memWstrbStmt.Rdata);
-			}
-			if (item is IfStmt ifStmt)
-			{
-				CollectIfRegOuts(ifStmt, regOuts);
-			}
+			item.Accept(regOutVisitor);
 		}
 		return regOuts;
 	}
@@ -160,79 +140,19 @@ public static class VerilogEmitter
 	public static void EmitModuleBody(List<Stmt> stmts, StringBuilder verilogsb)
 	{
 		CheckMultiDrive.Check(stmts);
-		EmitCombStmtHandler handler = new(verilogsb);
-		CombStmtDispatch.WalkComb(stmts, handler);
+		EmitBodyVisitor emitBodyVisitor = new(verilogsb);
 		foreach (Stmt item in stmts)
 		{
-			if (item is MemStmt memStmt)
-			{
-				string memName = $"mem_{memStmt.Rdata.Name}";
-				if (!string.IsNullOrEmpty(memStmt.Name))
-				{
-					memName = memStmt.Name;
-				}
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{memStmt.Width - 1}:0] {memName} [0:{memStmt.Depth - 1}];\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {memStmt.Clk.Name}) begin\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tif ({memStmt.We.Name}) {memName}[{memStmt.Addr.Name}] <= {memStmt.Wdata.Name};\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{memStmt.Rdata.Name} <= {memName}[{memStmt.Addr.Name}];\n");
-				_ = verilogsb.Append($"end\n");
-			}
-			if (item is MemWstrbStmt memWstrbStmt)
-			{
-				string memName = $"mem_{memWstrbStmt.Rdata.Name}";
-				if (!string.IsNullOrEmpty(memWstrbStmt.Name))
-				{
-					memName = memWstrbStmt.Name;
-				}
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{memWstrbStmt.Width - 1}:0] {memName} [0:{memWstrbStmt.Depth - 1}];\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tif ({memWstrbStmt.We.Name}) begin\n");
-				uint memLSB = 0;
-				uint memMSB = 7;
-				for (int i = 0; i < memWstrbStmt.Width / 8; i++)
-				{
-					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) {memName}[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
-					memLSB += 8;
-					memMSB += 8;
-				}
-				_ = verilogsb.Append("\tend\n");
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{memWstrbStmt.Rdata.Name} <= {memName}[{memWstrbStmt.Addr.Name}];\n");
-				_ = verilogsb.Append($"end\n");
-			}
-			if (item is SeqBlockStmt seqBlock)
-			{
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\talways @(posedge {seqBlock.Clk.Name}) begin\n");
-				foreach (Stmt bodyItem in seqBlock.Body)
-				{
-					if (bodyItem is SeqAssignStmt seqAssign)
-					{
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({seqBlock.Reset.Name}) begin\n");
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t\t{seqAssign.Signal.Name} <= {seqAssign.Signal.Width}'d{seqAssign.ResetValue};\n");
-						_ = verilogsb.Append("\t\tend else begin\n");
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t\t{seqAssign.Signal.Name} <= {EmitExpr(seqAssign.Expr)};\n");
-						_ = verilogsb.Append("\t\tend\n");
-					}
-				}
-				_ = verilogsb.Append("\tend\n");
-			}
+			item.Accept(emitBodyVisitor);
 		}
 	}
 
 	public static void CollectInstances(List<Stmt> stmts, List<InstanceStmt> instanceStmts, StringBuilder verilogsb)
 	{
-		HashSet<string> emitted = [];
+		InstanceVisitor instanceVisitor = new(verilogsb, instanceStmts);
 		foreach (Stmt item in stmts)
 		{
-			if (item is InstanceStmt stmt)
-			{
-				instanceStmts.Add(stmt);
-				if (!emitted.Add(stmt.ChildModule.GetType().Name))
-				{
-					continue;
-				}
-
-				_ = verilogsb.Append(EmitOneModule(stmt.ChildModule, stmt.ChildModule.GetType().Name, [], false));
-			}
+			item.Accept(instanceVisitor);
 		}
 	}
 
@@ -279,82 +199,5 @@ public static class VerilogEmitter
 		_ = verilogsb.Append("endmodule");
 
 		return verilogsb.ToString();
-	}
-
-	public static void EmitOneIf(StringBuilder verilogsb, Stmt stmt, int depth)
-	{
-		if (stmt is IfStmt ifStmt)
-		{
-			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}if ({EmitExpr(ifStmt.Cond)}) begin\n");
-
-			foreach (Stmt thenItem in ifStmt.Then)
-			{
-				if (thenItem is AssignStmt assignStmt)
-				{
-					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth + 1))}{assignStmt.Signal.Name} = {EmitExpr(assignStmt.Expr)};\n");
-				}
-				else if (thenItem is IfStmt)
-				{
-					EmitOneIf(verilogsb, thenItem, depth + 1);
-				}
-				else
-				{
-					throw new EmitException();
-				}
-			}
-			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}end\n");
-			if (ifStmt.Else != null)
-			{
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}else begin\n");
-				foreach (Stmt elseItem in ifStmt.Else)
-				{
-					if (elseItem is AssignStmt assignStmt)
-					{
-						_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth + 1))}{assignStmt.Signal.Name} = {EmitExpr(assignStmt.Expr)};\n");
-					}
-					else if (elseItem is IfStmt)
-					{
-						EmitOneIf(verilogsb, elseItem, depth + 1);
-					}
-					else
-					{
-						throw new EmitException();
-					}
-				}
-				_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}end\n");
-			}
-		}
-	}
-
-	public static void CollectIfRegOuts(Stmt stmt, HashSet<Signal> regOuts)
-	{
-		if (stmt is IfStmt ifStmt)
-		{
-			foreach (Stmt thenItem in ifStmt.Then)
-			{
-				if (thenItem is AssignStmt assignStmt)
-				{
-					_ = regOuts.Add(assignStmt.Signal);
-				}
-				else if (thenItem is IfStmt)
-				{
-					CollectIfRegOuts(thenItem, regOuts);
-				}
-			}
-			if (ifStmt.Else != null)
-			{
-				foreach (Stmt elseItem in ifStmt.Else)
-				{
-					if (elseItem is AssignStmt assignStmt)
-					{
-						_ = regOuts.Add(assignStmt.Signal);
-					}
-					else if (elseItem is IfStmt)
-					{
-						CollectIfRegOuts(elseItem, regOuts);
-					}
-				}
-			}
-		}
 	}
 }

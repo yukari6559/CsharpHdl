@@ -2,33 +2,47 @@ using System.Globalization;
 using System.Text;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
-using SharpHdl.Core.Walk;
+using SharpHdl.Core.Model.Visitors;
 
-namespace SharpHdl.Emit;
+namespace SharpHdl.Emit.Visitors;
 
-public class EmitCombStmtHandler(StringBuilder verilogsb) : ICombStmtHandler
+public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 {
-	public void OnAssign(AssignStmt assignStmt)
+	public void VisitAssign(AssignStmt assignStmt)
 	{
 		Expr expr = assignStmt.Expr;
 		string s = VerilogEmitter.EmitExpr(expr);
 		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tassign {assignStmt.Signal.Name} = {s};\n");
 	}
 
-	public void OnIf(IfStmt ifStmt)
+	public void VisitIf(IfStmt ifStmt)
 	{
 		_ = verilogsb.Append("\talways @(*) begin\n");
-		VerilogEmitter.EmitOneIf(verilogsb, ifStmt, 1);
+		IfVisitor ifVisitor = new(verilogsb, 1);
+		ifStmt.Accept(ifVisitor);
 
 		_ = verilogsb.Append("\tend\n");
 	}
 
-	public void OnInstance(InstanceStmt instanceStmt)
+	public void VisitInstance(InstanceStmt instanceStmt)
 	{
-
 	}
 
-	public void OnMem2R1WStmt(Mem2R1WStmt mem2R1WStmt)
+	public void VisitMem(MemStmt memStmt)
+	{
+		string memName = $"mem_{memStmt.Rdata.Name}";
+		if (!string.IsNullOrEmpty(memStmt.Name))
+		{
+			memName = memStmt.Name;
+		}
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{memStmt.Width - 1}:0] {memName} [0:{memStmt.Depth - 1}];\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {memStmt.Clk.Name}) begin\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tif ({memStmt.We.Name}) {memName}[{memStmt.Addr.Name}] <= {memStmt.Wdata.Name};\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{memStmt.Rdata.Name} <= {memName}[{memStmt.Addr.Name}];\n");
+		_ = verilogsb.Append($"end\n");
+	}
+
+	public void VisitMem2R1W(Mem2R1WStmt mem2R1WStmt)
 	{
 		string memName = $"mem_{mem2R1WStmt.Rdata0.Name}";
 		if (!string.IsNullOrEmpty(mem2R1WStmt.Name))
@@ -43,7 +57,46 @@ public class EmitCombStmtHandler(StringBuilder verilogsb) : ICombStmtHandler
 		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"assign {mem2R1WStmt.Rdata1.Name} = {memName}[{mem2R1WStmt.Raddr1.Name}];\n");
 	}
 
-	public void OnSwitch(SwitchStmt switchStmt)
+	public void VisitMemWstrb(MemWstrbStmt memWstrbStmt)
+	{
+		string memName = $"mem_{memWstrbStmt.Rdata.Name}";
+		if (!string.IsNullOrEmpty(memWstrbStmt.Name))
+		{
+			memName = memWstrbStmt.Name;
+		}
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{memWstrbStmt.Width - 1}:0] {memName} [0:{memWstrbStmt.Depth - 1}];\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {memWstrbStmt.Clk.Name}) begin\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\tif ({memWstrbStmt.We.Name}) begin\n");
+		uint memLSB = 0;
+		uint memMSB = 7;
+		for (int i = 0; i < memWstrbStmt.Width / 8; i++)
+		{
+			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({memWstrbStmt.Wstrb.Name}[{i}]) {memName}[{memWstrbStmt.Addr.Name}][{memMSB}:{memLSB}] <= {memWstrbStmt.Wdata.Name}[{memMSB}:{memLSB}];\n");
+			memLSB += 8;
+			memMSB += 8;
+		}
+		_ = verilogsb.Append("\tend\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{memWstrbStmt.Rdata.Name} <= {memName}[{memWstrbStmt.Addr.Name}];\n");
+		_ = verilogsb.Append($"end\n");
+	}
+
+	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
+	{
+		throw SeqAssignAtTopLevel();
+	}
+
+	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
+	{
+		SeqVisitor seqVisitor = new(verilogsb, seqBlockStmt.Reset);
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\talways @(posedge {seqBlockStmt.Clk.Name}) begin\n");
+		foreach (Stmt bodyItem in seqBlockStmt.Body)
+		{
+			bodyItem.Accept(seqVisitor);
+		}
+		_ = verilogsb.Append("\tend\n");
+	}
+
+	public void VisitSwitch(SwitchStmt switchStmt)
 	{
 		Signal? beforeSignal = null;
 		AssignStmt assignStmt;
@@ -83,5 +136,10 @@ public class EmitCombStmtHandler(StringBuilder verilogsb) : ICombStmtHandler
 			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t({VerilogEmitter.EmitExpr(switchStmt.Expr)} == {switchStmt.Expr.GetWidth()}'d{switchStmt.Cases[i].Value}) ? ({VerilogEmitter.EmitExpr(assignStmt.Expr)}) :\n");
 			beforeSignal = assignStmt.Signal;
 		}
+	}
+
+	internal static EmitException SeqAssignAtTopLevel()
+	{
+		return new EmitException("Module body emit: Seq assign must be inside a Seq block, not at module top level.");
 	}
 }
