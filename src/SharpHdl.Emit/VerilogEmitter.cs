@@ -148,19 +148,10 @@ public static class VerilogEmitter
 
 	public static void CollectInstances(List<Stmt> stmts, List<InstanceStmt> instanceStmts, StringBuilder verilogsb)
 	{
-		HashSet<string> emitted = [];
+		InstanceVisitor instanceVisitor = new(verilogsb, instanceStmts);
 		foreach (Stmt item in stmts)
 		{
-			if (item is InstanceStmt stmt)
-			{
-				instanceStmts.Add(stmt);
-				if (!emitted.Add(stmt.ChildModule.GetType().Name))
-				{
-					continue;
-				}
-
-				_ = verilogsb.Append(EmitOneModule(stmt.ChildModule, stmt.ChildModule.GetType().Name, [], false));
-			}
+			item.Accept(instanceVisitor);
 		}
 	}
 
