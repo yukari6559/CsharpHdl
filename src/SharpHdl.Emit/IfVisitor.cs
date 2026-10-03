@@ -37,36 +37,41 @@ public class IfVisitor(StringBuilder verilogsb, int depth) : IStmtVisitor
 
 	public void VisitInstance(InstanceStmt instanceStmt)
 	{
-		throw new EmitException("If emit: Instance cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("Instance");
 	}
 
 	public void VisitMem(MemStmt memStmt)
 	{
-		throw new EmitException("If emit: Mem cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("Mem");
 	}
 
 	public void VisitMem2R1W(Mem2R1WStmt mem2R1WStmt)
 	{
-		throw new EmitException("If emit: Mem2R1W cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("Mem2R1W");
 	}
 
 	public void VisitMemWstrb(MemWstrbStmt memWstrbStmt)
 	{
-		throw new EmitException("If emit: MemWstrb cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("MemWstrb");
 	}
 
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
-		throw new EmitException("If emit: Seq assign cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("Seq assign");
 	}
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
 	{
-		throw new EmitException("If emit: Seq block cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("Seq block");
 	}
 
 	public void VisitSwitch(SwitchStmt switchStmt)
 	{
-		throw new EmitException("If emit: Switch cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
+		throw NotAllowedInIf("Switch");
+	}
+
+	internal static EmitException NotAllowedInIf(string stmtKind)
+	{
+		return new EmitException($"If emit: {stmtKind} cannot be placed inside a Comb If (always @(*)); only Assign and nested If are allowed.");
 	}
 }

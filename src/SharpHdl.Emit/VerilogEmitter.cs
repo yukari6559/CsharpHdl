@@ -90,30 +90,10 @@ public static class VerilogEmitter
 
 	public static HashSet<Signal> CollectRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts)
 	{
+		RegOutVisitor regOutVisitor = new(regOuts);
 		foreach (Stmt item in stmts)
 		{
-			if (item is SeqBlockStmt seq)
-			{
-				foreach (Stmt body in seq.Body)
-				{
-					if (body is SeqAssignStmt sa)
-					{
-						_ = regOuts.Add(sa.Signal);
-					}
-				}
-			}
-			if (item is MemStmt memStmt)
-			{
-				_ = regOuts.Add(memStmt.Rdata);
-			}
-			if (item is MemWstrbStmt memWstrbStmt)
-			{
-				_ = regOuts.Add(memWstrbStmt.Rdata);
-			}
-			if (item is IfStmt ifStmt)
-			{
-				CollectIfRegOuts(ifStmt, regOuts);
-			}
+			item.Accept(regOutVisitor);
 		}
 		return regOuts;
 	}
@@ -227,37 +207,5 @@ public static class VerilogEmitter
 		_ = verilogsb.Append("endmodule");
 
 		return verilogsb.ToString();
-	}
-
-	public static void CollectIfRegOuts(Stmt stmt, HashSet<Signal> regOuts)
-	{
-		if (stmt is IfStmt ifStmt)
-		{
-			foreach (Stmt thenItem in ifStmt.Then)
-			{
-				if (thenItem is AssignStmt assignStmt)
-				{
-					_ = regOuts.Add(assignStmt.Signal);
-				}
-				else if (thenItem is IfStmt)
-				{
-					CollectIfRegOuts(thenItem, regOuts);
-				}
-			}
-			if (ifStmt.Else != null)
-			{
-				foreach (Stmt elseItem in ifStmt.Else)
-				{
-					if (elseItem is AssignStmt assignStmt)
-					{
-						_ = regOuts.Add(assignStmt.Signal);
-					}
-					else if (elseItem is IfStmt)
-					{
-						CollectIfRegOuts(elseItem, regOuts);
-					}
-				}
-			}
-		}
 	}
 }

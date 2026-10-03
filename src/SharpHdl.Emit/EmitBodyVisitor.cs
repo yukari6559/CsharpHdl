@@ -26,7 +26,6 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 
 	public void VisitInstance(InstanceStmt instanceStmt)
 	{
-
 	}
 
 	public void VisitMem(MemStmt memStmt)
@@ -83,7 +82,7 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
-		throw new EmitException("Module body emit: Seq assign must be inside a Seq block, not at module top level.");
+		throw SeqAssignAtTopLevel();
 	}
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
@@ -137,5 +136,10 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t({VerilogEmitter.EmitExpr(switchStmt.Expr)} == {switchStmt.Expr.GetWidth()}'d{switchStmt.Cases[i].Value}) ? ({VerilogEmitter.EmitExpr(assignStmt.Expr)}) :\n");
 			beforeSignal = assignStmt.Signal;
 		}
+	}
+
+	internal static EmitException SeqAssignAtTopLevel()
+	{
+		return new EmitException("Module body emit: Seq assign must be inside a Seq block, not at module top level.");
 	}
 }

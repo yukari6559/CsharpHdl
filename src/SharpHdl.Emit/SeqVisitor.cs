@@ -10,32 +10,32 @@ public class SeqVisitor(StringBuilder verilogsb, Signal reset) : IStmtVisitor
 {
 	public void VisitAssign(AssignStmt assignStmt)
 	{
-		throw new EmitException("Seq emit: Comb Assign cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("Comb Assign");
 	}
 
 	public void VisitIf(IfStmt ifStmt)
 	{
-		throw new EmitException("Seq emit: If cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("If");
 	}
 
 	public void VisitInstance(InstanceStmt instanceStmt)
 	{
-		throw new EmitException("Seq emit: Instance cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("Instance");
 	}
 
 	public void VisitMem(MemStmt memStmt)
 	{
-		throw new EmitException("Seq emit: Mem cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("Mem");
 	}
 
 	public void VisitMem2R1W(Mem2R1WStmt mem2R1WStmt)
 	{
-		throw new EmitException("Seq emit: Mem2R1W cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("Mem2R1W");
 	}
 
 	public void VisitMemWstrb(MemWstrbStmt memWstrbStmt)
 	{
-		throw new EmitException("Seq emit: MemWstrb cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("MemWstrb");
 	}
 
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
@@ -49,11 +49,16 @@ public class SeqVisitor(StringBuilder verilogsb, Signal reset) : IStmtVisitor
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
 	{
-		throw new EmitException("Seq emit: Nested Seq block cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("Nested Seq block");
 	}
 
 	public void VisitSwitch(SwitchStmt switchStmt)
 	{
-		throw new EmitException("Seq emit: Switch cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
+		throw NotAllowedInSeq("Switch");
+	}
+
+	internal static EmitException NotAllowedInSeq(string stmtKind)
+	{
+		return new EmitException($"Seq emit: {stmtKind} cannot be placed inside a Seq block (always @(posedge)); only Seq assign is allowed.");
 	}
 }
