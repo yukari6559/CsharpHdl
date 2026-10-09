@@ -19,7 +19,7 @@ public class SimSession<T> where T : Module
 	}
 	public void Settle()
 	{
-		_ = CombSettle.Settle([.. Module.GetStmts()], SimWorld);
+		CombSettle.Settle([.. Module.GetStmts()], SimWorld);
 	}
 	public void Advance(In clk)
 	{

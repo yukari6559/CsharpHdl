@@ -1,19 +1,17 @@
 using SharpHdl.Core.Model;
-using SharpHdl.Core.Walk;
 using SharpHdl.Sim.Runtime;
 
 namespace SharpHdl.Sim.Interp;
 
 public class CombSettle
 {
-	public static bool Settle(List<Stmt> stmts, SimWorld simWorld)
+	public static void Settle(List<Stmt> stmts, SimWorld simWorld)
 	{
-		SimCombStmtHandler simCombStmtHandler = new(simWorld, true, false);
-		while (simCombStmtHandler.IsUpdate)
+		CombStmtVisitor combStmtVisitor = new(simWorld);
+		while (combStmtVisitor.IsUpdate)
 		{
-			simCombStmtHandler.IsUpdate = false;
-			CombStmtDispatch.WalkComb(stmts, simCombStmtHandler);
+			combStmtVisitor.Reset();
+			stmts.ForEach(x => x.Accept(combStmtVisitor));
 		}
-		return simCombStmtHandler.IsUpdateAll;
 	}
 }
