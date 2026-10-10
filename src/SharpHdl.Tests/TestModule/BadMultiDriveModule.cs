@@ -11,12 +11,13 @@ public sealed class BadMultiDriveModule : Module
 	public In Rst { get; } = In.UInt(1, "rst");
 	public In A { get; } = In.UInt(8, "A");
 	public In B { get; } = In.UInt(8, "B");
+	public In Sel { get; } = In.UInt(1, "Sel");
 	public Out Y { get; } = Out.UInt(8, "Y");
 	public Out Count { get; } = Out.UInt(8, "count");
 
 	public BadMultiDriveModule()
 	{
-		SetPorts([Clk, Rst, A, B, Y, Count]);
+		SetPorts([Clk, Rst, A, B, Sel, Y, Count]);
 	}
 
 	public void DescribeDualCombAssign()
@@ -46,5 +47,50 @@ public sealed class BadMultiDriveModule : Module
 				(0u, () => Y.Assign(B)),
 				(1u, () => Y.Assign(B)));
 		});
+	}
+
+	public void DescribeAssignAndSwitchSecondCase()
+	{
+		Comb(() =>
+		{
+			Y.Assign(A);
+			Switch(A,
+				(0u, () => Count.Assign(B)),
+				(1u, () => Y.Assign(B)));
+		});
+	}
+
+	public void DescribeAssignAndIfThen()
+	{
+		Comb(() =>
+		{
+			Y.Assign(A);
+			If(Sel, then: () => Y.Assign(B));
+		});
+	}
+
+	public void DescribeIfThenBeforeAssign()
+	{
+		Comb(() =>
+		{
+			If(Sel, then: () => Y.Assign(B));
+			Y.Assign(A);
+		});
+	}
+
+	public void DescribeDualAssignInIfThen()
+	{
+		Comb(() => If(Sel, then: () =>
+		{
+			Y.Assign(A);
+			Y.Assign(B);
+		}));
+	}
+
+	public void DescribeIfThenElseSameSignal()
+	{
+		Comb(() => If(Sel,
+			then: () => Y.Assign(A),
+			@else: () => Y.Assign(B)));
 	}
 }

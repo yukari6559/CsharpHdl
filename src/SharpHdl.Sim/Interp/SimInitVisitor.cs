@@ -1,3 +1,4 @@
+using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Model.Visitors;
 using SharpHdl.Sim.Runtime;
@@ -41,6 +42,7 @@ public class SimInitVisitor(SimWorld simWorld) : IStmtVisitor
 
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
+		throw new SimUnsupportedException();
 	}
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)

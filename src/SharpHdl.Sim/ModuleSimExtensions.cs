@@ -1,4 +1,3 @@
-using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Validate;
 using SharpHdl.Sim.Interp;
@@ -13,13 +12,6 @@ public static class ModuleSimExtensions
 		module.Describe();
 		CheckMultiDrive.Check([.. module.GetStmts()]);
 		simSession.SimWorld = ModuleFlat.Build(module);
-		foreach (Stmt stmt in module.GetStmts())
-		{
-			if (!StmtSupport.IsSupportedTopLevel(stmt))
-			{
-				throw new SimUnsupportedException();
-			}
-		}
 		simSession.Settle();
 		return simSession;
 	}

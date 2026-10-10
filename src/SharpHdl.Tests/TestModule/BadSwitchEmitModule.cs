@@ -34,7 +34,7 @@ public sealed class BadSwitchEmitModule : Module
 			(0, () =>
 			{
 				Y.Assign(A);
-				Y.Assign(B);
+				Z.Assign(B);
 			}
 		),
 			(1, () => Y.Assign(A))));
