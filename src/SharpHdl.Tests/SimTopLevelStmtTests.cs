@@ -3,11 +3,10 @@ using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Model.Visitors;
 using SharpHdl.Sim;
-using SharpHdl.Sim.Interp;
 
 namespace SharpHdl.Tests;
 
-public class StmtSupportTests
+public class SimTopLevelStmtTests
 {
 	private sealed class BogusStmt : Stmt
 	{
@@ -17,36 +16,51 @@ public class StmtSupportTests
 		}
 	}
 
-	private sealed class ModuleWithUnknownTopStmt : Core.Model.Module
+	private abstract class ModuleWithInjectedTopStmt : Core.Model.Module
 	{
-		public override void Describe()
+		protected void AddTopStmt(Stmt stmt)
 		{
 			FieldInfo field = typeof(Core.Model.Module).GetField("Stmts", BindingFlags.Instance | BindingFlags.NonPublic)
 				?? throw new InvalidOperationException("Stmts field missing");
 			List<Stmt> stmts = (List<Stmt>)(field.GetValue(this)
 				?? throw new InvalidOperationException("Stmts is null"));
-			stmts.Add(new BogusStmt());
+			stmts.Add(stmt);
 		}
 	}
 
-	[Fact]
-	public void IsSupportedTopLevelAssignStmtIsTrue()
+	private sealed class ModuleWithUnknownTopStmt : ModuleWithInjectedTopStmt
 	{
-		In a = In.UInt(1, "a");
-		Out y = Out.UInt(1, "y");
-		AssignStmt stmt = new(y, a);
-		Assert.True(StmtSupport.IsSupportedTopLevel(stmt));
+		public override void Describe()
+		{
+			AddTopStmt(new BogusStmt());
+		}
 	}
 
-	[Fact]
-	public void IsSupportedTopLevelUnknownStmtIsFalse()
+	private sealed class ModuleWithTopLevelSeqAssign : ModuleWithInjectedTopStmt
 	{
-		Assert.False(StmtSupport.IsSupportedTopLevel(new BogusStmt()));
+		public In A { get; } = In.UInt(1, "a");
+		public Out Y { get; } = Out.UInt(1, "y");
+
+		public ModuleWithTopLevelSeqAssign()
+		{
+			SetPorts([A, Y]);
+		}
+
+		public override void Describe()
+		{
+			AddTopStmt(new SeqAssignStmt(Y, A, 0));
+		}
 	}
 
 	[Fact]
 	public void RunUnknownTopLevelStmtThrowsSimUnsupported()
 	{
 		_ = Assert.Throws<SimUnsupportedException>(() => new ModuleWithUnknownTopStmt().Run());
+	}
+
+	[Fact]
+	public void RunTopLevelSeqAssignThrowsSimUnsupported()
+	{
+		_ = Assert.Throws<SimUnsupportedException>(() => new ModuleWithTopLevelSeqAssign().Run());
 	}
 }
