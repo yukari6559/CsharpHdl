@@ -1,6 +1,8 @@
+using SharpHdl.Core.Model.Visitors;
+
 namespace SharpHdl.Core.Model;
 
-public class OpExpr : Expr
+public sealed class OpExpr : Expr
 {
 	public required Expr Left { get; set; }
 	public required Expr Right { get; set; }
@@ -9,6 +11,11 @@ public class OpExpr : Expr
 	public override uint GetWidth()
 	{
 		return Op is Op.Eq or Op.Neq or Op.Lt or Op.Gt or Op.Le or Op.Ge ? 1 : Left.GetWidth();
+	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitOp(this);
 	}
 }
 

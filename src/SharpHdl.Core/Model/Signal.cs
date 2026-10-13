@@ -1,4 +1,5 @@
 using SharpHdl.Core.Exceptions;
+using SharpHdl.Core.Model.Visitors;
 
 namespace SharpHdl.Core.Model;
 
@@ -18,6 +19,11 @@ public class Signal : Expr
 		Width = width;
 		Name = name;
 		Direction = direction;
+	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitSignal(this);
 	}
 
 	public void Assign(Expr expr)

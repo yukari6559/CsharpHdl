@@ -1,4 +1,5 @@
 using SharpHdl.Core.Exceptions;
+using SharpHdl.Core.Model.Visitors;
 
 namespace SharpHdl.Core.Model;
 
@@ -75,9 +76,10 @@ public abstract class Expr
 		return zeroExtendExpr;
 	}
 	public abstract uint GetWidth();
+	public abstract T Accept<T>(IExprVisitor<T> exprVisitor);
 }
 
-public class SliceExpr(uint msb, uint lsb, Expr expr) : Expr
+public sealed class SliceExpr(uint msb, uint lsb, Expr expr) : Expr
 {
 	public uint LSB { get; private set; } = lsb;
 	public uint MSB { get; private set; } = msb;
@@ -87,9 +89,14 @@ public class SliceExpr(uint msb, uint lsb, Expr expr) : Expr
 	{
 		return MSB - LSB + 1;
 	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitSlice(this);
+	}
 }
 
-public class ConcatExpr(params Expr[] expr) : Expr
+public sealed class ConcatExpr(params Expr[] expr) : Expr
 {
 	public Expr[] Exprs { get; private set; } = expr;
 
@@ -103,9 +110,14 @@ public class ConcatExpr(params Expr[] expr) : Expr
 
 		return len;
 	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitConcat(this);
+	}
 }
 
-public class SignExtendExpr(uint width, Expr expr) : Expr
+public sealed class SignExtendExpr(uint width, Expr expr) : Expr
 {
 	public uint Width { get; private set; } = width;
 	public Expr Expr { get; private set; } = expr;
@@ -114,9 +126,14 @@ public class SignExtendExpr(uint width, Expr expr) : Expr
 	{
 		return Width;
 	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitSignExtend(this);
+	}
 }
 
-public class ZeroExtendExpr(uint width, Expr expr) : Expr
+public sealed class ZeroExtendExpr(uint width, Expr expr) : Expr
 {
 	public uint Width { get; private set; } = width;
 	public Expr Expr { get; private set; } = expr;
@@ -124,6 +141,11 @@ public class ZeroExtendExpr(uint width, Expr expr) : Expr
 	public override uint GetWidth()
 	{
 		return Width;
+	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitZeroExtend(this);
 	}
 }
 
@@ -135,7 +157,7 @@ public static class Lit
 	}
 }
 
-public class ConstExpr : Expr
+public sealed class ConstExpr : Expr
 {
 	public uint Width { get; private set; }
 	public ulong Value { get; private set; }
@@ -152,5 +174,10 @@ public class ConstExpr : Expr
 	public override uint GetWidth()
 	{
 		return Width;
+	}
+
+	public override T Accept<T>(IExprVisitor<T> exprVisitor)
+	{
+		return exprVisitor.VisitConst(this);
 	}
 }
