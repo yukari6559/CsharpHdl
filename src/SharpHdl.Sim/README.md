@@ -2,19 +2,19 @@
 
 Cycle-style simulation for [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) modules (`Run` / `Set` / `Get` / `Settle` / `Advance`).
 
-**Current scope (S1):** single-module Comb + Seq. Memory and hierarchy come in a later release (S2). Assert with ordinary xUnit.
+**Current scope (S2):** Comb + Seq, sync memories (1R1W / 2R1W / byte-strobe), one level of module hierarchy, `LoadMem` / `PeekMem` / `PokeMem`, `AdvanceWhile`. Assert with ordinary xUnit.
 
 ## Install
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.3.8" />
-<PackageReference Include="SharpHdl.Sim" Version="0.3.8" />
+<PackageReference Include="SharpHdl.Core" Version="0.4.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.4.0" />
 ```
 
 Optional with emit:
 
 ```xml
-<PackageReference Include="SharpHdl.Emit" Version="0.3.8" />
+<PackageReference Include="SharpHdl.Emit" Version="0.4.0" />
 ```
 
 ## Docs
