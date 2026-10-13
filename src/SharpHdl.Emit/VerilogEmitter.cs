@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text;
-using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Core.Validate;
 using SharpHdl.Emit.Visitors;
@@ -21,72 +20,8 @@ public static class VerilogEmitter
 
 	public static string EmitExpr(Expr expr)
 	{
-
-		if (expr is Signal signal)
-		{
-			return signal.Name;
-		}
-		else if (expr is OpExpr opExpr)
-		{
-			return EmitExpr(opExpr.Left) + " " + opExpr.Op.ToCustomString() + " " + EmitExpr(opExpr.Right);
-		}
-		else if (expr is SliceExpr sliceExpr)
-		{
-			return EmitExpr(sliceExpr.Expr) + $"[{sliceExpr.MSB}:{sliceExpr.LSB}]";
-		}
-		else if (expr is ConcatExpr concatExpr)
-		{
-			string s = "{";
-			for (int i = 0; i < concatExpr.Exprs.Length; i++)
-			{
-				if (i == concatExpr.Exprs.Length - 1)
-				{
-					s += $"{EmitExpr(concatExpr.Exprs[i])}";
-				}
-				else
-				{
-					s += $"{EmitExpr(concatExpr.Exprs[i])}, ";
-				}
-			}
-			s += "}";
-			return s;
-		}
-		else if (expr is SignExtendExpr signExtendExpr)
-		{
-			if (signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth() == 0)
-			{
-				return EmitExpr(signExtendExpr.Expr);
-			}
-			else
-			{
-				string s = "{{" + $"{signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth()}{{" + $"{EmitExpr(signExtendExpr.Expr)}[{signExtendExpr.Expr.GetWidth() - 1}]" + "}}, " + $"{EmitExpr(signExtendExpr.Expr)}" + "}";
-				return s;
-			}
-		}
-		else if (expr is ZeroExtendExpr zeroExtendExpr)
-		{
-			if (zeroExtendExpr.GetWidth() - zeroExtendExpr.Expr.GetWidth() == 0)
-			{
-				return EmitExpr(zeroExtendExpr.Expr);
-			}
-			else
-			{
-				string s = "{{" + $"{zeroExtendExpr.GetWidth() - zeroExtendExpr.Expr.GetWidth()}" + "{1'b0}}, " + $"{EmitExpr(zeroExtendExpr.Expr)}}}";
-				return s;
-			}
-		}
-		else if (expr is ConstExpr constExpr)
-		{
-			ulong masked = constExpr.Width != 64
-				? constExpr.Value & ((1UL << (int)constExpr.Width) - 1)
-				: constExpr.Width == 64 ? constExpr.Value : throw new WidthMismatchException();
-			string s = $"{constExpr.Width}'d{masked}";
-			return s;
-		}
-		else
-		{
-			throw new EmitException();
-		}
+		EmitExprVisitor exprVisitor = new();
+		return expr.Accept(exprVisitor);
 	}
 
 	public static HashSet<Signal> CollectRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts)
