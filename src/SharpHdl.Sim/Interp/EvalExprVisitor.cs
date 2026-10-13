@@ -26,54 +26,23 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 		return constExpr.Value & BitUtils.MakeMaskBit(constExpr.Width);
 	}
 
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:条件式に変換します", Justification = "<保留中>")]
 	public ulong VisitOp(OpExpr opExpr)
 	{
-		ulong MaskBit = BitUtils.MakeMaskBit(opExpr.Left.GetWidth());
-		if (opExpr.Op == Op.Plus)
+		ulong maskBit = BitUtils.MakeMaskBit(opExpr.Left.GetWidth());
+		return opExpr.Op switch
 		{
-			return (opExpr.Left.Accept(this) + opExpr.Right.Accept(this)) & MaskBit;
-		}
-		else if (opExpr.Op == Op.Minus)
-		{
-			return (opExpr.Left.Accept(this) - opExpr.Right.Accept(this)) & MaskBit;
-		}
-		else if (opExpr.Op == Op.And)
-		{
-			return opExpr.Left.Accept(this) & opExpr.Right.Accept(this) & MaskBit;
-		}
-		else if (opExpr.Op == Op.Or)
-		{
-			return (opExpr.Left.Accept(this) | opExpr.Right.Accept(this)) & MaskBit;
-		}
-		else if (opExpr.Op == Op.Eq)
-		{
-			return (opExpr.Left.Accept(this) == opExpr.Right.Accept(this)) ? 1u : 0u;
-		}
-		else if (opExpr.Op == Op.Neq)
-		{
-			return (opExpr.Left.Accept(this) != opExpr.Right.Accept(this)) ? 1u : 0u;
-		}
-		else if (opExpr.Op == Op.Lt)
-		{
-			return (opExpr.Left.Accept(this) < opExpr.Right.Accept(this)) ? 1u : 0u;
-		}
-		else if (opExpr.Op == Op.Gt)
-		{
-			return (opExpr.Left.Accept(this) > opExpr.Right.Accept(this)) ? 1u : 0u;
-		}
-		else if (opExpr.Op == Op.Le)
-		{
-			return (opExpr.Left.Accept(this) <= opExpr.Right.Accept(this)) ? 1u : 0u;
-		}
-		else if (opExpr.Op == Op.Ge)
-		{
-			return (opExpr.Left.Accept(this) >= opExpr.Right.Accept(this)) ? 1u : 0u;
-		}
-		else
-		{
-			throw new SimUnsupportedException();
-		}
+			Op.Plus => (opExpr.Left.Accept(this) + opExpr.Right.Accept(this)) & maskBit,
+			Op.Minus => (opExpr.Left.Accept(this) - opExpr.Right.Accept(this)) & maskBit,
+			Op.And => opExpr.Left.Accept(this) & opExpr.Right.Accept(this) & maskBit,
+			Op.Or => (opExpr.Left.Accept(this) | opExpr.Right.Accept(this)) & maskBit,
+			Op.Eq => (opExpr.Left.Accept(this) == opExpr.Right.Accept(this)) ? 1u : 0u,
+			Op.Neq => (opExpr.Left.Accept(this) != opExpr.Right.Accept(this)) ? 1u : 0u,
+			Op.Lt => (opExpr.Left.Accept(this) < opExpr.Right.Accept(this)) ? 1u : 0u,
+			Op.Gt => (opExpr.Left.Accept(this) > opExpr.Right.Accept(this)) ? 1u : 0u,
+			Op.Le => (opExpr.Left.Accept(this) <= opExpr.Right.Accept(this)) ? 1u : 0u,
+			Op.Ge => (opExpr.Left.Accept(this) >= opExpr.Right.Accept(this)) ? 1u : 0u,
+			_ => throw new SimUnsupportedException()
+		};
 	}
 
 	public ulong VisitSignal(Signal signal)
@@ -83,10 +52,11 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 
 	public ulong VisitSignExtend(SignExtendExpr signExtendExpr)
 	{
-		ulong tmp = (signExtendExpr.Expr.Accept(this) >> ((int)signExtendExpr.Expr.GetWidth() - 1)) & 1;
+		ulong signExtendExprValue = signExtendExpr.Expr.Accept(this);
+		ulong tmp = (signExtendExprValue >> ((int)signExtendExpr.Expr.GetWidth() - 1)) & 1;
 		return tmp == 0
-			? signExtendExpr.Expr.Accept(this) & BitUtils.MakeMaskBit(signExtendExpr.Expr.GetWidth())
-			: signExtendExpr.Expr.Accept(this) | (BitUtils.MakeMaskBit(signExtendExpr.GetWidth()) & ~BitUtils.MakeMaskBit(signExtendExpr.Expr.GetWidth()));
+			? signExtendExprValue & BitUtils.MakeMaskBit(signExtendExpr.Expr.GetWidth())
+			: signExtendExprValue | (BitUtils.MakeMaskBit(signExtendExpr.GetWidth()) & ~BitUtils.MakeMaskBit(signExtendExpr.Expr.GetWidth()));
 	}
 
 	public ulong VisitSlice(SliceExpr sliceExpr)
