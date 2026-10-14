@@ -8,13 +8,65 @@ public class Module
 {
 	private readonly List<Signal> Ports = [];
 	private readonly List<Stmt> Stmts = [];
+	private readonly List<Signal> Locals = [];
+	private readonly HashSet<string> Defined = [];
 	public void SetPorts(List<Signal> ports)
 	{
+		HashSet<string> seen = [];
+		foreach (Signal port in ports)
+		{
+			if (port.Direction is SignalDirection.Internal)
+			{
+				throw new SignalDeclarationException($"Signal '{port.Name}' is a local signal (Wire/Reg) and cannot be a port.");
+			}
+			if (Defined.Contains(port.Name) || !seen.Add(port.Name))
+			{
+				throw new SignalDeclarationException($"Duplicate signal name '{port.Name}'.");
+			}
+		}
+		Defined.UnionWith(seen);
 		Ports.AddRange(ports);
 	}
 	public void SetPort(Signal port)
 	{
+		if (port.Direction is SignalDirection.Internal)
+		{
+			throw new SignalDeclarationException($"Signal '{port.Name}' is a local signal (Wire/Reg) and cannot be a port.");
+		}
+		if (!Defined.Add(port.Name))
+		{
+			throw new SignalDeclarationException($"Duplicate signal name '{port.Name}'.");
+		}
 		Ports.Add(port);
+	}
+	public void SetLocal(Signal local)
+	{
+		if (local.Direction is not SignalDirection.Internal)
+		{
+			throw new SignalDeclarationException($"Signal '{local.Name}' is not a local signal (Wire/Reg).");
+		}
+		if (!Defined.Add(local.Name))
+		{
+			throw new SignalDeclarationException($"Duplicate signal name '{local.Name}'.");
+		}
+		Locals.Add(local);
+	}
+	public void SetLocals(List<Signal> locals)
+	{
+		HashSet<string> seen = [];
+		foreach (Signal local in locals)
+		{
+			if (local.Direction is not SignalDirection.Internal)
+			{
+				throw new SignalDeclarationException($"Signal '{local.Name}' is not a local signal (Wire/Reg).");
+			}
+			if (Defined.Contains(local.Name) || !seen.Add(local.Name))
+			{
+				throw new SignalDeclarationException($"Duplicate signal name '{local.Name}'.");
+			}
+		}
+		Defined.UnionWith(seen);
+		Locals.AddRange(locals);
 	}
 	public ReadOnlyCollection<Signal> GetPorts()
 	{
@@ -23,6 +75,10 @@ public class Module
 	public ReadOnlyCollection<Stmt> GetStmts()
 	{
 		return Stmts.AsReadOnly();
+	}
+	public ReadOnlyCollection<Signal> GetLocals()
+	{
+		return Locals.AsReadOnly();
 	}
 
 	public virtual void Describe()
