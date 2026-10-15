@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
 using SharpHdl.Emit;
+using SharpHdl.Sim;
 using SharpHdl.Tests.TestModule;
 
 namespace SharpHdl.Tests;
@@ -172,5 +173,56 @@ public class LocalSignalTests
 		int firstDecl = verilog.IndexOf("\treg [7:0] picked;", StringComparison.Ordinal);
 		int body = verilog.IndexOf("always @(*)", StringComparison.Ordinal);
 		Assert.True(portListEnd < firstDecl && firstDecl < body);
+	}
+
+	[Fact]
+	public void SimEvaluatesLocalsInTopModule()
+	{
+		LocalSignalModule module = new();
+		module.DescribeDatapath();
+		SimSession<LocalSignalModule> s = module.Run();
+
+		s.Set(module.Rst, 0);
+		s.Set(module.A, 3);
+		s.Set(module.B, 4);
+		s.Settle();
+		Assert.Equal(7u, s.Get(module.Sum));
+		Assert.Equal(0u, s.Get(module.Y));
+
+		s.Advance(module.Clk);
+		Assert.Equal(7u, s.Get(module.Acc));
+		Assert.Equal(7u, s.Get(module.Y));
+	}
+
+	[Fact]
+	public void SimEvaluatesLocalsInChildModule()
+	{
+		SimSession<LocalSignalTop> s = new LocalSignalTop().Run();
+
+		s.Set(s.Module.Rst, 0);
+		s.Set(s.Module.A, 10);
+		s.Set(s.Module.B, 5);
+		s.Settle();
+		Assert.Equal(15u, s.Get(s.Module.Child.Sum));
+		Assert.Equal(0u, s.Get(s.Module.Y));
+
+		s.Advance(s.Module.Clk);
+		Assert.Equal(15u, s.Get(s.Module.Child.Acc));
+		Assert.Equal(15u, s.Get(s.Module.Y));
+	}
+
+	[Theory]
+	[InlineData(1u, 0x11u, 0x22u, 0x11u)]
+	[InlineData(0u, 0x11u, 0x22u, 0x22u)]
+	public void SimEvaluatesIfAssignedAndOneBitLocals(uint sel, uint a, uint b, uint expected)
+	{
+		SimSession<LocalIfComb> s = new LocalIfComb().Run();
+
+		s.Set(s.Module.Sel, sel);
+		s.Set(s.Module.A, a);
+		s.Set(s.Module.B, b);
+		s.Settle();
+		Assert.Equal(expected, s.Get(s.Module.Y));
+		Assert.Equal(sel, s.Get(s.Module.Flag));
 	}
 }

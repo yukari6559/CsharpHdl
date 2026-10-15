@@ -21,6 +21,10 @@ public class SimInitVisitor(SimWorld simWorld) : IStmtVisitor
 		{
 			simWorld.Alias.Add(connection.ChildPort, connection.ParentSignal);
 		}
+		foreach (Signal signal in instanceStmt.ChildModule.GetLocals())
+		{
+			simWorld.Values.Add(signal, 0);
+		}
 	}
 
 	public void VisitMem(MemStmt memStmt)
