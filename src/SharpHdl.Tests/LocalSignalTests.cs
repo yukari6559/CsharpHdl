@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
+using SharpHdl.Emit;
 using SharpHdl.Tests.TestModule;
 
 namespace SharpHdl.Tests;
@@ -122,5 +123,54 @@ public class LocalSignalTests
 
 		Assert.Equal(["y", "s", "t"], module.GetPorts().Select(p => p.Name));
 		Assert.Equal(["x", "p", "q"], module.GetLocals().Select(l => l.Name));
+	}
+
+	[Fact]
+	public void EmitDeclaresLocalsAfterPortList()
+	{
+		LocalSignalModule module = new();
+		module.DescribeDatapath();
+		string verilog = VerilogEmitter.Emitter(module, nameof(LocalSignalModule));
+
+		const string expected =
+			"module LocalSignalModule(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire rst,\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\toutput wire [7:0] Y\n" +
+			");\n" +
+			"\twire [7:0] sum;\n" +
+			"\treg [7:0] acc;\n" +
+			"\tassign sum = A + B;\n" +
+			"\talways @(posedge clk) begin\n" +
+			"\t\tif (rst) begin\n" +
+			"\t\t\tacc <= 8'd0;\n" +
+			"\t\tend else begin\n" +
+			"\t\t\tacc <= sum;\n" +
+			"\t\tend\n" +
+			"\tend\n" +
+			"\tassign Y = acc;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void EmitDeclaresIfAssignedWireAsRegAndOneBitWithoutRange()
+	{
+		LocalIfComb module = new();
+		module.Describe();
+		string verilog = VerilogEmitter.Emitter(module, nameof(LocalIfComb));
+
+		Assert.Contains("\treg [7:0] picked;\n", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("wire [7:0] picked", verilog, StringComparison.Ordinal);
+		Assert.Contains("\twire valid;\n", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("[0:0] valid", verilog, StringComparison.Ordinal);
+
+		int portListEnd = verilog.IndexOf(");\n", StringComparison.Ordinal);
+		int firstDecl = verilog.IndexOf("\treg [7:0] picked;", StringComparison.Ordinal);
+		int body = verilog.IndexOf("always @(*)", StringComparison.Ordinal);
+		Assert.True(portListEnd < firstDecl && firstDecl < body);
 	}
 }

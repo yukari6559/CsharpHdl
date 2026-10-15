@@ -72,6 +72,39 @@ public static class VerilogEmitter
 		_ = verilogsb.Append(");\n");
 	}
 
+	public static void LocalWireDefine(List<Signal> localSignals, StringBuilder verilogsb, HashSet<Signal> regOuts)
+	{
+		for (int i = 0; i < localSignals.Count; i++)
+		{
+			if (localSignals[i].Width == 1)
+			{
+				if (localSignals[i] is Reg reg)
+				{
+					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\treg {reg.Name};\n");
+				}
+				if (localSignals[i] is Wire wire)
+				{
+					_ = regOuts.Contains(localSignals[i])
+						? verilogsb.Append(CultureInfo.InvariantCulture, $"\treg {wire.Name};\n")
+						: verilogsb.Append(CultureInfo.InvariantCulture, $"\twire {wire.Name};\n");
+				}
+			}
+			else
+			{
+				if (localSignals[i] is Reg reg)
+				{
+					_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\treg [{reg.Width - 1}:0] {reg.Name};\n");
+				}
+				if (localSignals[i] is Wire wire)
+				{
+					_ = regOuts.Contains(localSignals[i])
+						? verilogsb.Append(CultureInfo.InvariantCulture, $"\treg [{wire.Width - 1}:0] {wire.Name};\n")
+						: verilogsb.Append(CultureInfo.InvariantCulture, $"\twire [{wire.Width - 1}:0] {wire.Name};\n");
+				}
+			}
+		}
+	}
+
 	public static void EmitModuleBody(List<Stmt> stmts, StringBuilder verilogsb)
 	{
 		CheckMultiDrive.Check(stmts);
@@ -111,6 +144,7 @@ public static class VerilogEmitter
 		StringBuilder verilogsb = new();
 
 		List<Signal> signals = [.. module.GetPorts()];
+		List<Signal> localSignals = [.. module.GetLocals()];
 		List<Stmt> stmts = [.. module.GetStmts()];
 		HashSet<Signal> regOuts = [];
 
@@ -123,6 +157,7 @@ public static class VerilogEmitter
 		_ = CollectRegOuts(stmts, regOuts);
 
 		WireDefine(signals, verilogsb, regOuts);
+		LocalWireDefine(localSignals, verilogsb, regOuts);
 
 		if (emitHierarchy)
 		{
