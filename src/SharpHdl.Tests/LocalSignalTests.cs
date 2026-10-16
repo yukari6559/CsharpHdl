@@ -225,4 +225,24 @@ public class LocalSignalTests
 		Assert.Equal(expected, s.Get(s.Module.Y));
 		Assert.Equal(sel, s.Get(s.Module.Flag));
 	}
+
+	[Fact]
+	public void SimSetOnLocalThrowsButGetAndPortSetRemainAllowed()
+	{
+		LocalSignalModule module = new();
+		module.DescribeDatapath();
+		SimSession<LocalSignalModule> s = module.Run();
+
+		SimException wireEx = Assert.Throws<SimException>(() => s.Set(module.Sum, 1));
+		Assert.Contains("'sum'", wireEx.Message, StringComparison.Ordinal);
+		SimException regEx = Assert.Throws<SimException>(() => s.Set(module.Acc, 1));
+		Assert.Contains("'acc'", regEx.Message, StringComparison.Ordinal);
+
+		s.Set(module.Rst, 0);
+		s.Set(module.A, 3);
+		s.Set(module.B, 4);
+		s.Settle();
+		Assert.Equal(7u, s.Get(module.Sum));
+		Assert.Equal(0u, s.Get(module.Acc));
+	}
 }
