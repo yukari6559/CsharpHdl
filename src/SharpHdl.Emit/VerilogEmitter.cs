@@ -148,6 +148,8 @@ public static class VerilogEmitter
 		List<Stmt> stmts = [.. module.GetStmts()];
 		HashSet<Signal> regOuts = [];
 
+		CheckUndeclaredLocals.Check(module);
+
 		if (emitHierarchy)
 		{
 			CollectInstances(stmts, instanceStmts, verilogsb);

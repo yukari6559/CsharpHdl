@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
+using SharpHdl.Core.Validate;
 using SharpHdl.Emit;
 using SharpHdl.Sim;
 using SharpHdl.Tests.TestModule;
@@ -244,5 +245,34 @@ public class LocalSignalTests
 		s.Settle();
 		Assert.Equal(7u, s.Get(module.Sum));
 		Assert.Equal(0u, s.Get(module.Acc));
+	}
+
+	[Fact]
+	public void UndeclaredLocalLhsThrowsOnCheckSimAndEmit()
+	{
+		BadUndeclaredLocalModule module = new();
+		module.DescribeUndeclaredWireLhs();
+
+		SignalDeclarationException checkEx = Assert.Throws<SignalDeclarationException>(
+			() => CheckUndeclaredLocals.Check(module));
+		Assert.Contains("'undeclared'", checkEx.Message, StringComparison.Ordinal);
+
+		SignalDeclarationException simEx = Assert.Throws<SignalDeclarationException>(module.Run);
+		Assert.Contains("'undeclared'", simEx.Message, StringComparison.Ordinal);
+
+		SignalDeclarationException emitEx = Assert.Throws<SignalDeclarationException>(
+			() => VerilogEmitter.Emitter(module, nameof(BadUndeclaredLocalModule)));
+		Assert.Contains("'undeclared'", emitEx.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void UndeclaredLocalRhsThrowsOnCheck()
+	{
+		BadUndeclaredLocalModule module = new();
+		module.DescribeUndeclaredWireRhs();
+
+		SignalDeclarationException ex = Assert.Throws<SignalDeclarationException>(
+			() => CheckUndeclaredLocals.Check(module));
+		Assert.Contains("'undeclared'", ex.Message, StringComparison.Ordinal);
 	}
 }
