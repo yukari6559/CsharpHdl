@@ -11,6 +11,7 @@ public static class ModuleSimExtensions
 		SimSession<T> simSession = new() { Module = module };
 		module.Describe();
 		CheckMultiDrive.Check([.. module.GetStmts()]);
+		CheckUndeclaredLocals.Check(module);
 		simSession.SimWorld = ModuleFlat.Build(module);
 		simSession.Settle();
 		return simSession;

@@ -10,20 +10,14 @@ public class SimWorld
 	public Dictionary<Signal, ulong[]> MemState { get; set; } = [];
 	public ulong Get(Signal signal)
 	{
-		if (Alias.TryGetValue(signal, out Signal? parent))
-		{
-			signal = parent;
-		}
+		signal = ResolveAlias(signal);
 
 		return Values[signal];
 	}
 
 	public void Set(Signal signal, ulong value)
 	{
-		if (Alias.TryGetValue(signal, out Signal? parent))
-		{
-			signal = parent;
-		}
+		signal = ResolveAlias(signal);
 
 		ulong maxValue = BitUtils.MakeMaskBit(signal.Width);
 		if (Values.ContainsKey(signal) && value <= maxValue)
@@ -38,5 +32,14 @@ public class SimWorld
 		{
 			throw new WidthMismatchException();
 		}
+	}
+
+	public Signal ResolveAlias(Signal signal)
+	{
+		if (Alias.TryGetValue(signal, out Signal? parent))
+		{
+			signal = parent;
+		}
+		return signal;
 	}
 }

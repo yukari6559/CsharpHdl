@@ -1,6 +1,9 @@
 using System.Collections.ObjectModel;
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Core.Model;
+using SharpHdl.Core.Validate;
+using SharpHdl.Emit;
+using SharpHdl.Sim;
 using SharpHdl.Tests.TestModule;
 
 namespace SharpHdl.Tests;
@@ -122,5 +125,154 @@ public class LocalSignalTests
 
 		Assert.Equal(["y", "s", "t"], module.GetPorts().Select(p => p.Name));
 		Assert.Equal(["x", "p", "q"], module.GetLocals().Select(l => l.Name));
+	}
+
+	[Fact]
+	public void EmitDeclaresLocalsAfterPortList()
+	{
+		LocalSignalModule module = new();
+		module.DescribeDatapath();
+		string verilog = VerilogEmitter.Emitter(module, nameof(LocalSignalModule));
+
+		const string expected =
+			"module LocalSignalModule(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire rst,\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\toutput wire [7:0] Y\n" +
+			");\n" +
+			"\twire [7:0] sum;\n" +
+			"\treg [7:0] acc;\n" +
+			"\tassign sum = A + B;\n" +
+			"\talways @(posedge clk) begin\n" +
+			"\t\tif (rst) begin\n" +
+			"\t\t\tacc <= 8'd0;\n" +
+			"\t\tend else begin\n" +
+			"\t\t\tacc <= sum;\n" +
+			"\t\tend\n" +
+			"\tend\n" +
+			"\tassign Y = acc;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void EmitDeclaresIfAssignedWireAsRegAndOneBitWithoutRange()
+	{
+		LocalIfComb module = new();
+		module.Describe();
+		string verilog = VerilogEmitter.Emitter(module, nameof(LocalIfComb));
+
+		Assert.Contains("\treg [7:0] picked;\n", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("wire [7:0] picked", verilog, StringComparison.Ordinal);
+		Assert.Contains("\twire valid;\n", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("[0:0] valid", verilog, StringComparison.Ordinal);
+
+		int portListEnd = verilog.IndexOf(");\n", StringComparison.Ordinal);
+		int firstDecl = verilog.IndexOf("\treg [7:0] picked;", StringComparison.Ordinal);
+		int body = verilog.IndexOf("always @(*)", StringComparison.Ordinal);
+		Assert.True(portListEnd < firstDecl && firstDecl < body);
+	}
+
+	[Fact]
+	public void SimEvaluatesLocalsInTopModule()
+	{
+		LocalSignalModule module = new();
+		module.DescribeDatapath();
+		SimSession<LocalSignalModule> s = module.Run();
+
+		s.Set(module.Rst, 0);
+		s.Set(module.A, 3);
+		s.Set(module.B, 4);
+		s.Settle();
+		Assert.Equal(7u, s.Get(module.Sum));
+		Assert.Equal(0u, s.Get(module.Y));
+
+		s.Advance(module.Clk);
+		Assert.Equal(7u, s.Get(module.Acc));
+		Assert.Equal(7u, s.Get(module.Y));
+	}
+
+	[Fact]
+	public void SimEvaluatesLocalsInChildModule()
+	{
+		SimSession<LocalSignalTop> s = new LocalSignalTop().Run();
+
+		s.Set(s.Module.Rst, 0);
+		s.Set(s.Module.A, 10);
+		s.Set(s.Module.B, 5);
+		s.Settle();
+		Assert.Equal(15u, s.Get(s.Module.Child.Sum));
+		Assert.Equal(0u, s.Get(s.Module.Y));
+
+		s.Advance(s.Module.Clk);
+		Assert.Equal(15u, s.Get(s.Module.Child.Acc));
+		Assert.Equal(15u, s.Get(s.Module.Y));
+	}
+
+	[Theory]
+	[InlineData(1u, 0x11u, 0x22u, 0x11u)]
+	[InlineData(0u, 0x11u, 0x22u, 0x22u)]
+	public void SimEvaluatesIfAssignedAndOneBitLocals(uint sel, uint a, uint b, uint expected)
+	{
+		SimSession<LocalIfComb> s = new LocalIfComb().Run();
+
+		s.Set(s.Module.Sel, sel);
+		s.Set(s.Module.A, a);
+		s.Set(s.Module.B, b);
+		s.Settle();
+		Assert.Equal(expected, s.Get(s.Module.Y));
+		Assert.Equal(sel, s.Get(s.Module.Flag));
+	}
+
+	[Fact]
+	public void SimSetOnLocalThrowsButGetAndPortSetRemainAllowed()
+	{
+		LocalSignalModule module = new();
+		module.DescribeDatapath();
+		SimSession<LocalSignalModule> s = module.Run();
+
+		SimException wireEx = Assert.Throws<SimException>(() => s.Set(module.Sum, 1));
+		Assert.Contains("'sum'", wireEx.Message, StringComparison.Ordinal);
+		SimException regEx = Assert.Throws<SimException>(() => s.Set(module.Acc, 1));
+		Assert.Contains("'acc'", regEx.Message, StringComparison.Ordinal);
+
+		s.Set(module.Rst, 0);
+		s.Set(module.A, 3);
+		s.Set(module.B, 4);
+		s.Settle();
+		Assert.Equal(7u, s.Get(module.Sum));
+		Assert.Equal(0u, s.Get(module.Acc));
+	}
+
+	[Fact]
+	public void UndeclaredLocalLhsThrowsOnCheckSimAndEmit()
+	{
+		BadUndeclaredLocalModule module = new();
+		module.DescribeUndeclaredWireLhs();
+
+		SignalDeclarationException checkEx = Assert.Throws<SignalDeclarationException>(
+			() => CheckUndeclaredLocals.Check(module));
+		Assert.Contains("'undeclared'", checkEx.Message, StringComparison.Ordinal);
+
+		SignalDeclarationException simEx = Assert.Throws<SignalDeclarationException>(module.Run);
+		Assert.Contains("'undeclared'", simEx.Message, StringComparison.Ordinal);
+
+		SignalDeclarationException emitEx = Assert.Throws<SignalDeclarationException>(
+			() => VerilogEmitter.Emitter(module, nameof(BadUndeclaredLocalModule)));
+		Assert.Contains("'undeclared'", emitEx.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void UndeclaredLocalRhsThrowsOnCheck()
+	{
+		BadUndeclaredLocalModule module = new();
+		module.DescribeUndeclaredWireRhs();
+
+		SignalDeclarationException ex = Assert.Throws<SignalDeclarationException>(
+			() => CheckUndeclaredLocals.Check(module));
+		Assert.Contains("'undeclared'", ex.Message, StringComparison.Ordinal);
 	}
 }

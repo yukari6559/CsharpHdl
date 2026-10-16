@@ -2,5 +2,6 @@
   "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
   "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
   "dotnet.diagnostics.reportInformationAsHint": false,
+  "dotnet.defaultSolution": "CsharpHdl.slnx",
   "editor.showUnused": true
 }

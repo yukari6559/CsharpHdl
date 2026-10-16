@@ -11,6 +11,10 @@ public class SimSession<T> where T : Module
 	public SimWorld SimWorld { get; set; } = new();
 	public void Set(Signal signal, ulong value)
 	{
+		if (signal.Direction is SignalDirection.Internal)
+		{
+			throw new SimException($"Signal '{signal.Name}' is a local signal (Wire/Reg) and cannot be set from outside.");
+		}
 		SimWorld.Set(signal, value);
 	}
 	public ulong Get(Signal signal)

@@ -25,7 +25,7 @@ public class SeqStmtVisitor(SimWorld simWorld, Signal clk) : IStmtVisitor
 
 	public void VisitMem(MemStmt memStmt)
 	{
-		if (memStmt.Clk == clk)
+		if (simWorld.ResolveAlias(memStmt.Clk) == simWorld.ResolveAlias(clk))
 		{
 			ulong nextRdata = simWorld.MemState[memStmt.Rdata][EvalExpr.Eval(memStmt.Addr, simWorld)];
 			nextValues[memStmt.Rdata] = nextRdata;
@@ -38,7 +38,7 @@ public class SeqStmtVisitor(SimWorld simWorld, Signal clk) : IStmtVisitor
 
 	public void VisitMem2R1W(Mem2R1WStmt mem2R1WStmt)
 	{
-		if (mem2R1WStmt.Clk == clk && EvalExpr.Eval(mem2R1WStmt.We, simWorld) == 1)
+		if (simWorld.ResolveAlias(mem2R1WStmt.Clk) == simWorld.ResolveAlias(clk) && EvalExpr.Eval(mem2R1WStmt.We, simWorld) == 1)
 		{
 			simWorld.MemState[mem2R1WStmt.Rdata0][EvalExpr.Eval(mem2R1WStmt.Waddr, simWorld)] = EvalExpr.Eval(mem2R1WStmt.Wdata, simWorld);
 		}
@@ -46,7 +46,7 @@ public class SeqStmtVisitor(SimWorld simWorld, Signal clk) : IStmtVisitor
 
 	public void VisitMemWstrb(MemWstrbStmt memWstrbStmt)
 	{
-		if (memWstrbStmt.Clk == clk)
+		if (simWorld.ResolveAlias(memWstrbStmt.Clk) == simWorld.ResolveAlias(clk))
 		{
 			ulong nextRdata = simWorld.MemState[memWstrbStmt.Rdata][EvalExpr.Eval(memWstrbStmt.Addr, simWorld)];
 			if (EvalExpr.Eval(memWstrbStmt.We, simWorld) == 1)
@@ -72,7 +72,7 @@ public class SeqStmtVisitor(SimWorld simWorld, Signal clk) : IStmtVisitor
 
 	public void VisitSeqBlock(SeqBlockStmt seqBlockStmt)
 	{
-		if (seqBlockStmt.Clk == clk)
+		if (simWorld.ResolveAlias(seqBlockStmt.Clk) == simWorld.ResolveAlias(clk))
 		{
 			ulong resetValue = EvalExpr.Eval(seqBlockStmt.Reset, simWorld);
 			if (resetValue is not 0 and not 1)

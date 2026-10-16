@@ -28,6 +28,21 @@ public class CircuitSimTests
 	}
 
 	[Fact]
+	public void CounterTopAdvancesChildSeqWithParentClock()
+	{
+		SimSession<CounterTop> c = new CounterTop().Run();
+
+		c.Set(c.Module.Rst, 1);
+		c.Advance(c.Module.Clk);
+		Assert.Equal(0u, c.Get(c.Module.Count));
+
+		c.Set(c.Module.Rst, 0);
+		c.Set(c.Module.Step, 3);
+		c.Advance(c.Module.Clk, 2);
+		Assert.Equal(6u, c.Get(c.Module.Count));
+	}
+
+	[Fact]
 	public void SeqResetUlongResetsAboveUintMax()
 	{
 		SimSession<SeqResetUlong> s = new SeqResetUlong().Run();

@@ -13,6 +13,10 @@ public class ModuleFlat
 		{
 			simWorld.Values.Add(signal, 0);
 		}
+		foreach (Signal localSignal in module.GetLocals())
+		{
+			simWorld.Values.Add(localSignal, 0);
+		}
 		foreach (Stmt stmt in module.GetStmts())
 		{
 			stmt.Accept(simInitVisitor);
