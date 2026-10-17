@@ -72,11 +72,27 @@ public abstract class Expr
 	}
 	public Expr Slice(uint msb, uint lsb)
 	{
+		if (this is not Signal and not SliceExpr)
+		{
+			throw new UnsupportedSelectException("Slice is only supported on a signal or a slice of a signal.");
+		}
+		if (lsb > msb || msb >= GetWidth())
+		{
+			throw new WidthMismatchException($"Slice [{msb}:{lsb}] is out of range for width {GetWidth()}.");
+		}
+		if (this is SliceExpr innerSliceExpr)
+		{
+			return new SliceExpr(innerSliceExpr.LSB + msb, innerSliceExpr.LSB + lsb, innerSliceExpr.Expr);
+		}
 		SliceExpr sliceExpr = new(msb, lsb, this);
 		return sliceExpr;
 	}
 	public Expr SignExtend(uint width)
 	{
+		if (this is not Signal and not SliceExpr)
+		{
+			throw new UnsupportedSelectException("SignExtend is only supported on a signal or a slice of a signal.");
+		}
 		if (GetWidth() > width)
 		{
 			throw new WidthMismatchException();
@@ -106,11 +122,18 @@ public abstract class Expr
 	}
 }
 
-public sealed class SliceExpr(uint msb, uint lsb, Expr expr) : Expr
+public sealed class SliceExpr : Expr
 {
-	public uint LSB { get; private set; } = lsb;
-	public uint MSB { get; private set; } = msb;
-	public Expr Expr { get; private set; } = expr;
+	public uint LSB { get; private set; }
+	public uint MSB { get; private set; }
+	public Expr Expr { get; private set; }
+
+	internal SliceExpr(uint msb, uint lsb, Expr expr)
+	{
+		LSB = lsb;
+		MSB = msb;
+		Expr = expr;
+	}
 
 	public override uint GetWidth()
 	{
@@ -144,10 +167,16 @@ public sealed class ConcatExpr(params Expr[] expr) : Expr
 	}
 }
 
-public sealed class SignExtendExpr(uint width, Expr expr) : Expr
+public sealed class SignExtendExpr : Expr
 {
-	public uint Width { get; private set; } = width;
-	public Expr Expr { get; private set; } = expr;
+	public uint Width { get; private set; }
+	public Expr Expr { get; private set; }
+
+	internal SignExtendExpr(uint width, Expr expr)
+	{
+		Width = width;
+		Expr = expr;
+	}
 
 	public override uint GetWidth()
 	{
@@ -160,10 +189,16 @@ public sealed class SignExtendExpr(uint width, Expr expr) : Expr
 	}
 }
 
-public sealed class ZeroExtendExpr(uint width, Expr expr) : Expr
+public sealed class ZeroExtendExpr : Expr
 {
-	public uint Width { get; private set; } = width;
-	public Expr Expr { get; private set; } = expr;
+	public uint Width { get; private set; }
+	public Expr Expr { get; private set; }
+
+	internal ZeroExtendExpr(uint width, Expr expr)
+	{
+		Width = width;
+		Expr = expr;
+	}
 
 	public override uint GetWidth()
 	{
