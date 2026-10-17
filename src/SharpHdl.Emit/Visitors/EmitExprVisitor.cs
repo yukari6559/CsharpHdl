@@ -35,7 +35,25 @@ public class EmitExprVisitor : IExprVisitor<string>
 
 	public string VisitOp(OpExpr opExpr)
 	{
-		return opExpr.Left.Accept(this) + " " + opExpr.Op.ToCustomString() + " " + opExpr.Right.Accept(this);
+		string s = "";
+		if (opExpr.Left is OpExpr)
+		{
+			s += "(" + opExpr.Left.Accept(this) + ")" + " ";
+		}
+		else
+		{
+			s += opExpr.Left.Accept(this) + " ";
+		}
+		s += opExpr.Op.ToCustomString() + " ";
+		if (opExpr.Right is OpExpr)
+		{
+			s += "(" + opExpr.Right.Accept(this) + ")";
+		}
+		else
+		{
+			s += opExpr.Right.Accept(this);
+		}
+		return s;
 	}
 
 	public string VisitSignal(Signal signal)
