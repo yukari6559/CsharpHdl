@@ -1,0 +1,225 @@
+# 開発ワークフロー（M3 完了後）
+
+**切替タイミング:** MidiSynth **M3（定数 Expr）** をテスト＋版上げで閉じた直後から移行する。  
+M3 完了前の先取り（Milestone／Issue 作成）は可。
+
+**目的:** 就活作品・OSS として見られる履歴を残す。枚数稼ぎではなく、**普通のチーム開発に見える粒度**にする。  
+**役割:** 実装は人手（原則）。**ブランチ作成・Issue／Milestone・PR・コメント編集・（委任時）マージはエージェント**が行う。
+
+関連: [ROADMAP.md](ROADMAP.md) / [refactor-plan.md](refactor-plan.md) / [tickets/midisynth-tang-primer25k-requests.md](tickets/midisynth-tang-primer25k-requests.md)
+
+---
+
+## 0. 階層の正（取り込む例と捨てる例）
+
+採用するイメージ（提案を業務／OSS 王道に合わせて調整したもの）:
+
+```
+Milestone …… テーマ全体（例: リファクタキャンペーン、M4、版 v0.3.9）
+  └─ Issue …… レビュー可能な 1 ステップ（≒ 後で 1 PR）
+        ├─ 本文チェックリスト …… 細かい手順（Issue にしない）
+        └─ PR
+              └─ コミット …… PR 内の論理単位（Issue にしない）
+```
+
+| 層 | 役割 | リファクタ例 |
+|----|------|----------------|
+| **Milestone** | テーマ全体を束ねる | `refactor-emitter`（R-E1〜E2 など関連をまとめる） |
+| **Issue** | マージ可能な成果 1 つ | `#15 Unify dual Emitter paths (R-E1)` |
+| **チェックリスト** | Issue 内の手順メモ | `- [ ] extract helpers` `- [ ] delete duplicate` |
+| **PR** | Issue を閉じる差分 | `Closes #15` |
+| **コミット** | PR 内の読みやすい区切り | Core 共通化 → 二重削除 → テスト緑確認 |
+
+### 取り込んだ点（元の提案）
+- リファクタなど **大きな仕事は Milestone に載せる**
+- その中を **Issue（ステップ）に分割**する
+- 作業を GitHub 上に残し、`main` 直コミット運用から離れる
+
+### 採用しない点（細かすぎ／非王道）
+- **サブIssue をコミット単位まで切る**
+- **サブIssue 完了＝1コミットで Issue を閉じる**
+
+理由（就活・業務の見え方）:
+- 評価者／採用側が見るのは主に **PR の質・説明・テスト** と **Issue の意図**。Issue の枚数ではない
+- OSS／業務の定石は **Milestone → Issue → PR**。コミットは PR の内部履歴
+- サブIssue＝1コミットは管理コストが高く、ノイズに見えやすい
+
+### サブIssueを使ってよい例外
+別 PR になりうる・長いブロッカー・明確に並列できるときだけ。それでも **1 サブIssue ≈ 1 PR 候補** であり、1 コミットではない。
+
+---
+
+## 1. 新しいタスクを立てるときのフロー（必須）
+
+エージェント／作者が「次の仕事」を切るときは、毎回この順で組む。
+
+1. **テーマを決める** → Milestone があるか確認。無ければ作成  
+   - 版: `v0.3.8`  
+   - 機能束: `m4-local-signals`  
+   - リファクタ束: `refactor-emitter`（[refactor-plan.md](refactor-plan.md) の関連 ID をまとめる）
+2. **レビュー可能な塊に分割** → 各塊を **Issue** にする  
+   - 目安: 半日〜数日、1 PR で見られる差分  
+   - リファクタ: 原則 **R-\* の 1 ID ≈ 1 Issue**（密接なら 2 ID まで）
+3. **細かい手順** → Issue 本文の **チェックリスト**（サブIssueにしない）
+4. **実装** → `feat|refactor|…/<issue>-<short>` ブランチ → 論理単位でコミット → **PR**（`Closes #N`）
+5. **完了** → PR マージで Issue クローズ。内部 tickets／refactor-plan の状態も更新
+
+「タスク生成」の出力は、少なくとも次を含む文案にする:  
+Milestone 名、Issue タイトル、本文（内部 ID・完了条件・チェックリスト案）、ブランチ名案、想定コミット分割（PR 内）。
+
+---
+
+## 2. 役割分担
+
+| 置き場 | 役割 |
+|--------|------|
+| `internal/docs/`（Git で追跡。`internal/` のそれ以外はローカル専用） | 仕様・ロードマップ・詳細チケット・R-\* ID |
+| **GitHub Milestone** | テーマ／版の束 |
+| **GitHub Issue** | 公開される作業単位（1 Issue ≈ 1 PR） |
+| **PR + コミット** | 実装履歴（コミットは Issue にしない） |
+| タグ `v*.*.*` | nuget 公開（従来どおり） |
+
+仕様の正本 = internal。作業トラッキングの正本 = GitHub Issue／PR。
+
+---
+
+## 3. Milestone
+
+| 種類 | 例 |
+|------|-----|
+| 版 | `v0.3.8` — M3 完了 |
+| 機能テーマ | `m4-local-signals` |
+| リファクタテーマ | `refactor-emitter`（中に R-E1, R-E2 の Issue） |
+
+- オープン Issue はいずれかの Milestone に属させる
+- リファクタ「全体」を Milestone にし、中の R-\* を Issue にする（元提案の良い部分）
+
+---
+
+## 4. Issue
+
+### 立て方
+- タイトル例: `refactor: Unify dual VerilogEmitter paths (R-E1)`
+- 本文: 内部 ID、完了条件、触るパッケージ、**チェックリスト（細ステップ）**
+- ラベル: `feat` / `refactor` / `docs` / `test` / `chore` / `sim` / `emit` / `core`
+- Milestone 必須
+
+### 粒度
+| ダメ | よい |
+|------|------|
+| Milestone 無しで巨大 Issue 1 本 | テーマは Milestone、中身は複数 Issue |
+| 「helpers 抽出」をサブIssue＋1コミット | 同じ内容を親 Issue の `- [ ]` に書く |
+| M4 全部を 1 Issue | M4a / M4b など PR 単位に割る |
+
+### 閉じ方
+- PR の `Closes #N`
+- 内部表（tickets / refactor-plan）も更新
+
+---
+
+## 5. ブランチ
+
+```
+main
+feat/<issue>-<short>
+refactor/<issue>-<short>
+fix/<issue>-<short>
+docs/<issue>-<short>
+chore/<issue>-<short>
+```
+
+- Issue 番号を含める
+- `main` から切る。共有ブランチへの force push 禁止
+- M3 移行後、機能・リファクタは原則 `main` 直コミットしない
+
+---
+
+## 6. Pull Request とコミット
+
+**PR**
+- 1 PR ≈ 1 Issue
+- Summary / Test plan / `Closes #N` / 内部 ID
+- 自分のみレビューでも PR を残す（履歴が目的）
+- **マージは merge commit のみ**（squash / rebase はリポで無効）。グラフ上で feature が `main` に合流して見えるようにする。`gh pr merge` は `--merge` を使う
+
+**コミット（PR 内）**
+- **1 コミット = 説明できる一塊**。複数単位なら分ける（例: Core → Sim → Emit → tests）
+- ユーザーが「コミットして」だけでも、エージェントは差分を見て **必要なだけ複数コミット**する（都度確認しない）
+- Conventional 寄り: `feat:` / `refactor:` / `fix:` / `docs:` / `chore:` / `test:`
+- **コミットごとに Issue／サブIssueを増やさない**（分割するのは git commit のみ）
+- 版上げは `chore: bump …` ＋タグ `vX.Y.Z`（実装 PR と分ける）
+
+### `main` 直コミットの例外
+- typo・1 行 docs（できれば Issue）
+- ユーザーが「main に直接」と明示した場合
+
+---
+
+## 7. 具体例
+
+### リファクタ（Emitter）
+1. Milestone: `refactor-emitter`
+2. Issue `#15` R-E1 統合（チェックリストに extract / merge / テスト）
+3. Issue `#16` R-E2 wire/reg（意味論変更の可能性 → 別 Issue）
+4. 各 Issue ごとにブランチ＋PR。`#15` の PR 内で複数コミット可
+
+### 機能（M4）
+1. Milestone: `m4-local-signals`
+2. Issue: M4a 宣言、M4b Emit+Sim+テスト（または 1 Issue＋チェックリスト）
+3. 同様に PR
+
+---
+
+## 8. エージェント向け
+
+`no-concrete-code`（実装は明示依頼があるまで人手）は継続。  
+**リポジトリ操作（GitHub / ブランチ）はエージェントが担う**（ユーザーが都度指示しなくてよい。区切りが来たら実行する）。
+
+### エージェントが実行する操作
+
+| タイミング | 内容 |
+|------------|------|
+| **作業開始** | Milestone の有無を確認し、無ければ作成。対応 Issue を作成または既存に紐づけ。`feat|refactor|fix|docs|chore/<issue>-<short>` を **作成して checkout** |
+| **マージ可能な品質になったとき** | リモートへ push → **PR 作成**（タイトル Conventional、本文に Summary / Test plan / `Closes #N` / 内部 ID）→ 必要に応じて PR 説明やレビューコメントを編集 → ユーザーが本運用で委任済みなら **マージ**（`gh pr merge`）。Issue／Milestone の状態を確認 |
+| **版上げ** | 実装 PR と分け、chore Issue＋PR（例: bump 0.3.8） |
+| **「次へ」** | 次 Milestone／Issue を案内し、着手するならブランチまで切る |
+
+### ユーザーが言うと特に動くフレーズ（必須ではない）
+「checkout」「PR して」「マージまで」「Issue 切って」— 無くても区切りで上記を行う。
+
+### やらない／推さない
+| 内容 | 代わり |
+|------|--------|
+| サブIssue＝1コミット | Issue チェックリスト＋PR 内コミット |
+| 勝手な `main` 直コミット（機能） | ブランチ＋PR |
+| 実装の先回り | 明示「実装して」等があるまで案内のみ |
+
+### 従来どおりの表
+
+| 依頼 | 動作 |
+|------|------|
+| 新しいタスク／「次へ」 | §1 フロー＋ **ブランチ checkout**。サブIssue＝コミット案は出さない |
+| 「実装して」 | 現ブランチ上で実装可（範囲内） |
+| 「コミットして」 | ブランチ上で、**論理単位が複数なら複数コミット**。続けて PR を提案／作成 |
+| 「サブIssueでコミット単位に」 | **推さない** |
+
+---
+
+## 9. 移行チェックリスト（M3 閉じた直後）
+
+- [ ] M3 テスト緑・版上げ・タグ
+- [ ] Milestone 作成（例: `refactor-emitter`、`m4-local-signals`）
+- [ ] 直近 Issue 化（少なくとも R-E1）
+- [ ] 以降はブランチ＋PR
+- [ ] （任意）公開 README／CONTRIBUTING に Issue・PR 運用を一言
+
+---
+
+## 改版履歴
+
+| 版 | 日付 | 変更 |
+|----|------|------|
+| 1.3 | 2026-09-18 | 「コミットして」でも論理単位で複数コミット分割 |
+| 1.2 | 2026-09-18 | エージェントがブランチ／Issue／PR／（委任時）マージを担当すると明記 |
+| 1.1 | 2026-09-18 | Milestone→Issue→PR を正とする。元提案の取り込む／捨てるを明記。タスク生成フロー固定 |
+| 1.0 | 2026-09-18 | 初版 |
