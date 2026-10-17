@@ -841,6 +841,30 @@ public class ModuleTests
 		Assert.Equal(expected, verilog);
 	}
 
+	[Fact]
+	public void TestNestedOpCombEmitterParenthesizesNestedOperands()
+	{
+		NestedOpComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(NestedOpComb));
+
+		const string expected =
+			"module NestedOpComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire [7:0] C,\n" +
+			"\toutput wire [7:0] XorAnd,\n" +
+			"\toutput wire [7:0] OrAnd,\n" +
+			"\toutput wire [7:0] AndOr\n" +
+			");\n" +
+			"\tassign XorAnd = (A ^ B) & C;\n" +
+			"\tassign OrAnd = (A | B) & C;\n" +
+			"\tassign AndOr = A & (B | C);\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;

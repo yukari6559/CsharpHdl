@@ -325,6 +325,21 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0xF0u, 0x0Fu, 0x3Cu, 0x3Cu, 0x3Cu, 0x30u)]
+	[InlineData(0xAAu, 0x55u, 0x0Fu, 0x0Fu, 0x0Fu, 0x0Au)]
+	public void NestedOpCombKeepsTreeGrouping(uint a, uint b, uint c, uint xorAnd, uint orAnd, uint andOr)
+	{
+		SimSession<NestedOpComb> m = new NestedOpComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.C, c);
+		m.Settle();
+		Assert.Equal(xorAnd, m.Get(m.Module.XorAnd));
+		Assert.Equal(orAnd, m.Get(m.Module.OrAnd));
+		Assert.Equal(andOr, m.Get(m.Module.AndOr));
+	}
+
+	[Theory]
 	[InlineData(3u, 3u, 10u, 20u, 10u)]
 	[InlineData(2u, 5u, 10u, 20u, 20u)]
 	public void IfMuxCombSelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)
