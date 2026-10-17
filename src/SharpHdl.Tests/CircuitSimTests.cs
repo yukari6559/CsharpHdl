@@ -311,6 +311,20 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0xF0u, 0x0Fu, 0xFFu, 0x00u)]
+	[InlineData(0xAAu, 0xAAu, 0x00u, 0xFFu)]
+	[InlineData(0x3Cu, 0x5Au, 0x66u, 0x99u)]
+	public void XorCombXorAndXnorStayWithinWidth(uint a, uint b, uint x, uint xn)
+	{
+		SimSession<XorComb> m = new XorComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Settle();
+		Assert.Equal(x, m.Get(m.Module.X));
+		Assert.Equal(xn, m.Get(m.Module.Xn));
+	}
+
+	[Theory]
 	[InlineData(3u, 3u, 10u, 20u, 10u)]
 	[InlineData(2u, 5u, 10u, 20u, 20u)]
 	public void IfMuxCombSelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)

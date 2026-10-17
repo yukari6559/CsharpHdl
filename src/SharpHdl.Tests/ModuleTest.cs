@@ -820,6 +820,27 @@ public class ModuleTests
 		Assert.DoesNotContain("8'd300", verilog, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void TestXorCombModuleEmitterEmitsXorAndXnor()
+	{
+		XorComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(XorComb));
+
+		const string expected =
+			"module XorComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\toutput wire [7:0] X,\n" +
+			"\toutput wire [7:0] Xn\n" +
+			");\n" +
+			"\tassign X = A ^ B;\n" +
+			"\tassign Xn = A ~^ B;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;
