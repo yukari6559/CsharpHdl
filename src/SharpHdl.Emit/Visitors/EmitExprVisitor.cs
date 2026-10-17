@@ -63,19 +63,45 @@ public class EmitExprVisitor : IExprVisitor<string>
 
 	public string VisitSignExtend(SignExtendExpr signExtendExpr)
 	{
+		string signBit;
 		if (signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth() == 0)
 		{
 			return signExtendExpr.Expr.Accept(this);
 		}
+
+		string repeatCount = $"{signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth()}";
+
+		if (signExtendExpr.Expr is SliceExpr sliceExpr)
+		{
+			if (sliceExpr.Expr.GetWidth() == 1)
+			{
+				signBit = $"{sliceExpr.Expr.Accept(this)}";
+			}
+			else
+			{
+				signBit = $"{sliceExpr.Expr.Accept(this)}[{sliceExpr.MSB}]";
+			}
+		}
 		else
 		{
-			string s = "{{" + $"{signExtendExpr.GetWidth() - signExtendExpr.Expr.GetWidth()}{{" + $"{signExtendExpr.Expr.Accept(this)}[{signExtendExpr.Expr.GetWidth() - 1}]" + "}}, " + $"{signExtendExpr.Expr.Accept(this)}" + "}";
-			return s;
+			if (signExtendExpr.Expr.GetWidth() == 1)
+			{
+				signBit = signExtendExpr.Expr.Accept(this);
+			}
+			else
+			{
+				signBit = $"{signExtendExpr.Expr.Accept(this)}[{signExtendExpr.Expr.GetWidth() - 1}]";
+			}
 		}
+		return "{" + "{" + $"{repeatCount}" + "{" + $"{signBit}" + "}" + "}" + ", " + $"{signExtendExpr.Expr.Accept(this)}" + "}";
 	}
 
 	public string VisitSlice(SliceExpr sliceExpr)
 	{
+		if (sliceExpr.LSB == 0 && sliceExpr.MSB == sliceExpr.Expr.GetWidth() - 1)
+		{
+			return sliceExpr.Expr.Accept(this);
+		}
 		return sliceExpr.Expr.Accept(this) + $"[{sliceExpr.MSB}:{sliceExpr.LSB}]";
 	}
 
