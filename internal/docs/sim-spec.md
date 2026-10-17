@@ -276,4 +276,4 @@ S2 完了 → M1 → (M3/M4 並行可) → M2 → M5 →（任意）M6/M7
 
 1. ~~S2 残りを閉じる~~ → **完了**（`0.3.5`）  
 2. 消費者が `rv64ui` / 階層 Mem を Sim 本線に寄せる（RISC-Sharp 側）  
-3. **いまの本線:** MidiSynth 宿題 — M1・M3・M4 済み → **M2 進行中**（XOR / XNOR は PR #103。演算の左右の幅 #105 で Eval のマスク規則も揃える）→ M5（[tickets/midisynth-tang-primer25k-requests.md](tickets/midisynth-tang-primer25k-requests.md)）
+3. **いまの本線:** MidiSynth 宿題 — M1・M3・M4 済み → **M2 進行中**（XOR / XNOR は PR #103。演算の左右は同じ幅が必須になり（#105）、Eval の左幅マスクと Verilog の幅が一致）→ M5（[tickets/midisynth-tang-primer25k-requests.md](tickets/midisynth-tang-primer25k-requests.md)）

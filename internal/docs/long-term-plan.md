@@ -519,7 +519,7 @@ flowchart TB
 ## 最初に着手すべき具体タスク（人手）
 
 1. ~~T2e~~ / ~~Sim S2~~ / ~~M1~~ / ~~M3~~ / ~~M4~~ — **完了**
-2. **M2（HC1）**: 先に演算の正しさ（#102 括弧（済み）→ #105 左右の幅 → #104 式のスライス）→ 残りの演算（#9）と単項演算（#101）（[tickets/midisynth-tang-primer25k-requests.md](tickets/midisynth-tang-primer25k-requests.md)）
+2. **M2（HC1）**: 先に演算の正しさ（#102 括弧（済み）→ #105 左右の幅（済み）→ #104 式のスライス）→ 残りの演算（#9）と単項演算（#101）（[tickets/midisynth-tang-primer25k-requests.md](tickets/midisynth-tang-primer25k-requests.md)）
 3. M5 → 単音が鳴ったら M6 / M7。並行で Stage 1 フロー（[hdl-coverage-plan.md](hdl-coverage-plan.md) §5）
 4. 消費者の「書けない」が出たら L2–L3 の該当項だけ切る（一括実装しない）
 5. [pin-attribute-spec.md](pin-attribute-spec.md) の起草 — ツール軸を進める場合

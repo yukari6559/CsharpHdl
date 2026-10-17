@@ -201,6 +201,36 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestBinaryOpOperandWidthMismatchThrows()
+	{
+		In a = In.UInt(4, "a");
+		In b = In.UInt(8, "b");
+		Func<Expr>[] ops =
+		[
+			() => a + b, () => a - b, () => a & b, () => a | b, () => a ^ b,
+			() => a < b, () => a > b, () => a <= b, () => a >= b,
+			() => a.Eq(b), () => a.Neq(b), () => a.Xnor(b),
+		];
+
+		foreach (Func<Expr> op in ops)
+		{
+			WidthMismatchException ex = Assert.Throws<WidthMismatchException>(op);
+			Assert.Contains("left 4, right 8", ex.Message, StringComparison.Ordinal);
+		}
+	}
+
+	[Fact]
+	public void TestExtendedOperandCombEmitsZeroExtendedOperand()
+	{
+		ExtendedOperandComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ExtendedOperandComb));
+
+		Assert.Contains("\tassign Sum = A + {{4{1'b0}}, B};\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Gt = A > {{4{1'b0}}, B};\n", verilog, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void TestDualCombAssignThrowsMultiDrive()
 	{
 		BadMultiDriveModule module = new();
