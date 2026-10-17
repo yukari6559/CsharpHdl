@@ -354,6 +354,23 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0xFFF0_0A00u, 1u, 0xFFFF_FFFF_FFFF_FFFFUL, 0xAu, 0xFFu, 0xFFu, 1u)]
+	[InlineData(0x7FF0_0500u, 0u, 0x7FFUL, 0x5u, 0x00u, 0x00u, 0u)]
+	public void SliceSelectCombFoldsAndSignExtendsSlices(uint instr, uint f, ulong imm, uint folded, uint top, uint fExt, uint fSlice)
+	{
+		SimSession<SliceSelectComb> m = new SliceSelectComb().Run();
+		m.Set(m.Module.Instr, instr);
+		m.Set(m.Module.F, f);
+		m.Settle();
+		Assert.Equal(imm, m.Get(m.Module.Imm));
+		Assert.Equal(folded, m.Get(m.Module.Folded));
+		Assert.Equal(top, m.Get(m.Module.Top));
+		Assert.Equal(instr, m.Get(m.Module.Full));
+		Assert.Equal(fExt, m.Get(m.Module.FExt));
+		Assert.Equal(fSlice, m.Get(m.Module.FSlice));
+	}
+
+	[Theory]
 	[InlineData(3u, 3u, 10u, 20u, 10u)]
 	[InlineData(2u, 5u, 10u, 20u, 20u)]
 	public void IfMuxCombSelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)

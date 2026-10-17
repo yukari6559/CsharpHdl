@@ -627,6 +627,72 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestNestedSliceFoldsIntoOneSliceOfTheSignal()
+	{
+		In instr = In.UInt(32, "instr");
+
+		SliceExpr twoLevels = Assert.IsType<SliceExpr>(instr.Slice(15, 8).Slice(3, 0));
+		Assert.Same(instr, twoLevels.Expr);
+		Assert.Equal(11u, twoLevels.MSB);
+		Assert.Equal(8u, twoLevels.LSB);
+
+		SliceExpr threeLevels = Assert.IsType<SliceExpr>(instr.Slice(31, 16).Slice(11, 4).Slice(3, 0));
+		Assert.Same(instr, threeLevels.Expr);
+		Assert.Equal(23u, threeLevels.MSB);
+		Assert.Equal(20u, threeLevels.LSB);
+	}
+
+	[Fact]
+	public void TestSliceOutOfRangeThrows()
+	{
+		In instr = In.UInt(32, "instr");
+
+		_ = Assert.Throws<WidthMismatchException>(() => instr.Slice(32, 0));
+		_ = Assert.Throws<WidthMismatchException>(() => instr.Slice(3, 4));
+		WidthMismatchException inner = Assert.Throws<WidthMismatchException>(() => instr.Slice(15, 8).Slice(8, 0));
+		Assert.Contains("width 8", inner.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestSliceAndSignExtendRejectNonSignalOperands()
+	{
+		In a = In.UInt(8, "a");
+		In b = In.UInt(8, "b");
+		Func<Expr>[] nonSignals =
+		[
+			() => a + b,
+			() => Lit.Bits(8, 5),
+			() => a.Concat(b),
+			() => a.ZeroExtend(16),
+			() => a.SignExtend(16),
+		];
+
+		foreach (Func<Expr> make in nonSignals)
+		{
+			Expr operand = make();
+			_ = Assert.Throws<UnsupportedSelectException>(() => operand.Slice(3, 0));
+			_ = Assert.Throws<UnsupportedSelectException>(() => operand.SignExtend(32));
+		}
+	}
+
+	[Fact]
+	public void TestSliceSelectCombEmitsValidSelects()
+	{
+		SliceSelectComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(SliceSelectComb));
+
+		Assert.Contains("\tassign Imm = {{52{Instr[31]}}, Instr[31:20]};\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Folded = Instr[11:8];\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Top = {{7{Instr[31]}}, Instr[31:31]};\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Full = Instr;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign FExt = {{7{F}}, F};\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign FSlice = F;\n", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("][", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("F[0", verilog, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void TestConcatGetWidthSumsParts()
 	{
 		In hi = In.UInt(16, "hi");
