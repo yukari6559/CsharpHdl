@@ -7,50 +7,62 @@ public abstract class Expr
 {
 	public static OpExpr operator +(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Plus };
 	}
 	public static OpExpr operator -(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Minus };
 	}
 	public static OpExpr operator &(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.And };
 	}
 	public static OpExpr operator |(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Or };
 	}
 	public static OpExpr operator ^(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Xor };
 	}
 	public static OpExpr operator <(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Lt };
 	}
 	public static OpExpr operator >(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Gt };
 	}
 	public static OpExpr operator <=(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Le };
 	}
 	public static OpExpr operator >=(Expr left, Expr right)
 	{
+		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Ge };
 	}
 	public Expr Eq(Expr right)
 	{
+		CheckWidth(this, right);
 		return new OpExpr() { Left = this, Right = right, Op = Op.Eq };
 	}
 	public Expr Neq(Expr right)
 	{
+		CheckWidth(this, right);
 		return new OpExpr() { Left = this, Right = right, Op = Op.Neq };
 	}
 	public Expr Xnor(Expr right)
 	{
+		CheckWidth(this, right);
 		return new OpExpr() { Left = this, Right = right, Op = Op.Xnor };
 	}
 	public Expr Concat(params Expr[] exprs)
@@ -85,6 +97,13 @@ public abstract class Expr
 	}
 	public abstract uint GetWidth();
 	public abstract T Accept<T>(IExprVisitor<T> exprVisitor);
+	private static void CheckWidth(Expr left, Expr right)
+	{
+		if (right.GetWidth() != left.GetWidth())
+		{
+			throw new WidthMismatchException($"Operand widths differ: left {left.GetWidth()}, right {right.GetWidth()}.");
+		}
+	}
 }
 
 public sealed class SliceExpr(uint msb, uint lsb, Expr expr) : Expr
