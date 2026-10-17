@@ -340,6 +340,20 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0xF0u, 0xFu, 0xFFu, 1u)]
+	[InlineData(0x0Au, 0xFu, 0x19u, 0u)]
+	[InlineData(0xFFu, 0x1u, 0x00u, 1u)]
+	public void ExtendedOperandCombAddsAndComparesAtExtendedWidth(uint a, uint b, uint sum, uint gt)
+	{
+		SimSession<ExtendedOperandComb> m = new ExtendedOperandComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Settle();
+		Assert.Equal(sum, m.Get(m.Module.Sum));
+		Assert.Equal(gt, m.Get(m.Module.Gt));
+	}
+
+	[Theory]
 	[InlineData(3u, 3u, 10u, 20u, 10u)]
 	[InlineData(2u, 5u, 10u, 20u, 20u)]
 	public void IfMuxCombSelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)
