@@ -20,7 +20,10 @@ CsharpHdl が提供するハードウェア記述 API の契約です。
 |----|------|
 | `Module` | ポートと内部論理を持つハードウェアモジュール |
 | `Signal` / `In` / `Out` | 信号・ポート |
-| 幅付きベクタ | `In.UInt(width, name)` / `Out.UInt(width, name)` など |
+| `Wire` / `Reg` | モジュール内のローカル信号（ポートではない）。`SetLocal` / `SetLocals` で登録する |
+| 幅付きベクタ | `In.UInt(width, name)` / `Out.UInt(width, name)` / `Wire.UInt` / `Reg.UInt` など |
+
+**ローカル信号:** `Wire` は `Comb` 内の `Assign(expr)`、`Reg` は `Seq` 内の `Assign(reset, next)` でだけ代入できる（違反は `DescribeContextException`）。ポートとローカルの名前は合わせて一意。登録していない `Wire` / `Reg` を使うと `SignalDeclarationException`。Emit ではポート一覧の直後に内部 `wire` / `reg` として宣言される（If 内で代入される `Wire` は `reg` 宣言になる）。Sim では `Get` で観測できるが、テストベンチからの `Set` は `SimException`。
 
 ---
 
@@ -75,11 +78,15 @@ public sealed class Alu : Module
 | `If` / `Else` | 述語分岐（`Eq` や比較など）。`If(cond, then: …, @else: …)`（`@else` 省略可） |
 | `Switch` / `Case` | **セレクタは `Expr`**（`In`/`Signal`/Slice など）と**定数**ケースの多分岐 |
 | 比較 | `Eq`/`Neq` メソッドと `< <= > >=`（結果 1 bit）。`==`/`!=` は使わない |
-| 算術 `+ -` | ビット演算（幅は左辺などに合わせる実装） |
-| 論理 `& |` | ビット演算 |
+| 算術 `+ -` | 左右は同じ幅。結果も同じ幅（桁あふれは切り捨て） |
+| ビット `& \| ^` / `Xnor` | 左右は同じ幅。`a ^ b` は Verilog `^`、`a.Xnor(b)` は `~^` |
 | `Slice(hi, lo)` | `x[hi:lo]`（両端 inclusive）。結果幅 `hi - lo + 1` |
 | `Concat(...)` | `{a, b, …}`（左が MSB）。結果幅は各幅の和 |
 | `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅 |
+
+**幅の規則:** 二項演算と比較は左右の幅が違うと `WidthMismatchException`。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`）。入れ子の演算は Emit で括弧付きになる（`(A ^ B) & C`）。
+
+**`Slice` / `SignExtend` の対象:** 信号か信号のスライスに限る（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` の `Slice` は 1 段にまとまり（`x.Slice(15, 8).Slice(3, 0)` は `x[11:8]`）、範囲外は `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` は `{{52{instr[31]}}, instr[31:20]}` と出る。演算の結果を切り出したいときはローカル `Wire` を経由する。
 
 **If と Switch:** 定数ラベルの一択（`Op` や `Instr.Slice(...)` など）は `Switch`、真偽・比較の分岐は `If`。  
 `Switch` のセレクタは `Expr`（旧 API の `In` 専用ではない）。case 値は定数のまま。  

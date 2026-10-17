@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.4.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.4.0" />
-<PackageReference Include="SharpHdl.Sim" Version="0.4.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.5.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.5.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.5.0" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -38,12 +38,12 @@ dotnet build
    - Repository Owner: `yukari6559` / Repository: `CsharpHdl` / Workflow: `release-nuget.yml`  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って push する（例: `0.4.0`）
+3. タグを打って push する（例: `0.5.0`）
 
 ```bash
 git push origin main
-git tag v0.4.0
-git push origin v0.4.0
+git tag v0.5.0
+git push origin v0.5.0
 ```
 
 `Release NuGet` workflow がテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
@@ -74,4 +74,11 @@ csproj の `<Version>` はローカル表示用です。タグ付きリリース
 3. Program またはテストから Emitter を呼び、`.v` を書く — または `Run` / `Settle` / `Advance` でシミュする  
 4. 生成物を自分のシミュレーション / FPGA フローへ渡す（emit 利用時）  
 
-書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）** まで。`0.4.0` で内部を Stmt／Expr Visitor に移行（`Stmt`／`Expr` の具象型は `sealed`。If／Switch の全枝で多重駆動を検出）。いまの本線は **M4**（ローカル線）（内部 ROADMAP / tickets 参照）。
+書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR まで。
+
+**`0.5.0` の注意（挙動の変更）:**
+- 二項演算と比較（`+ - & | ^ < <= > >=`、`Eq` / `Neq` / `Xnor`）は左右の幅が同じでないと `WidthMismatchException`。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する
+- `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
+- テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
+
+いまの本線は演算子の穴埋め（シフト・乗算など）（内部 ROADMAP / tickets 参照）。
