@@ -23,3 +23,9 @@ dotnet_analyzer_diagnostic.category-Usage.severity = warning
 
 # IDE0160: 範囲指定されたブロックが設定された namespace に変換
 dotnet_diagnostic.IDE0160.severity = none
+
+# IDE0045: 条件式に変換します
+dotnet_diagnostic.IDE0045.severity = none
+
+# IDE0046: 条件式に変換します
+dotnet_diagnostic.IDE0046.severity = none
