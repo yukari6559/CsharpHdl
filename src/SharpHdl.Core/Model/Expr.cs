@@ -21,6 +21,10 @@ public abstract class Expr
 	{
 		return new OpExpr() { Left = left, Right = right, Op = Op.Or };
 	}
+	public static OpExpr operator ^(Expr left, Expr right)
+	{
+		return new OpExpr() { Left = left, Right = right, Op = Op.Xor };
+	}
 	public static OpExpr operator <(Expr left, Expr right)
 	{
 		return new OpExpr() { Left = left, Right = right, Op = Op.Lt };
@@ -44,6 +48,10 @@ public abstract class Expr
 	public Expr Neq(Expr right)
 	{
 		return new OpExpr() { Left = this, Right = right, Op = Op.Neq };
+	}
+	public Expr Xnor(Expr right)
+	{
+		return new OpExpr() { Left = this, Right = right, Op = Op.Xnor };
 	}
 	public Expr Concat(params Expr[] exprs)
 	{
