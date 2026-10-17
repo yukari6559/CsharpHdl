@@ -77,7 +77,7 @@ R0  M3 完了（Emit/テスト/版上げ）
 | **R-C2** | 高 | Switch が常に `CurrentStmts = Stmts`、If だけ親復元 | Switch を If/Seq 内にネストできない | If と同じ親ポインタ＋ finally | R-C1 と同時がよい | ルート Comb 内は維持 |
 | **R-C3** | 中 | `Switch(In op, …)` のみ | セレクタを一般 Expr にできない | `Signal`/`Expr` へ拡張（定数 case は維持） | なし | オーバーロードで可 |
 | **R-C4** | 中 | Seq `ResetValue` が `uint` | 64bit・Const と非対称 | `ulong` または Const 系に揃える | M3 後が自然 | 広い値は breaking 可 |
-| **R-C5** | 中 | `GetWidth(this object)` | 型安全が弱い。Op 幅は左辺のみ | Expr 上の幅 API、構築時チェック強化（演算の左右の幅を揃える検査は #105） | M2 前が望ましい | 厳格化は一部 breaking |
+| **R-C5** | 中 | `GetWidth(this object)` | 型安全が弱い。Op 幅は左辺のみ | Expr 上の幅 API、構築時チェック強化（演算の左右の幅を揃える検査は #105 で済み） | M2 前が望ましい | 厳格化は一部 breaking |
 | **R-C6** | 中 | 裸の `throw new Exception()` | 原因が分からない | 専用例外 | なし | はい |
 | **R-C7** | 中 | 同一信号への二重駆動未検出（dsl-spec はエラー） | 黙って多重駆動 | Describe 後または emit 時の静的検査 | L4 と近い | 新規失敗増 |
 | **R-C8** | 低 | fluent `.Else` / `When` 三項（チケットで後回し） | DX | 任意 API 整理 | なし | 新 API |
