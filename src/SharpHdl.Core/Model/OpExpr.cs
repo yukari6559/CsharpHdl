@@ -23,6 +23,7 @@ public enum Op
 {
 	Plus,
 	Minus,
+	Mul,
 	And,
 	Or,
 	Xor,
@@ -45,6 +46,7 @@ public static class OpExtension
 		{
 			Op.Plus => "+",
 			Op.Minus => "-",
+			Op.Mul => "*",
 			Op.And => "&",
 			Op.Or => "|",
 			Op.Xor => "^",

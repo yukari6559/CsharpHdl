@@ -394,6 +394,25 @@ public class CircuitSimTests
 		Assert.Equal(0xC3u, m.Get(m.Module.ShlZero));
 	}
 
+	[Theory]
+	[InlineData(0xFFu, 0xFFu, 0x02u, 0xFFFF_FFFF_FFFF_FFFFUL, 0x2UL, 0x01u, 0xFE01u, 0x03u, 0xFFFF_FFFF_FFFF_FFFEUL)]
+	[InlineData(0x12u, 0x34u, 0x10u, 0x1_0000_0001UL, 0x1_0000_0001UL, 0xA8u, 0x03A8u, 0xB8u, 0x0000_0002_0000_0001UL)]
+	public void MulCombTruncatesToOperandWidthAndWidensExplicitly(uint a, uint b, uint c, ulong q, ulong r, uint low, uint full, uint nested, ulong q64)
+	{
+		SimSession<MulComb> m = new MulComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.C, c);
+		m.Set(m.Module.Q, q);
+		m.Set(m.Module.R, r);
+		m.Settle();
+
+		Assert.Equal(low, m.Get(m.Module.Low));
+		Assert.Equal(full, m.Get(m.Module.Full));
+		Assert.Equal(nested, m.Get(m.Module.Nested));
+		Assert.Equal(q64, m.Get(m.Module.Q64));
+	}
+
 	[Fact]
 	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
 	{
