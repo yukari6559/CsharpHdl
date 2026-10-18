@@ -33,6 +33,7 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 		{
 			Op.Plus => (opExpr.Left.Accept(this) + opExpr.Right.Accept(this)) & maskBit,
 			Op.Minus => (opExpr.Left.Accept(this) - opExpr.Right.Accept(this)) & maskBit,
+			Op.Mul => (opExpr.Left.Accept(this) * opExpr.Right.Accept(this)) & maskBit,
 			Op.And => opExpr.Left.Accept(this) & opExpr.Right.Accept(this) & maskBit,
 			Op.Or => (opExpr.Left.Accept(this) | opExpr.Right.Accept(this)) & maskBit,
 			Op.Xor => (opExpr.Left.Accept(this) ^ opExpr.Right.Accept(this)) & maskBit,
