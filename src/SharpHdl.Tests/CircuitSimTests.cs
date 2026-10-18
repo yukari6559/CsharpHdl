@@ -371,6 +371,40 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(1u, 1u, 0x86u, 0x61u, 0x0000_0002u)]
+	[InlineData(7u, 31u, 0x80u, 0x01u, 0x8000_0000u)]
+	[InlineData(8u, 64u, 0x00u, 0x00u, 0x0000_0000u)]
+	[InlineData(15u, 100u, 0x00u, 0x00u, 0x0000_0000u)]
+	public void ShiftCombShiftsLogicallyAndZeroesOutOfRangeAmounts(uint amt, uint amt7, uint shlVar, uint shrVar, uint wShlVar)
+	{
+		SimSession<ShiftComb> m = new ShiftComb().Run();
+		m.Set(m.Module.A, 0xC3);
+		m.Set(m.Module.W, 0x8000_0001);
+		m.Set(m.Module.Amt, amt);
+		m.Set(m.Module.Amt7, amt7);
+		m.Settle();
+
+		Assert.Equal(0x0Cu, m.Get(m.Module.ShlConst));
+		Assert.Equal(0x18u, m.Get(m.Module.ShrConst));
+		Assert.Equal(shlVar, m.Get(m.Module.ShlVar));
+		Assert.Equal(shrVar, m.Get(m.Module.ShrVar));
+		Assert.Equal(0x4000_0000u, m.Get(m.Module.WShr));
+		Assert.Equal(wShlVar, m.Get(m.Module.WShlVar));
+		Assert.Equal(0x49u, m.Get(m.Module.Nested));
+		Assert.Equal(0xC3u, m.Get(m.Module.ShlZero));
+	}
+
+	[Fact]
+	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
+	{
+		Assert.Equal(1UL, BitUtils.ShiftRight(ulong.MaxValue, 63, 64));
+		Assert.Equal(0x8000_0000_0000_0000UL, BitUtils.ShiftLeft(1, 63, 64));
+		Assert.Equal(0UL, BitUtils.ShiftLeft(ulong.MaxValue, 64, 64));
+		Assert.Equal(0UL, BitUtils.ShiftRight(ulong.MaxValue, 64, 64));
+		Assert.Equal(0UL, BitUtils.ShiftLeft(0xFF, 200, 8));
+	}
+
+	[Theory]
 	[InlineData(3u, 3u, 10u, 20u, 10u)]
 	[InlineData(2u, 5u, 10u, 20u, 20u)]
 	public void IfMuxCombSelectsThenOrElse(uint selA, uint selB, uint cVal, uint dVal, uint expected)

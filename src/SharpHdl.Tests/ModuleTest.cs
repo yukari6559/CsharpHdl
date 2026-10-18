@@ -220,6 +220,42 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestShiftOperandsAreExemptFromWidthRule()
+	{
+		In a = In.UInt(8, "a");
+		In amt = In.UInt(4, "amt");
+
+		Assert.Equal(8u, (a << amt).GetWidth());
+		Assert.Equal(8u, (a >> amt).GetWidth());
+
+		ConstExpr zero = Assert.IsType<ConstExpr>((a << 0).Right);
+		Assert.Equal(1u, zero.Width);
+		ConstExpr five = Assert.IsType<ConstExpr>((a >> 5).Right);
+		Assert.Equal(3u, five.Width);
+		Assert.Equal(5UL, five.Value);
+
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a << -1);
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a >> -1);
+	}
+
+	[Fact]
+	public void TestShiftCombEmitsShifts()
+	{
+		ShiftComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ShiftComb));
+
+		Assert.Contains("\tassign ShlConst = A << 2'd2;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign ShrConst = A >> 2'd3;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign ShlVar = A << Amt;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign ShrVar = A >> Amt;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign WShr = W >> 1'd1;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign WShlVar = W << Amt7;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Nested = (A << 1'd1) + A;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign ShlZero = A << 1'd0;\n", verilog, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void TestExtendedOperandCombEmitsZeroExtendedOperand()
 	{
 		ExtendedOperandComb mod = new();
