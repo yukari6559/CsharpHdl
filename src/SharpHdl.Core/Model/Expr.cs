@@ -15,6 +15,11 @@ public abstract class Expr
 		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Minus };
 	}
+	public static OpExpr operator *(Expr left, Expr right)
+	{
+		CheckWidth(left, right);
+		return new OpExpr() { Left = left, Right = right, Op = Op.Mul };
+	}
 	public static OpExpr operator &(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
