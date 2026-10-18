@@ -50,6 +50,22 @@ public abstract class Expr
 		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Ge };
 	}
+	public static OpExpr operator <<(Expr left, Expr right)
+	{
+		return new OpExpr() { Left = left, Right = right, Op = Op.Shl };
+	}
+	public static OpExpr operator >>(Expr left, Expr right)
+	{
+		return new OpExpr() { Left = left, Right = right, Op = Op.Shr };
+	}
+	public static OpExpr operator <<(Expr left, int right)
+	{
+		return new OpExpr() { Left = left, Right = ShiftAmountLit(right), Op = Op.Shl };
+	}
+	public static OpExpr operator >>(Expr left, int right)
+	{
+		return new OpExpr() { Left = left, Right = ShiftAmountLit(right), Op = Op.Shr };
+	}
 	public Expr Eq(Expr right)
 	{
 		CheckWidth(this, right);
@@ -119,6 +135,16 @@ public abstract class Expr
 		{
 			throw new WidthMismatchException($"Operand widths differ: left {left.GetWidth()}, right {right.GetWidth()}.");
 		}
+	}
+	private static Expr ShiftAmountLit(int right)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegative(right);
+		uint width = (uint)(32 - System.Numerics.BitOperations.LeadingZeroCount((uint)right));
+		if (right == 0)
+		{
+			width = 1;
+		}
+		return Lit.Bits(width, (ulong)right);
 	}
 }
 
