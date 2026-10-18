@@ -43,6 +43,8 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 			Op.Gt => (opExpr.Left.Accept(this) > opExpr.Right.Accept(this)) ? 1u : 0u,
 			Op.Le => (opExpr.Left.Accept(this) <= opExpr.Right.Accept(this)) ? 1u : 0u,
 			Op.Ge => (opExpr.Left.Accept(this) >= opExpr.Right.Accept(this)) ? 1u : 0u,
+			Op.Shl => BitUtils.ShiftLeft(opExpr.Left.Accept(this), opExpr.Right.Accept(this), opExpr.GetWidth()),
+			Op.Shr => BitUtils.ShiftRight(opExpr.Left.Accept(this), opExpr.Right.Accept(this), opExpr.GetWidth()),
 			_ => throw new SimUnsupportedException()
 		};
 	}
