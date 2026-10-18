@@ -32,7 +32,9 @@ public enum Op
 	Lt,
 	Gt,
 	Le,
-	Ge
+	Ge,
+	Shl,
+	Shr
 }
 
 public static class OpExtension
@@ -53,6 +55,8 @@ public static class OpExtension
 			Op.Gt => ">",
 			Op.Le => "<=",
 			Op.Ge => ">=",
+			Op.Shl => "<<",
+			Op.Shr => ">>",
 			_ => op.ToString()
 		};
 	}

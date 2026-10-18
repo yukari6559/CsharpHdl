@@ -49,7 +49,7 @@
 - [ ] [refactor-plan.md](refactor-plan.md) R-E1 Emitter 統合など — **次候補**（Issue #4）
 - [x] GitHub Milestone / Issue 先行作成（v0.3.8 / refactor-emitter / m4 / m2 / m5）— 以降はブランチ+PR（[dev-workflow.md](dev-workflow.md)）
 - [x] M4 ローカル Wire/Reg — PR #85 / #100
-- [ ] M2 乗算・シフト・^/~ — 進行中（`^` / `~^` は PR #103。#102 / #105 / #104 済み。単項は #101）
+- [ ] M2 乗算・シフト・^/~ — 進行中（`^` / `~^` は PR #103、論理シフトは M2b で完了。#102 / #105 / #104 済み。単項は #101）
 - [ ] M5 波形 ROM 初期化
 - [ ] **GM:** M1–M5 完了（単音シンセがフォークなしで書ける）
 - [ ] （任意）M6 / M7
