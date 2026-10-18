@@ -220,6 +220,31 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestMulCombEmitsMultiply()
+	{
+		MulComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(MulComb));
+
+		Assert.Contains("\tassign Low = A * B;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Full = {{8{1'b0}}, A} * {{8{1'b0}}, B};\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Nested = (A * B) + C;\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tassign Q64 = Q * R;\n", verilog, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestMulRequiresEqualWidthsAndWidening()
+	{
+		In a = In.UInt(8, "a");
+		In narrow = In.UInt(4, "narrow");
+		_ = Assert.Throws<WidthMismatchException>(() => a * narrow);
+		Assert.Equal(8u, (a * a).GetWidth());
+
+		MulComb mod = new();
+		_ = Assert.Throws<WidthMismatchException>(mod.DescribeForgotWiden);
+	}
+
+	[Fact]
 	public void TestShiftOperandsAreExemptFromWidthRule()
 	{
 		In a = In.UInt(8, "a");
