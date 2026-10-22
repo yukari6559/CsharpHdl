@@ -59,7 +59,14 @@ public class EmitExprVisitor : IExprVisitor<string>
 	public string VisitUnary(UnaryExpr unaryExpr)
 	{
 		string s = "";
-		s += unaryExpr.UnaryOp.ToCustomString();
+		if (unaryExpr.UnaryOp is UnaryOp.LogicNot && unaryExpr.Expr.GetWidth() != 1)
+		{
+			s += "~|";
+		}
+		else
+		{
+			s += unaryExpr.UnaryOp.ToCustomString();
+		}
 		if (unaryExpr.Expr is OpExpr or UnaryExpr)
 		{
 			s += "(" + unaryExpr.Expr.Accept(this) + ")";
