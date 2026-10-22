@@ -12,9 +12,9 @@ Use with [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) to genera
 
 ## Docs
 
-- Repository: https://github.com/yukari6559/CsharpHdl
-- Getting started: https://github.com/yukari6559/CsharpHdl/blob/main/docs/getting-started.md
-- DSL overview: https://github.com/yukari6559/CsharpHdl/blob/main/docs/dsl-spec.md
+- Repository: https://gitlab.com/sharphdl/SharpHDL
+- Getting started: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/getting-started.md
+- DSL overview: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/dsl-spec.md
 
 ## License
 
