@@ -403,7 +403,7 @@ sequenceDiagram
 
 ### CI / 品質
 
-- GitHub Actions: `dotnet test` + Verilator パース + 制約ファイルゴールデン
+- GitLab CI: `dotnet test` + Verilator パース + 制約ファイルゴールデン
 - 合成はランナーに Vivado/Quartus ライセンスが無いため **スクリプト生成の snapshot テスト** に留める
 
 **完了条件:** [e2e-workflow.md](e2e-workflow.md) に 1 ボード完走手順、VSCode デモ動画またはスクリーンショット。
