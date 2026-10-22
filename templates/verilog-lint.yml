@@ -1,0 +1,74 @@
+spec:
+  description: >-
+    Emits Verilog with a command of your choice, then lints every .v file with Verilator
+    (--lint-only -Wall) and Icarus Verilog (-g2005). Errors fail the job, warnings are
+    printed. Each file is reported in the merge request test report (JUnit).
+  inputs:
+    job_name:
+      default: verilog-lint
+      description: Name of the lint job.
+    stage:
+      default: test
+      description: Stage of the lint job.
+    emit_command:
+      description: Command that writes .v files into verilog_dir, for example `dotnet run --project tools/Emit -- artifacts/verilog`.
+    verilog_dir:
+      default: artifacts/verilog
+      description: Directory the emit command writes into. The JUnit report is written there as verilog-lint.junit.xml.
+    image:
+      default: mcr.microsoft.com/dotnet/sdk:10.0
+      description: Debian or Ubuntu based image that can run emit_command; verilator and iverilog are installed with apt.
+    allow_failure:
+      type: boolean
+      default: false
+      description: Set to true to keep the pipeline green while known lint errors are being fixed.
+---
+"$[[ inputs.job_name ]]":
+  stage: $[[ inputs.stage ]]
+  image: $[[ inputs.image ]]
+  needs: []
+  allow_failure: $[[ inputs.allow_failure ]]
+  variables:
+    VERILOG_DIR: $[[ inputs.verilog_dir ]]
+  script:
+    - apt-get update -qq && apt-get install -y -qq verilator iverilog > /dev/null
+    # sed reads all input; head would close the pipe early and fail the job with SIGPIPE under pipefail.
+    - verilator --version && iverilog -V 2>&1 | sed -n 1p
+    - $[[ inputs.emit_command ]]
+    - |
+      failures=0
+      total=0
+      cases=""
+      for file in "$VERILOG_DIR"/*.v; do
+        name=$(basename "$file" .v)
+        total=$((total + 1))
+        set +e
+        verilator_out=$(verilator --lint-only -Wall -Wno-fatal "$file" 2>&1)
+        verilator_status=$?
+        iverilog_out=$(iverilog -g2005 -Wall -o /dev/null "$file" 2>&1)
+        iverilog_status=$?
+        set -e
+        if [ -n "$verilator_out" ] || [ -n "$iverilog_out" ]; then
+          echo "=== $name"
+          [ -n "$verilator_out" ] && echo "$verilator_out"
+          [ -n "$iverilog_out" ] && echo "iverilog: $iverilog_out"
+        fi
+        if [ "$verilator_status" -ne 0 ] || [ "$iverilog_status" -ne 0 ]; then
+          failures=$((failures + 1))
+          message=$(printf '%s\n%s\n' "$verilator_out" "$iverilog_out" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')
+          cases="$cases<testcase classname=\"verilog-lint\" name=\"$name\"><failure message=\"lint error\">$message</failure></testcase>"
+        else
+          cases="$cases<testcase classname=\"verilog-lint\" name=\"$name\"/>"
+        fi
+      done
+      printf '<?xml version="1.0" encoding="UTF-8"?>\n<testsuites><testsuite name="verilog-lint" tests="%s" failures="%s">%s</testsuite></testsuites>\n' \
+        "$total" "$failures" "$cases" > "$VERILOG_DIR/verilog-lint.junit.xml"
+      echo "verilog-lint: $total files, $failures with errors"
+      [ "$failures" -eq 0 ]
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - $[[ inputs.verilog_dir ]]/
+    reports:
+      junit: $[[ inputs.verilog_dir ]]/verilog-lint.junit.xml
