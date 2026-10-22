@@ -61,6 +61,27 @@ build-test:
         coverage_format: cobertura
         path: artifacts/coverage/**/coverage.cobertura.xml
 
+code-quality:
+  stage: test
+  needs: []
+  script:
+    - mkdir -p artifacts/sarif
+    - dotnet restore CsharpHdl.slnx --locked-mode
+    # Warnings stay warnings here so the report can list them; build-test fails on them (CI=true).
+    - >
+      dotnet build CsharpHdl.slnx --no-restore -c Release -p:TreatWarningsAsErrors=false
+      -p:SarifOutputDir="$CI_PROJECT_DIR/artifacts/sarif"
+    - >
+      dotnet run --project tools/SarifToCodeQuality -c Release --no-build --
+      "$CI_PROJECT_DIR" gl-code-quality-report.json artifacts/sarif/*.sarif
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - gl-code-quality-report.json
+    reports:
+      codequality: gl-code-quality-report.json
+
 verilog-lint:
   stage: test
   needs: []
