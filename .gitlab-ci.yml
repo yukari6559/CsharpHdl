@@ -277,6 +277,8 @@ publish-nuget:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+([.-].+)?$/
   environment:
     name: release
+    # DORA metrics and value stream analytics count production deployments only.
+    deployment_tier: production
   id_tokens:
     NUGET_ID_TOKEN:
       aud: "https://www.nuget.org"
