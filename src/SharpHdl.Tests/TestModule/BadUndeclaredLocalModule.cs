@@ -29,4 +29,11 @@ public sealed class BadUndeclaredLocalModule : Module
 		Comb(() => Declared.Assign(Undeclared));
 		Comb(() => Y.Assign(Declared));
 	}
+
+	public void DescribeUndeclaredWireInUnary()
+	{
+		SetLocal(Declared);
+		Comb(() => Declared.Assign(~Undeclared));
+		Comb(() => Y.Assign(Declared));
+	}
 }

@@ -32,6 +32,7 @@ _ = Directory.CreateDirectory(outDir);
 	(nameof(XorComb), () => Described(new XorComb())),
 	(nameof(NestedOpComb), () => Described(new NestedOpComb())),
 	(nameof(SameWidthExtendComb), () => Described(new SameWidthExtendComb())),
+	(nameof(UnaryComb), () => Described(new UnaryComb())),
 	(nameof(ExtendedOperandComb), () => Described(new ExtendedOperandComb())),
 	(nameof(SliceSelectComb), () => Described(new SliceSelectComb())),
 	(nameof(ShiftComb), () => Described(new ShiftComb())),
