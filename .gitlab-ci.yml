@@ -215,7 +215,7 @@ pages-preview:
   # The API reference is generated from the XML docs in src/.
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
+      changes: &docs-paths
         - docs/**/*
         - docs-site/**/*
         - src/**/*
@@ -239,6 +239,7 @@ pages:
   needs: []
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+      changes: *docs-paths
   pages: true
   artifacts:
     paths:
