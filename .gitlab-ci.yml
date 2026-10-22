@@ -111,10 +111,11 @@ renovate:
   image:
     name: renovate/renovate:44
     entrypoint: [""]
-  # Runs from the weekly schedule (RENOVATE=true) or a manual pipeline on main with RENOVATE=true.
+  # Runs in scheduled pipelines (weekly; play the schedule to run it on demand). Pipeline variables
+  # are disabled for this project, so the job keys off the pipeline source instead of a variable.
   # RENOVATE_TOKEN is a masked, protected CI variable (project access token, Developer).
   rules:
-    - if: $RENOVATE == "true" && ($CI_PIPELINE_SOURCE == "schedule" || $CI_PIPELINE_SOURCE == "web")
+    - if: $CI_PIPELINE_SOURCE == "schedule"
   variables:
     RENOVATE_PLATFORM: gitlab
     RENOVATE_ENDPOINT: $CI_API_V4_URL
