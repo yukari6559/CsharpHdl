@@ -8,6 +8,10 @@ M3 完了前の先取り（Milestone／Issue 作成）は可。
 
 関連: [ROADMAP.md](ROADMAP.md) / [refactor-plan.md](refactor-plan.md) / [tickets/midisynth-tang-primer25k-requests.md](tickets/midisynth-tang-primer25k-requests.md)
 
+**拠点（2026-10-22〜）:** 開発は GitLab [sharphdl/SharpHDL](https://gitlab.com/sharphdl/SharpHDL)（リモート `origin`、操作は `glab`）。GitHub `yukari6559/CsharpHdl`（リモート `github`）は `main` とタグだけを同期するコピーで、Actions・Issue・Wiki は無効。GitHub からのインポートで番号は保たれており、移行前の「PR #N」は GitLab の MR `!N` と同じもの。以下の「PR」は GitLab の **マージリクエスト（MR）** と読み替える。GitLab では Issue（`#N`）と MR（`!N`）の番号は別々に振られる。
+
+**GitLab 側の設定（Ultimate / OSS プログラム）:** `main` は保護（push 不可、マージは Maintainer）、パイプライン成功とスレッド解決が必須、merge commit のみ（squash 不可）、`v*` タグは保護。プッシュルールでブランチ名（`<type>/<issue>-<short>`）とコミットメッセージ（Conventional）を検査し、シークレットのプッシュを拒否する。CI は build / test（JUnit・カバレッジ）、Secret Detection、GitLab Advanced SAST、Dependency Scanning、タグで NuGet 公開と GitLab Release。
+
 ---
 
 ## 0. 階層の正（取り込む例と捨てる例）
@@ -74,12 +78,12 @@ Milestone 名、Issue タイトル、本文（内部 ID・完了条件・チェ�
 | 置き場 | 役割 |
 |--------|------|
 | `internal/docs/`（Git で追跡。`internal/` のそれ以外はローカル専用） | 仕様・ロードマップ・詳細チケット・R-\* ID |
-| **GitHub Milestone** | テーマ／版の束 |
-| **GitHub Issue** | 公開される作業単位（1 Issue ≈ 1 PR） |
-| **PR + コミット** | 実装履歴（コミットは Issue にしない） |
-| タグ `v*.*.*` | nuget 公開（従来どおり） |
+| **GitLab Milestone** | テーマ／版の束 |
+| **GitLab Issue** | 公開される作業単位（1 Issue ≈ 1 MR） |
+| **MR + コミット** | 実装履歴（コミットは Issue にしない） |
+| タグ `v*.*.*` | GitLab CI で nuget 公開と GitLab Release |
 
-仕様の正本 = internal。作業トラッキングの正本 = GitHub Issue／PR。
+仕様の正本 = internal。作業トラッキングの正本 = GitLab Issue／MR。
 
 ---
 
@@ -140,7 +144,7 @@ chore/<issue>-<short>
 - 1 PR ≈ 1 Issue
 - Summary / Test plan / `Closes #N` / 内部 ID
 - 自分のみレビューでも PR を残す（履歴が目的）
-- **マージは merge commit のみ**（squash / rebase はリポで無効）。グラフ上で feature が `main` に合流して見えるようにする。`gh pr merge` は `--merge` を使う
+- **マージは merge commit のみ**（squash / rebase はリポで無効）。グラフ上で feature が `main` に合流して見えるようにする。`glab mr merge` を使う（マージ方式はプロジェクト設定で固定）。マージ後は `git push github main`（新しいタグも）で GitHub のコピーに同期する
 
 **コミット（PR 内）**
 - **1 コミット = 説明できる一塊**。複数単位なら分ける（例: Core → Sim → Emit → tests）
@@ -173,14 +177,14 @@ chore/<issue>-<short>
 ## 8. エージェント向け
 
 `no-concrete-code`（実装は明示依頼があるまで人手）は継続。  
-**リポジトリ操作（GitHub / ブランチ）はエージェントが担う**（ユーザーが都度指示しなくてよい。区切りが来たら実行する）。
+**リポジトリ操作（GitLab / ブランチ / GitHub への同期）はエージェントが担う**（ユーザーが都度指示しなくてよい。区切りが来たら実行する）。
 
 ### エージェントが実行する操作
 
 | タイミング | 内容 |
 |------------|------|
 | **作業開始** | Milestone の有無を確認し、無ければ作成。対応 Issue を作成または既存に紐づけ。`feat|refactor|fix|docs|chore/<issue>-<short>` を **作成して checkout** |
-| **マージ可能な品質になったとき** | リモートへ push → **PR 作成**（タイトル Conventional、本文に Summary / Test plan / `Closes #N` / 内部 ID）→ 必要に応じて PR 説明やレビューコメントを編集 → ユーザーが本運用で委任済みなら **マージ**（`gh pr merge`）。Issue／Milestone の状態を確認 |
+| **マージ可能な品質になったとき** | リモートへ push → **PR 作成**（タイトル Conventional、本文に Summary / Test plan / `Closes #N` / 内部 ID）→ 必要に応じて PR 説明やレビューコメントを編集 → ユーザーが本運用で委任済みなら **マージ**（`glab mr merge`）→ GitHub へ同期。Issue／Milestone の状態を確認 |
 | **版上げ** | 実装 PR と分け、chore Issue＋PR（例: bump 0.3.8） |
 | **「次へ」** | 次 Milestone／Issue を案内し、着手するならブランチまで切る |
 
@@ -219,6 +223,7 @@ chore/<issue>-<short>
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.4 | 2026-10-22 | 拠点を GitLab に移行（`glab`、MR、GitHub は同期コピー）。GitLab 側の保護・プッシュルール・CI を記載 |
 | 1.3 | 2026-09-18 | 「コミットして」でも論理単位で複数コミット分割 |
 | 1.2 | 2026-09-18 | エージェントがブランチ／Issue／PR／（委任時）マージを担当すると明記 |
 | 1.1 | 2026-09-18 | Milestone→Issue→PR を正とする。元提案の取り込む／捨てるを明記。タスク生成フロー固定 |
