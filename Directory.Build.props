@@ -5,5 +5,11 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <!-- Dependency Scanning reads packages.lock.json; CI restores in locked mode. -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- IDE code-style rules from .editorconfig also run in the build, so CI sees what the editor shows. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- GitLab CI sets CI=true: a new warning fails the pipeline. Local builds keep warnings as warnings. -->
+    <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
+    <!-- The code-quality job passes SarifOutputDir to collect analyzer results per project. -->
+    <ErrorLog Condition="'$(SarifOutputDir)' != ''">$(SarifOutputDir)/$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
   </PropertyGroup>
 </Project>
