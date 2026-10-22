@@ -226,7 +226,7 @@ chore/<issue>-<short>
 | **エピック** | グループ `sharphdl` の作業アイテム（#1 Stage 1 / #2 HC1 / #3 SX11 / #4 リファクタ / #5 GitLab 移行） | 新しい Issue を作ったら、該当するエピックを親にする。Stage や HC が増えたらエピックを足す |
 | **Issue の関係** | Issue の「ブロックする / される」 | hdl-coverage-plan の「前提」と同じ関係を付ける |
 | **要件** | 作業アイテムの Requirement（#120〜#126 = R1〜R7）、対応表 `.gitlab/requirements.tsv` | 仕様の大事な規則を足したら要件を作り、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す（見つからないテストは不合格になる） |
-| **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。#119 が直るまでジョブは止めない設定、直ったら `allow_failure` を外す |
+| **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。lint のエラーはパイプラインを止める |
 | **開発版パッケージ** | GitLab のパッケージレジストリ（`main` で Core / Emit / Sim か `Directory.Build.props` が変わったときに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md）。パッケージに入るプロジェクトを足したら `publish-dev-package` の `changes` にも足す |
 | **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる | コミットの件名がそのまま載るので、Conventional Commits の件名を利用者に伝わる言葉で書く。破壊的変更は `feat!:` などの `!` を付ける |
 | **ドキュメントサイト** | https://sharphdl.gitlab.io/SharpHDL （`docs-site/`、`docs/`、XML ドキュメントコメント） | 公開 `docs/` を変えたら MR の `pages-preview` が通ることを確かめる。リンク切れは失敗になる。`main` のサイトは docs・`src/`・CI 定義が変わったときだけデプロイされる（`&docs-paths`） |
@@ -246,7 +246,7 @@ chore/<issue>-<short>
 | **セキュリティ** | MR のセキュリティ欄と脆弱性レポート（Advanced SAST / 依存関係スキャン / シークレット検出、プッシュ時のシークレット拒否） | 指摘が出たら Issue にする。依存パッケージを変えたら `packages.lock.json` も更新してコミットする |
 | **依存パッケージの自動更新** | Renovate（`renovate.json`、CI の `renovate` ジョブ。定期実行のパイプラインで動く。手動で回すときはスケジュールを「実行」）。一覧は Issue「Dependency Dashboard (Renovate)」 | マイナー / パッチはパイプラインが通れば自動マージ。メジャーは人が見る（テストの件数が減っていないかも確認）。.NET の SDK イメージは 10.x に固定しているので、対象フレームワークを上げるときに `renovate.json` の `allowedVersions` も一緒に上げる |
 | **変更のないジョブの省略** | `.gitlab-ci.yml` の `.code-rules`（MR では `src/` `tools/` `templates/` `examples/`、ソリューション、`Directory.Build.props`、`.editorconfig`、CI 定義が変わったときだけビルド・テスト・lint）。`pages-preview` は docs と `src/` の変更で動く。main・タグ・定期実行は常に全部 | ビルドに効く場所（新しいトップレベルのフォルダ、`global.json` など）を足したら `.code-rules` の一覧にも足す。セキュリティスキャンは常に動く |
-| **例の検査** | CI の `examples-lint`（`tools/emit-examples.sh` が `examples/<名前>/` を 1 つずつビルドし、`tools/ExampleVerilog` が中の Module を `<名前>-<型>.v` に出力して lint） | 新しい例はフォルダを足すだけで対象になる。Module には引数なしのコンストラクタを付ける。#119 が直るまで止めない設定 |
+| **例の検査** | CI の `examples-lint`（`tools/emit-examples.sh` が `examples/<名前>/` を 1 つずつビルドし、`tools/ExampleVerilog` が中の Module を `<名前>-<型>.v` に出力して lint） | 新しい例はフォルダを足すだけで対象になる。Module には引数なしのコンストラクタを付ける。lint のエラーはパイプラインを止める |
 | **リリース** | Issue テンプレート「Release」（版上げ MR・タグ・nuget.org と GitLab Release の確認・GitHub への同期） | 版を出すときはこのテンプレートで Issue を作る |
 | **グループのトップページ** | 公開プロジェクト `sharphdl/gitlab-profile`（README と MIT の LICENSE） | 紹介文やリンクが変わったら README を直す。グループ内のプロジェクトはすべて公開・OSS ライセンスのまま |
 
