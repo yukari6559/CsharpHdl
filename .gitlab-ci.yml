@@ -36,6 +36,20 @@ variables:
   paths:
     - .nuget/packages
 
+# Merge request pipelines run a job only when its inputs changed; main, tags and schedules run everything.
+.code-rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - src/**/*
+        - tools/**/*
+        - templates/**/*
+        - CsharpHdl.slnx
+        - Directory.Build.props
+        - .editorconfig
+        - .gitlab-ci.yml
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
+
 stages:
   - test
   - report
@@ -56,6 +70,7 @@ include:
 build-test:
   stage: test
   cache: *nuget-cache
+  rules: !reference [.code-rules, rules]
   script:
     - dotnet restore CsharpHdl.slnx --locked-mode
     - dotnet build CsharpHdl.slnx --no-restore -c Release
@@ -84,6 +99,7 @@ code-quality:
   stage: test
   needs: []
   cache: *nuget-cache
+  rules: !reference [.code-rules, rules]
   script:
     - mkdir -p artifacts/sarif
     - dotnet restore CsharpHdl.slnx --locked-mode
@@ -104,6 +120,21 @@ code-quality:
 
 verilog-lint:
   cache: *nuget-cache
+  rules: !reference [.code-rules, rules]
+
+renovate-config:
+  stage: test
+  needs: []
+  image:
+    name: renovate/renovate:44
+    entrypoint: [""]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - renovate.json
+  script:
+    # Without a file argument the repository config is validated (a path is read as global config).
+    - renovate-config-validator --strict
 
 renovate:
   stage: test
@@ -163,8 +194,15 @@ pages-preview:
   extends: .docfx
   stage: test
   needs: []
+  # The API reference is generated from the XML docs in src/.
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - docs/**/*
+        - docs-site/**/*
+        - src/**/*
+        - Directory.Build.props
+        - .gitlab-ci.yml
   # Pages parallel deployment per MR; deleted when the MR is merged or closed.
   pages:
     path_prefix: "mr-$CI_MERGE_REQUEST_IID"
