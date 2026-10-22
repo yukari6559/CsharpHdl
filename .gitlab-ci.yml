@@ -19,6 +19,8 @@ variables:
   # Security templates only run in branch pipelines unless this is set; the workflow
   # above replaces branch pipelines with MR pipelines while an MR is open.
   AST_ENABLE_MR_PIPELINES: "true"
+  # Ultimate: cross-function taint analysis for C#; Semgrep keeps the rules it does not cover.
+  GITLAB_ADVANCED_SAST_ENABLED: "true"
 
 stages:
   - test
