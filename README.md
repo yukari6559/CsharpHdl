@@ -39,6 +39,27 @@ C# Module（消費者プロジェクト）
 - [docs/getting-started.md](docs/getting-started.md)
 - [docs/dsl-spec.md](docs/dsl-spec.md)
 
+## CI/CD コンポーネント（GitLab）
+
+自分のプロジェクトで出力した Verilog を、GitLab CI で Verilator と Icarus Verilog にかけるコンポーネントを公開しています（[CI/CD Catalog](https://gitlab.com/explore/catalog)）。エラーがあるとジョブが失敗し、ファイルごとの結果が MR のテスト結果に出ます。
+
+```yaml
+include:
+  - component: gitlab.com/sharphdl/SharpHDL/verilog-lint@v0.6.0
+    inputs:
+      emit_command: dotnet run --project tools/EmitVerilog -- artifacts/verilog
+```
+
+| 入力 | 既定値 | 内容 |
+|------|--------|------|
+| `emit_command` | （必須） | `verilog_dir` に `.v` を書き出すコマンド |
+| `verilog_dir` | `artifacts/verilog` | 出力先。JUnit の結果もここに書かれる |
+| `image` | `mcr.microsoft.com/dotnet/sdk:10.0` | `emit_command` を実行できる Debian / Ubuntu 系のイメージ |
+| `allow_failure` | `false` | 既知のエラーを直す間だけパイプラインを止めないとき `true` |
+| `job_name` / `stage` | `verilog-lint` / `test` | ジョブ名とステージ |
+
+版はリリースのタグ（`v0.6.0` 以降）を指定します。
+
 ## このリポジトリをビルドする
 
 ```bash
