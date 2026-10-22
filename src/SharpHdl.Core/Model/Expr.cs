@@ -15,10 +15,22 @@ public abstract class Expr
 		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Minus };
 	}
+	public static UnaryExpr operator -(Expr expr)
+	{
+		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.Neg };
+	}
 	public static OpExpr operator *(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Mul };
+	}
+	public static UnaryExpr operator ~(Expr expr)
+	{
+		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.Not };
+	}
+	public static UnaryExpr operator !(Expr expr)
+	{
+		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.LogicNot };
 	}
 	public static OpExpr operator &(Expr left, Expr right)
 	{
