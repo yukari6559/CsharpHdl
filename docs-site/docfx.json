@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../src",
+          "files": [
+            "SharpHdl.Core/SharpHdl.Core.csproj",
+            "SharpHdl.Emit/SharpHdl.Emit.csproj",
+            "SharpHdl.Sim/SharpHdl.Sim.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "properties": {
+        "Configuration": "Release"
+      }
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [ "index.md", "toc.yml", "api/**.yml", "api/index.md" ]
+      },
+      {
+        "src": "..",
+        "files": [ "docs/*.md" ],
+        "exclude": [ "docs/INDEX.md" ]
+      }
+    ],
+    "output": "../public",
+    "template": [ "default", "modern" ],
+    "globalMetadata": {
+      "_appName": "SharpHdl",
+      "_appTitle": "SharpHdl",
+      "_enableSearch": true,
+      "_disableContribution": true
+    }
+  }
+}

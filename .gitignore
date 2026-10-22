@@ -17,3 +17,8 @@ internal/*
 
 # ローカル作業用キャッシュ
 .tmp-gh-cache/
+
+# docfx: generated API metadata and the Pages output
+docs-site/api/*.yml
+docs-site/api/.manifest
+public/
