@@ -1,0 +1,10 @@
+# Requirement legacy IID <TAB> tests that verify it (space separated).
+# A test is a test method name; "suite:<classname>" means every test case of that class.
+# Work items: #120 = 1, #121 = 2, ... #126 = 7.
+1	TestBinaryOpOperandWidthMismatchThrows TestMulRequiresEqualWidthsAndWidening TestShiftOperandsAreExemptFromWidthRule
+2	TestNestedOpCombEmitterParenthesizesNestedOperands NestedOpCombKeepsTreeGrouping
+3	TestNestedSliceFoldsIntoOneSliceOfTheSignal TestSliceOutOfRangeThrows TestSliceAndSignExtendRejectNonSignalOperands TestSliceSelectCombEmitsValidSelects
+4	EmitDeclaresLocalsAfterPortList SimEvaluatesLocalsInChildModule UndeclaredLocalLhsThrowsOnCheckSimAndEmit UndeclaredLocalRhsThrowsOnCheck SimSetOnLocalThrowsButGetAndPortSetRemainAllowed
+5	ShiftCombShiftsLogicallyAndZeroesOutOfRangeAmounts BitUtilsShiftHandlesFullWidthAndLargeAmounts TestShiftOperandsAreExemptFromWidthRule
+6	AssignAndSwitchSecondCaseThrows AssignAndIfThenThrows IfThenBeforeAssignThrows DualAssignInIfThenThrows IfThenElseSameSignalDoesNotThrow
+7	suite:verilog-lint

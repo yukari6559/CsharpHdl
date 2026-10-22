@@ -1,7 +1,8 @@
-# Build, test and security scans on merge requests, main and tags.
+# Build, test, security scans and Verilog lint on merge requests, main, tags and schedules.
+# main: dev packages (X.Y.Z+1-dev.N) to the GitLab NuGet registry and the requirements report.
 # A tag vX.Y.Z publishes SharpHdl.Core / Emit / Sim to nuget.org via Trusted Publishing
 # (GitLab OIDC id_token exchanged for a one-hour API key; no long-lived secret),
-# then creates a GitLab Release.
+# then creates a GitLab Release with notes generated from commit subjects.
 # nuget.org policy: namespace "sharphdl", project "SharpHDL", environment "release".
 
 workflow:
@@ -9,6 +10,7 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
+    - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
@@ -24,6 +26,7 @@ variables:
 
 stages:
   - test
+  - report
   - publish
   - release
 
@@ -42,8 +45,8 @@ build-test:
       --logger "junit;LogFilePath=$CI_PROJECT_DIR/artifacts/test/{assembly}.junit.xml"
       --collect:"XPlat Code Coverage" --results-directory "$CI_PROJECT_DIR/artifacts/coverage"
     - |
-      COBERTURA=$(find artifacts/coverage -name coverage.cobertura.xml | head -n 1)
-      grep -o '<coverage [^>]*line-rate="[0-9.]*"' "$COBERTURA" | head -n 1 \
+      COBERTURA=$(find artifacts/coverage -name coverage.cobertura.xml | sed -n 1p)
+      grep -o '<coverage [^>]*line-rate="[0-9.]*"' "$COBERTURA" | sed -n 1p \
         | sed 's/.*line-rate="\([0-9.]*\)"/\1/' | awk '{printf "Line coverage: %.2f%%\n", $1 * 100}'
   coverage: '/Line coverage: \d+(?:\.\d+)?%/'
   artifacts:
@@ -74,6 +77,44 @@ verilog-lint:
     reports:
       junit: artifacts/verilog-lint.junit.xml
 
+requirements:
+  stage: report
+  needs:
+    - job: build-test
+      artifacts: true
+    - job: verilog-lint
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - tools/requirements-report.sh .gitlab/requirements.tsv requirements.json artifacts/test/*.junit.xml artifacts/verilog-lint.junit.xml
+  artifacts:
+    reports:
+      requirements: requirements.json
+
+publish-dev-package:
+  stage: publish
+  needs: [build-test]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+  script:
+    - BASE=$(sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' src/SharpHdl.Core/SharpHdl.Core.csproj | sed -n 1p)
+    - VERSION="$(echo "$BASE" | awk -F. '{printf "%d.%d.%d", $1, $2, $3 + 1}')-dev.$CI_PIPELINE_IID"
+    - echo "Publishing $VERSION to the GitLab package registry"
+    - mkdir -p artifacts/nuget
+    - |
+      for p in Core Emit Sim; do
+        dotnet pack "src/SharpHdl.$p/SharpHdl.$p.csproj" -c Release -o artifacts/nuget \
+          -p:Version="$VERSION" -p:PackageVersion="$VERSION"
+      done
+    - >
+      dotnet nuget add source "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/nuget/index.json"
+      --name gitlab --username gitlab-ci-token --password "$CI_JOB_TOKEN" --store-password-in-clear-text
+    - |
+      for p in Core Emit Sim; do
+        dotnet nuget push "artifacts/nuget/SharpHdl.$p.$VERSION.nupkg" --source gitlab
+      done
+
 publish-nuget:
   stage: publish
   needs: [build-test]
@@ -86,8 +127,11 @@ publish-nuget:
       aud: "https://www.nuget.org"
   variables:
     NUGET_USERNAME: araiguma
+    # Release notes need every commit since the previous tag.
+    GIT_DEPTH: 0
   script:
     - VERSION="${CI_COMMIT_TAG#v}"
+    - tools/release-notes.sh "$CI_COMMIT_TAG" > release-notes.md
     - mkdir -p artifacts/nuget
     - |
       for p in Core Emit Sim; do
@@ -115,25 +159,19 @@ publish-nuget:
         dotnet nuget push "artifacts/nuget/SharpHdl.$p.$VERSION.nupkg" \
           --source https://api.nuget.org/v3/index.json --api-key "$API_KEY" --skip-duplicate
       done
+  artifacts:
+    paths:
+      - release-notes.md
 
 release:
   stage: release
   image: registry.gitlab.com/gitlab-org/cli:latest
-  needs: [publish-nuget]
+  needs:
+    - job: publish-nuget
+      artifacts: true
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+([.-].+)?$/
   script:
-    - VERSION="${CI_COMMIT_TAG#v}"
-    - |
-      {
-        echo "SharpHdl $VERSION on nuget.org:"
-        echo ""
-        for p in Core Emit Sim; do
-          echo "- [SharpHdl.$p $VERSION](https://www.nuget.org/packages/SharpHdl.$p/$VERSION)"
-        done
-        echo ""
-        echo "Merged changes: [merge requests](https://gitlab.com/sharphdl/SharpHDL/-/merge_requests?state=merged)"
-      } > release-notes.md
     - cat release-notes.md
   release:
     tag_name: $CI_COMMIT_TAG

@@ -56,6 +56,22 @@ csproj の `<Version>` はローカル表示用です。タグ付きリリース
 
 ---
 
+## 開発版パッケージ（未リリースの変更を試す）
+
+`main` に変更が入るたびに、GitLab のパッケージレジストリへ開発版（例: `0.5.1-dev.42`。次の版 + `-dev.` + パイプライン番号）を公開しています。nuget.org の正式版より先に新しい機能を試したいときに使ってください。
+
+```bash
+dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nuget/index.json --name sharphdl-dev
+```
+
+```xml
+<PackageReference Include="SharpHdl.Core" Version="0.5.1-dev.*" />
+```
+
+開発版は予告なく変わります。正式な依存には nuget.org の版を使ってください。
+
+---
+
 ## プロジェクト参照（本リポジトリ開発・未公開版の試し用）
 
 ```xml
