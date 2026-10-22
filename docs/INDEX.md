@@ -6,4 +6,4 @@
 | [consumers.md](consumers.md) | 他プロジェクトからの参照（NuGet） |
 | [dsl-spec.md](dsl-spec.md) | DSL / API の契約 |
 
-記述例: リポジトリの [`examples/`](../examples/)
+記述例: リポジトリの [`examples/`](https://gitlab.com/sharphdl/SharpHDL/-/tree/main/examples)

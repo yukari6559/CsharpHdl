@@ -1,0 +1,8 @@
+- name: Guide
+  href: ../docs/getting-started.md
+- name: DSL
+  href: ../docs/dsl-spec.md
+- name: Consumers
+  href: ../docs/consumers.md
+- name: API
+  href: api/

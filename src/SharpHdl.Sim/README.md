@@ -20,6 +20,7 @@ Optional with emit:
 ## Docs
 
 - Repository: https://gitlab.com/sharphdl/SharpHDL
+- Documentation and API reference: https://sharphdl.gitlab.io/SharpHDL
 - Consumer guide: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/consumers.md
 
 ## License
