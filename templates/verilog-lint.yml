@@ -1,7 +1,7 @@
 spec:
   description: >-
     Emits Verilog with a command of your choice, then lints every .v file with Verilator
-    (--lint-only -Wall) and Icarus Verilog (-g2005). Errors fail the job, warnings are
+    (--lint-only, -Wall by default) and Icarus Verilog (-g2005). Errors fail the job, warnings are
     printed. Each file is reported in the merge request test report (JUnit).
   inputs:
     job_name:
@@ -22,6 +22,9 @@ spec:
       type: boolean
       default: false
       description: Set to true to keep the pipeline green while known lint errors are being fixed.
+    verilator_flags:
+      default: -Wall
+      description: Warning flags for `verilator --lint-only`, for example `-Wall -Wno-DECLFILENAME` when file names do not match module names.
 ---
 "$[[ inputs.job_name ]]":
   stage: $[[ inputs.stage ]]
@@ -30,6 +33,7 @@ spec:
   allow_failure: $[[ inputs.allow_failure ]]
   variables:
     VERILOG_DIR: $[[ inputs.verilog_dir ]]
+    VERILATOR_FLAGS: $[[ inputs.verilator_flags ]]
   script:
     - apt-get update -qq && apt-get install -y -qq verilator iverilog > /dev/null
     # sed reads all input; head would close the pipe early and fail the job with SIGPIPE under pipefail.
@@ -43,7 +47,8 @@ spec:
         name=$(basename "$file" .v)
         total=$((total + 1))
         set +e
-        verilator_out=$(verilator --lint-only -Wall -Wno-fatal "$file" 2>&1)
+        # Unquoted: VERILATOR_FLAGS may hold several flags.
+        verilator_out=$(verilator --lint-only $VERILATOR_FLAGS -Wno-fatal "$file" 2>&1)
         verilator_status=$?
         iverilog_out=$(iverilog -g2005 -Wall -o /dev/null "$file" 2>&1)
         iverilog_status=$?
