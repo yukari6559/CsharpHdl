@@ -1,8 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":semanticCommits", ":semanticCommitTypeAll(chore)"],
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(chore)"
+  ],
   "timezone": "Asia/Tokyo",
-  "labels": ["chore", "workflow::review"],
+  "labels": [
+    "chore",
+    "workflow::review"
+  ],
   "dependencyDashboardTitle": "Dependency Dashboard (Renovate)",
   "prHourlyLimit": 0,
   "prConcurrentLimit": 5,
@@ -13,27 +20,54 @@
   "packageRules": [
     {
       "description": "Test-only packages move together.",
-      "matchPackageNames": ["xunit", "xunit.*", "Microsoft.NET.Test.Sdk", "coverlet.collector", "JunitXml.TestLogger"],
+      "matchPackageNames": [
+        "xunit",
+        "xunit.*",
+        "Microsoft.NET.Test.Sdk",
+        "coverlet.collector",
+        "JunitXml.TestLogger"
+      ],
       "groupName": "test packages"
     },
     {
       "description": "Minor and patch updates merge on their own once the pipeline passes.",
-      "matchUpdateTypes": ["minor", "patch", "digest", "pin"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pin"
+      ],
       "automerge": true,
       "platformAutomerge": true
     },
     {
       "description": "Major updates wait for a human.",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false
+    },
+    {
+      "description": "Stay on the .NET 10 SDK image while the projects target net10.0; raise both together on purpose.",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "mcr.microsoft.com/dotnet/sdk"
+      ],
+      "allowedVersions": "/^10\\./"
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
       "description": "docfx version used by the Pages jobs.",
-      "managerFilePatterns": ["/^\\.gitlab-ci\\.yml$/"],
-      "matchStrings": ["DOCFX_VERSION: \"(?<currentValue>[^\"]+)\""],
+      "managerFilePatterns": [
+        "/^\\.gitlab-ci\\.yml$/"
+      ],
+      "matchStrings": [
+        "DOCFX_VERSION: \"(?<currentValue>[^\"]+)\""
+      ],
       "depNameTemplate": "docfx",
       "datasourceTemplate": "nuget"
     }
