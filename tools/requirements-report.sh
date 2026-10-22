@@ -11,6 +11,14 @@ shift 2
 # Paths without spaces (CI artifact paths); kept in a variable because the loop reuses "$@".
 junits="$*"
 
+# Without the inputs every requirement would look failed; fail the job instead.
+for junit in $junits; do
+	if [ ! -f "$junit" ]; then
+		echo "missing JUnit file: $junit"
+		exit 1
+	fi
+done
+
 # Prints "<found> <failed>" for one test name or "suite:<classname>".
 count() {
 	key="$1"
