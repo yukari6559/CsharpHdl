@@ -25,6 +25,7 @@ public class InstanceVisitor(StringBuilder verilogsb, List<InstanceStmt> instanc
 		}
 
 		_ = verilogsb.Append(VerilogEmitter.EmitOneModule(instanceStmt.ChildModule, instanceStmt.ChildModule.GetType().Name, [], false));
+		_ = verilogsb.Append("\n\n");
 	}
 
 	public void VisitMem(MemStmt memStmt)

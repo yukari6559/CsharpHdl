@@ -65,8 +65,6 @@ include:
   - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/verilog-lint@$CI_COMMIT_SHA
     inputs:
       emit_command: dotnet run --project tools/VerilogSamples -c Release -- artifacts/verilog
-      # Non-blocking until #119 (hierarchical output glues endmodule to the next module) is fixed.
-      allow_failure: true
   # The examples: each one must build against the current API; files are named <example>-<Module>.v.
   - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/verilog-lint@$CI_COMMIT_SHA
     inputs:
@@ -74,8 +72,6 @@ include:
       emit_command: tools/emit-examples.sh artifacts/examples
       verilog_dir: artifacts/examples
       verilator_flags: -Wall -Wno-DECLFILENAME
-      # alu-top is hierarchical (#119).
-      allow_failure: true
 
 build-test:
   stage: test

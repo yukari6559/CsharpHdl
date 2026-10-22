@@ -450,7 +450,8 @@ public class ModuleTests
 			"\t\t(Op == 2'd1) ? (A - B) :\n" +
 			"\t\t(Op == 2'd2) ? (A & B) :\n" +
 			"\t\t(A | B);\n" +
-			"endmodule" +
+			"endmodule\n" +
+			"\n" +
 			"module AluTop(\n" +
 			"\tinput wire [31:0] A,\n" +
 			"\tinput wire [31:0] B,\n" +
