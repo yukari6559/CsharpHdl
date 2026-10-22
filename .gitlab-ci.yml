@@ -156,6 +156,10 @@ renovate:
     # Installs dotnet on demand so packages.lock.json files are updated with the packages.
     RENOVATE_BINARY_SOURCE: install
     RENOVATE_BASE_DIR: $CI_PROJECT_DIR/.renovate
+    # Auto-merge is enabled right after the MR is created, once its pipeline runs. Renovate checks
+    # 5 times, waiting delay × attempt² ms (default 250 ms, about 14 s in total); merged results
+    # pipelines take longer to start, so wait about 55 s.
+    RENOVATE_X_GITLAB_MERGE_REQUEST_DELAY: "1000"
     LOG_LEVEL: info
   cache:
     key: renovate
