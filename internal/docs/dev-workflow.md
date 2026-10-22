@@ -227,9 +227,9 @@ chore/<issue>-<short>
 | **Issue の関係** | Issue の「ブロックする / される」 | hdl-coverage-plan の「前提」と同じ関係を付ける |
 | **要件** | 作業アイテムの Requirement（#120〜#126 = R1〜R7）、対応表 `.gitlab/requirements.tsv` | 仕様の大事な規則を足したら要件を作り、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す（見つからないテストは不合格になる） |
 | **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。#119 が直るまでジョブは止めない設定、直ったら `allow_failure` を外す |
-| **開発版パッケージ** | GitLab のパッケージレジストリ（`main` のたびに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md） |
+| **開発版パッケージ** | GitLab のパッケージレジストリ（`main` で Core / Emit / Sim か `Directory.Build.props` が変わったときに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md）。パッケージに入るプロジェクトを足したら `publish-dev-package` の `changes` にも足す |
 | **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる | コミットの件名がそのまま載るので、Conventional Commits の件名を利用者に伝わる言葉で書く。破壊的変更は `feat!:` などの `!` を付ける |
-| **ドキュメントサイト** | https://sharphdl.gitlab.io/SharpHDL （`docs-site/`、`docs/`、XML ドキュメントコメント） | 公開 `docs/` を変えたら MR の `pages-preview` が通ることを確かめる。リンク切れは失敗になる |
+| **ドキュメントサイト** | https://sharphdl.gitlab.io/SharpHDL （`docs-site/`、`docs/`、XML ドキュメントコメント） | 公開 `docs/` を変えたら MR の `pages-preview` が通ることを確かめる。リンク切れは失敗になる。`main` のサイトは docs・`src/`・CI 定義が変わったときだけデプロイされる（`&docs-paths`） |
 | **定期実行** | パイプラインのスケジュール（毎週月曜 3:00 JST） | 失敗したら原因（SDK の更新、新しい脆弱性など）を Issue にする |
 | **警告の扱い** | `Directory.Build.props`（コードスタイルの規則もビルドで検査、CI では警告をエラー扱い） | 新しい警告を入れるとパイプラインが失敗する。意図して残す指摘は `[SuppressMessage]` に理由を書いて抑制する（抑制したものはレポートにも出ない） |
 | **コード品質のレポート** | CI の `code-quality`（ビルドの SARIF を `tools/SarifToCodeQuality` で変換） | 何もしない。MR の画面と差分に、増えた / 減った指摘が出る |
@@ -239,6 +239,8 @@ chore/<issue>-<short>
 | **MR ごとのドキュメントのプレビュー** | CI の `pages-preview`（`https://sharphdl.gitlab.io/SharpHDL/mr-<iid>/`、環境 `docs/mr-<iid>`） | 何もしない。MR を閉じると消える |
 | **CI の高速化** | NuGet のキャッシュ（ロックファイルで鍵）、ジョブの中断可（公開系は除く）、古いパイプラインの自動キャンセル | 依存パッケージを変えるとキャッシュが作り直される |
 | **リリース環境の保護** | 環境 `release`（NuGet 公開）は Maintainer だけが実行できる | 協力者を Developer で迎えた場合も公開は Maintainer のみ |
+| **DORA 指標** | 環境 `release` は本番（`deployment_tier: production`）。「分析」→ CI/CD・Value Stream にデプロイ頻度と変更のリードタイムが出る | 何もしない。リリース（タグ）ごとに 1 回のデプロイとして数えられる |
+| **使わない機能** | プロジェクト設定でスニペット・フィーチャーフラグ・インフラ・Monitor・Wiki・コンテナレジストリを無効 | 必要になったら設定の「可視性・機能」で有効にする |
 | **脆弱性の自動解決** | グループの公開プロジェクト `sharphdl/security-policies`（MIT）のポリシー | 検出されなくなった脆弱性は自動で解決済みになる。ポリシー用プロジェクトも公開・OSS のまま保つ（グループ内はすべて公開が OSS プログラムの条件） |
 | **CI/CD コンポーネント** | `templates/verilog-lint.yml`（CI/CD Catalog に登録済み。次のタグから版が載る） | 入力や挙動を変えたら README の表も直す。互換を壊す変更はコミット件名に `!` |
 | **セキュリティ** | MR のセキュリティ欄と脆弱性レポート（Advanced SAST / 依存関係スキャン / シークレット検出、プッシュ時のシークレット拒否） | 指摘が出たら Issue にする。依存パッケージを変えたら `packages.lock.json` も更新してコミットする |
@@ -254,6 +256,7 @@ chore/<issue>-<short>
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.9 | 2026-10-22 | §10 開発版パッケージとサイトは元が変わったときだけ公開。DORA 指標・使わない機能を追加 |
 | 1.8 | 2026-10-22 | §10 に依存パッケージの自動更新・変更のないジョブの省略・例の検査・リリース・グループのトップページを追加。閉じた Issue の作業ラベルを外す。`docs-check` を `pages-preview` に訂正 |
 | 1.7 | 2026-10-22 | §10 に作業の状態ラベル・重み・自動マージ・MR プレビュー・CI の高速化・リリース環境の保護・脆弱性の自動解決・CI/CD コンポーネントを追加 |
 | 1.6 | 2026-10-22 | §10 に警告の扱い（CI でエラー）とコード品質のレポートを追加 |
