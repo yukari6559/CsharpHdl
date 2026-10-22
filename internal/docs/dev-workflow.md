@@ -229,11 +229,11 @@ chore/<issue>-<short>
 | **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。#119 が直るまでジョブは止めない設定、直ったら `allow_failure` を外す |
 | **開発版パッケージ** | GitLab のパッケージレジストリ（`main` のたびに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md） |
 | **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる | コミットの件名がそのまま載るので、Conventional Commits の件名を利用者に伝わる言葉で書く。破壊的変更は `feat!:` などの `!` を付ける |
-| **ドキュメントサイト** | https://sharphdl.gitlab.io/SharpHDL （`docs-site/`、`docs/`、XML ドキュメントコメント） | 公開 `docs/` を変えたら MR の `docs-check` が通ることを確かめる。リンク切れは失敗になる |
+| **ドキュメントサイト** | https://sharphdl.gitlab.io/SharpHDL （`docs-site/`、`docs/`、XML ドキュメントコメント） | 公開 `docs/` を変えたら MR の `pages-preview` が通ることを確かめる。リンク切れは失敗になる |
 | **定期実行** | パイプラインのスケジュール（毎週月曜 3:00 JST） | 失敗したら原因（SDK の更新、新しい脆弱性など）を Issue にする |
 | **警告の扱い** | `Directory.Build.props`（コードスタイルの規則もビルドで検査、CI では警告をエラー扱い） | 新しい警告を入れるとパイプラインが失敗する。意図して残す指摘は `[SuppressMessage]` に理由を書いて抑制する（抑制したものはレポートにも出ない） |
 | **コード品質のレポート** | CI の `code-quality`（ビルドの SARIF を `tools/SarifToCodeQuality` で変換） | 何もしない。MR の画面と差分に、増えた / 減った指摘が出る |
-| **作業の状態** | スコープ付きラベル `workflow::ready` / `in-progress` / `review` / `blocked`、ボード「Workflow」（エピックごとのスイムレーン表示も可） | 着手で `in-progress`、MR を作ったら `review`、前提が未完了なら `blocked`。ラベルは 1 つだけ付く |
+| **作業の状態** | スコープ付きラベル `workflow::ready` / `in-progress` / `review` / `blocked`、ボード「Workflow」（エピックごとのスイムレーン表示も可） | 着手で `in-progress`、MR を作ったら `review`、前提が未完了なら `blocked`。ラベルは 1 つだけ付く。Issue が閉じたら `workflow::` ラベルは外す（閉じた Issue はボードの Closed 列に出る） |
 | **重みと健康状態** | Issue の重み（1 / 2 / 3 / 5 / 8）、健康状態（順調 / 要注意 / 危険） | Issue を作るときに重みを付ける（最初の値は目安なので、分かった時点で直す）。作業中の Issue は健康状態を更新する |
 | **自動マージ** | MR の「パイプライン成功で自動マージ」 | MR を作ったら予約してよい。失敗すると外れる。マージ後に GitHub へ同期する |
 | **MR ごとのドキュメントのプレビュー** | CI の `pages-preview`（`https://sharphdl.gitlab.io/SharpHDL/mr-<iid>/`、環境 `docs/mr-<iid>`） | 何もしない。MR を閉じると消える |
@@ -242,6 +242,11 @@ chore/<issue>-<short>
 | **脆弱性の自動解決** | グループの公開プロジェクト `sharphdl/security-policies`（MIT）のポリシー | 検出されなくなった脆弱性は自動で解決済みになる。ポリシー用プロジェクトも公開・OSS のまま保つ（グループ内はすべて公開が OSS プログラムの条件） |
 | **CI/CD コンポーネント** | `templates/verilog-lint.yml`（CI/CD Catalog に登録済み。次のタグから版が載る） | 入力や挙動を変えたら README の表も直す。互換を壊す変更はコミット件名に `!` |
 | **セキュリティ** | MR のセキュリティ欄と脆弱性レポート（Advanced SAST / 依存関係スキャン / シークレット検出、プッシュ時のシークレット拒否） | 指摘が出たら Issue にする。依存パッケージを変えたら `packages.lock.json` も更新してコミットする |
+| **依存パッケージの自動更新** | Renovate（`renovate.json`、CI の `renovate` ジョブ。定期実行のパイプラインで動く。手動で回すときはスケジュールを「実行」）。一覧は Issue「Dependency Dashboard (Renovate)」 | マイナー / パッチはパイプラインが通れば自動マージ。メジャーは人が見る（テストの件数が減っていないかも確認）。.NET の SDK イメージは 10.x に固定しているので、対象フレームワークを上げるときに `renovate.json` の `allowedVersions` も一緒に上げる |
+| **変更のないジョブの省略** | `.gitlab-ci.yml` の `.code-rules`（MR では `src/` `tools/` `templates/` `examples/`、ソリューション、`Directory.Build.props`、`.editorconfig`、CI 定義が変わったときだけビルド・テスト・lint）。`pages-preview` は docs と `src/` の変更で動く。main・タグ・定期実行は常に全部 | ビルドに効く場所（新しいトップレベルのフォルダ、`global.json` など）を足したら `.code-rules` の一覧にも足す。セキュリティスキャンは常に動く |
+| **例の検査** | CI の `examples-lint`（`tools/emit-examples.sh` が `examples/<名前>/` を 1 つずつビルドし、`tools/ExampleVerilog` が中の Module を `<名前>-<型>.v` に出力して lint） | 新しい例はフォルダを足すだけで対象になる。Module には引数なしのコンストラクタを付ける。#119 が直るまで止めない設定 |
+| **リリース** | Issue テンプレート「Release」（版上げ MR・タグ・nuget.org と GitLab Release の確認・GitHub への同期） | 版を出すときはこのテンプレートで Issue を作る |
+| **グループのトップページ** | 公開プロジェクト `sharphdl/gitlab-profile`（README と MIT の LICENSE） | 紹介文やリンクが変わったら README を直す。グループ内のプロジェクトはすべて公開・OSS ライセンスのまま |
 
 ---
 
@@ -249,6 +254,7 @@ chore/<issue>-<short>
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.8 | 2026-10-22 | §10 に依存パッケージの自動更新・変更のないジョブの省略・例の検査・リリース・グループのトップページを追加。閉じた Issue の作業ラベルを外す。`docs-check` を `pages-preview` に訂正 |
 | 1.7 | 2026-10-22 | §10 に作業の状態ラベル・重み・自動マージ・MR プレビュー・CI の高速化・リリース環境の保護・脆弱性の自動解決・CI/CD コンポーネントを追加 |
 | 1.6 | 2026-10-22 | §10 に警告の扱い（CI でエラー）とコード品質のレポートを追加 |
 | 1.5 | 2026-10-22 | §10 GitLab で回している仕組み（エピック・要件・Verilog の検証・開発版・リリースノート・サイト・定期実行・セキュリティ） |
