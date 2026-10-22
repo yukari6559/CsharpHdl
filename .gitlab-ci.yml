@@ -1,6 +1,7 @@
-# Build and test on merge requests, main and tags.
+# Build, test and security scans on merge requests, main and tags.
 # A tag vX.Y.Z publishes SharpHdl.Core / Emit / Sim to nuget.org via Trusted Publishing
-# (GitLab OIDC id_token exchanged for a one-hour API key; no long-lived secret).
+# (GitLab OIDC id_token exchanged for a one-hour API key; no long-lived secret),
+# then creates a GitLab Release.
 # nuget.org policy: namespace "sharphdl", project "SharpHDL", environment "release".
 
 workflow:
@@ -18,20 +19,41 @@ variables:
   # Security templates only run in branch pipelines unless this is set; the workflow
   # above replaces branch pipelines with MR pipelines while an MR is open.
   AST_ENABLE_MR_PIPELINES: "true"
+  # Ultimate: cross-function taint analysis for C#; Semgrep keeps the rules it does not cover.
+  GITLAB_ADVANCED_SAST_ENABLED: "true"
 
 stages:
   - test
   - publish
+  - release
 
 include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.v2.gitlab-ci.yml
 
 build-test:
   stage: test
   script:
-    - dotnet restore CsharpHdl.slnx
+    - dotnet restore CsharpHdl.slnx --locked-mode
     - dotnet build CsharpHdl.slnx --no-restore -c Release
-    - dotnet test CsharpHdl.slnx --no-build -c Release --verbosity normal
+    - >
+      dotnet test CsharpHdl.slnx --no-build -c Release --verbosity normal
+      --logger "junit;LogFilePath=$CI_PROJECT_DIR/artifacts/test/{assembly}.junit.xml"
+      --collect:"XPlat Code Coverage" --results-directory "$CI_PROJECT_DIR/artifacts/coverage"
+    - |
+      COBERTURA=$(find artifacts/coverage -name coverage.cobertura.xml | head -n 1)
+      grep -o '<coverage [^>]*line-rate="[0-9.]*"' "$COBERTURA" | head -n 1 \
+        | sed 's/.*line-rate="\([0-9.]*\)"/\1/' | awk '{printf "Line coverage: %.2f%%\n", $1 * 100}'
+  coverage: '/Line coverage: \d+(?:\.\d+)?%/'
+  artifacts:
+    when: always
+    expire_in: 30 days
+    reports:
+      junit: artifacts/test/*.junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: artifacts/coverage/**/coverage.cobertura.xml
 
 publish-nuget:
   stage: publish
@@ -74,3 +96,27 @@ publish-nuget:
         dotnet nuget push "artifacts/nuget/SharpHdl.$p.$VERSION.nupkg" \
           --source https://api.nuget.org/v3/index.json --api-key "$API_KEY" --skip-duplicate
       done
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  needs: [publish-nuget]
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+([.-].+)?$/
+  script:
+    - VERSION="${CI_COMMIT_TAG#v}"
+    - |
+      {
+        echo "SharpHdl $VERSION on nuget.org:"
+        echo ""
+        for p in Core Emit Sim; do
+          echo "- [SharpHdl.$p $VERSION](https://www.nuget.org/packages/SharpHdl.$p/$VERSION)"
+        done
+        echo ""
+        echo "Merged changes: [merge requests](https://gitlab.com/sharphdl/SharpHDL/-/merge_requests?state=merged)"
+      } > release-notes.md
+    - cat release-notes.md
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "SharpHdl $CI_COMMIT_TAG"
+    description: ./release-notes.md
