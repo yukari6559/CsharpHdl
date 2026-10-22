@@ -55,6 +55,25 @@ build-test:
         coverage_format: cobertura
         path: artifacts/coverage/**/coverage.cobertura.xml
 
+verilog-lint:
+  stage: test
+  needs: []
+  # Non-blocking until #119 (hierarchical output glues endmodule to the next module) is fixed.
+  allow_failure: true
+  script:
+    - apt-get update -qq && apt-get install -y -qq verilator iverilog > /dev/null
+    # sed reads all input; head would close the pipe early and fail the job with SIGPIPE under pipefail.
+    - verilator --version && iverilog -V 2>&1 | sed -n 1p
+    - dotnet run --project tools/VerilogSamples -c Release -- artifacts/verilog
+    - tools/lint-verilog.sh artifacts/verilog artifacts/verilog-lint.junit.xml
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - artifacts/verilog/
+    reports:
+      junit: artifacts/verilog-lint.junit.xml
+
 publish-nuget:
   stage: publish
   needs: [build-test]
