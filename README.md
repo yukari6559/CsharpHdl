@@ -56,6 +56,7 @@ include:
 | `verilog_dir` | `artifacts/verilog` | 出力先。JUnit の結果もここに書かれる |
 | `image` | `mcr.microsoft.com/dotnet/sdk:10.0` | `emit_command` を実行できる Debian / Ubuntu 系のイメージ |
 | `allow_failure` | `false` | 既知のエラーを直す間だけパイプラインを止めないとき `true` |
+| `verilator_flags` | `-Wall` | `verilator --lint-only` に渡す警告のフラグ（例: ファイル名とモジュール名が違うとき `-Wall -Wno-DECLFILENAME`） |
 | `job_name` / `stage` | `verilog-lint` / `test` | ジョブ名とステージ |
 
 版はリリースのタグ（`v0.6.0` 以降）を指定します。

@@ -44,6 +44,7 @@ variables:
         - src/**/*
         - tools/**/*
         - templates/**/*
+        - examples/**/*
         - CsharpHdl.slnx
         - Directory.Build.props
         - .editorconfig
@@ -65,6 +66,15 @@ include:
     inputs:
       emit_command: dotnet run --project tools/VerilogSamples -c Release -- artifacts/verilog
       # Non-blocking until #119 (hierarchical output glues endmodule to the next module) is fixed.
+      allow_failure: true
+  # The examples: each one must build against the current API; files are named <example>-<Module>.v.
+  - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/verilog-lint@$CI_COMMIT_SHA
+    inputs:
+      job_name: examples-lint
+      emit_command: tools/emit-examples.sh artifacts/examples
+      verilog_dir: artifacts/examples
+      verilator_flags: -Wall -Wno-DECLFILENAME
+      # alu-top is hierarchical (#119).
       allow_failure: true
 
 build-test:
@@ -119,6 +129,10 @@ code-quality:
       codequality: gl-code-quality-report.json
 
 verilog-lint:
+  cache: *nuget-cache
+  rules: !reference [.code-rules, rules]
+
+examples-lint:
   cache: *nuget-cache
   rules: !reference [.code-rules, rules]
 
