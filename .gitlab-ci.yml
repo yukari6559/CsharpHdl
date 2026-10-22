@@ -96,6 +96,34 @@ requirements:
     reports:
       requirements: requirements.json
 
+.docfx:
+  variables:
+    DOCFX_VERSION: "2.81.0"
+  script:
+    - dotnet tool install -g docfx --version "$DOCFX_VERSION"
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+    - dotnet restore CsharpHdl.slnx --locked-mode
+    # Broken links and API metadata problems fail the job.
+    - docfx docs-site/docfx.json --warningsAsErrors
+
+docs-check:
+  extends: .docfx
+  stage: test
+  needs: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+pages:
+  extends: .docfx
+  stage: publish
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+  pages: true
+  artifacts:
+    paths:
+      - public
+
 publish-dev-package:
   stage: publish
   needs: [build-test]
