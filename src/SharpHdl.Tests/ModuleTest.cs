@@ -1023,6 +1023,39 @@ public class ModuleTests
 		Assert.Equal(expected, verilog);
 	}
 
+	[Fact]
+	public void TestZeroExtendToSameWidthReturnsExpression()
+	{
+		In a = In.UInt(8, "a");
+		In b = In.UInt(8, "b");
+		Expr sub = a - b;
+
+		Assert.Same(sub, sub.ZeroExtend(8));
+		Assert.Same(a, a.ZeroExtend(8));
+	}
+
+	[Fact]
+	public void TestSameWidthExtendCombEmitterKeepsParentheses()
+	{
+		SameWidthExtendComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(SameWidthExtendComb));
+
+		const string expected =
+			"module SameWidthExtendComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire [7:0] C,\n" +
+			"\toutput wire [7:0] SubSub,\n" +
+			"\toutput wire [7:0] SubMul\n" +
+			");\n" +
+			"\tassign SubSub = A - (B - C);\n" +
+			"\tassign SubMul = (A - B) * C;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
 	private static int CountOccurrences(string text, string value)
 	{
 		int count = 0;
