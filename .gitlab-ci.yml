@@ -105,6 +105,34 @@ code-quality:
 verilog-lint:
   cache: *nuget-cache
 
+renovate:
+  stage: test
+  needs: []
+  image:
+    name: renovate/renovate:44
+    entrypoint: [""]
+  # Runs in scheduled pipelines (weekly; play the schedule to run it on demand). Pipeline variables
+  # are disabled for this project, so the job keys off the pipeline source instead of a variable.
+  # RENOVATE_TOKEN is a masked, protected CI variable (project access token, Developer).
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  variables:
+    RENOVATE_PLATFORM: gitlab
+    RENOVATE_ENDPOINT: $CI_API_V4_URL
+    RENOVATE_REPOSITORIES: $CI_PROJECT_PATH
+    RENOVATE_REQUIRE_CONFIG: required
+    RENOVATE_ONBOARDING: "false"
+    # Installs dotnet on demand so packages.lock.json files are updated with the packages.
+    RENOVATE_BINARY_SOURCE: install
+    RENOVATE_BASE_DIR: $CI_PROJECT_DIR/.renovate
+    LOG_LEVEL: info
+  cache:
+    key: renovate
+    paths:
+      - .renovate/cache
+  script:
+    - renovate
+
 requirements:
   stage: report
   needs:
