@@ -1,4 +1,4 @@
-# DSL 仕様 v0.10
+# DSL 仕様 v0.11
 
 CsharpHdl が提供する **ハードウェア記述 API** の契約です。  
 実装のクラス名は変えてよいが、意味論はここに合わせる。
@@ -213,7 +213,7 @@ Comb の Emit は同一出力への三項 `assign` チェーン（現行）。�
 
 - 元幅が `GetWidth()` で分かること。`toWidth >= srcWidth`（縮小は例外）
 - 右辺のみ。emit は複製連結（`$signed` は使わない）
-- `toWidth == srcWidth` のときは内側式のみ
+- `toWidth == srcWidth` のときは内側式のみ。`ZeroExtend` は拡張ノードを作らずに式そのものを返すので、入れ子の演算の括弧（verilog-emit-spec §5c）もそのまま付く（`A - (B - C).ZeroExtend(8)` → `A - (B - C)`、#148）
 - LB/LBU や即値フィールド切り出しは消費者側（`Slice` + Extend）
 - `SignExtend` の対象も **信号か信号のスライス** に限る（それ以外は `UnsupportedSelectException`、#104）。`Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - `ZeroExtend` は 0 埋めの連結なので対象を問わない
@@ -272,6 +272,7 @@ public sealed class Top : Module
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 0.11 | 2026-10-22 | T2e: 同じ幅への `ZeroExtend` は式そのものを返す（括弧が消えない、#148） |
 | 0.10 | 2026-10-18 | M2a: 乗算 `*`（左右は同じ幅、結果も同じ幅。全幅は `ZeroExtend` で広げる） |
 | 0.9 | 2026-10-18 | M2b: 論理シフト `<<` / `>>`（定数量・可変量。幅の規則の対象外、量が幅以上なら 0） |
 | 0.8 | 2026-10-17 | #104: `Slice` / `SignExtend` の対象の制限、`Slice` の畳み込み、範囲の検査（T2b / T2e、既知の制約） |

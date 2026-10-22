@@ -84,7 +84,7 @@ public sealed class Alu : Module
 | 論理シフト `<< >>` | 量は定数（`x << 2`）か信号・式（`x << amt`）。結果は左の幅。量が左の幅以上なら 0。算術シフトは未対応 |
 | `Slice(hi, lo)` | `x[hi:lo]`（両端 inclusive）。結果幅 `hi - lo + 1` |
 | `Concat(...)` | `{a, b, …}`（左が MSB）。結果幅は各幅の和 |
-| `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅 |
+| `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅。同じ幅なら何もしない（`ZeroExtend` は式そのものを返し、入れ子の演算の括弧も保たれる） |
 
 **幅の規則:** 二項演算と比較は左右の幅が違うと `WidthMismatchException`（シフトの量だけは例外）。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`）。入れ子の演算は Emit で括弧付きになる（`(A ^ B) & C`）。
 

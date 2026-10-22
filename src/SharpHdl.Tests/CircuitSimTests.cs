@@ -340,6 +340,20 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(10u, 7u, 3u, 6u, 9u)]
+	[InlineData(0x80u, 0x01u, 0x02u, 0x81u, 0xFEu)]
+	public void SameWidthExtendCombKeepsTreeGrouping(uint a, uint b, uint c, uint subSub, uint subMul)
+	{
+		SimSession<SameWidthExtendComb> m = new SameWidthExtendComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.C, c);
+		m.Settle();
+		Assert.Equal(subSub, m.Get(m.Module.SubSub));
+		Assert.Equal(subMul, m.Get(m.Module.SubMul));
+	}
+
+	[Theory]
 	[InlineData(0xF0u, 0xFu, 0xFFu, 1u)]
 	[InlineData(0x0Au, 0xFu, 0x19u, 0u)]
 	[InlineData(0xFFu, 0x1u, 0x00u, 1u)]

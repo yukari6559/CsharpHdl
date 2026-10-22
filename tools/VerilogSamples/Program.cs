@@ -31,6 +31,7 @@ _ = Directory.CreateDirectory(outDir);
 	(nameof(RegFile2R1W), () => Described(new RegFile2R1W())),
 	(nameof(XorComb), () => Described(new XorComb())),
 	(nameof(NestedOpComb), () => Described(new NestedOpComb())),
+	(nameof(SameWidthExtendComb), () => Described(new SameWidthExtendComb())),
 	(nameof(ExtendedOperandComb), () => Described(new ExtendedOperandComb())),
 	(nameof(SliceSelectComb), () => Described(new SliceSelectComb())),
 	(nameof(ShiftComb), () => Described(new ShiftComb())),
