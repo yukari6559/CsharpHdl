@@ -14,6 +14,11 @@ workflow:
 default:
   image: mcr.microsoft.com/dotnet/sdk:10.0
 
+variables:
+  # Security templates only run in branch pipelines unless this is set; the workflow
+  # above replaces branch pipelines with MR pipelines while an MR is open.
+  AST_ENABLE_MR_PIPELINES: "true"
+
 stages:
   - test
   - publish
