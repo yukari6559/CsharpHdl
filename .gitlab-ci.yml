@@ -1,0 +1,71 @@
+# Build and test on merge requests, main and tags.
+# A tag vX.Y.Z publishes SharpHdl.Core / Emit / Sim to nuget.org via Trusted Publishing
+# (GitLab OIDC id_token exchanged for a one-hour API key; no long-lived secret).
+# nuget.org policy: namespace "sharphdl", project "SharpHDL", environment "release".
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+default:
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+
+stages:
+  - test
+  - publish
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+build-test:
+  stage: test
+  script:
+    - dotnet restore CsharpHdl.slnx
+    - dotnet build CsharpHdl.slnx --no-restore -c Release
+    - dotnet test CsharpHdl.slnx --no-build -c Release --verbosity normal
+
+publish-nuget:
+  stage: publish
+  needs: [build-test]
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+([.-].+)?$/
+  environment:
+    name: release
+  id_tokens:
+    NUGET_ID_TOKEN:
+      aud: "https://www.nuget.org"
+  variables:
+    NUGET_USERNAME: araiguma
+  script:
+    - VERSION="${CI_COMMIT_TAG#v}"
+    - mkdir -p artifacts/nuget
+    - |
+      for p in Core Emit Sim; do
+        dotnet pack "src/SharpHdl.$p/SharpHdl.$p.csproj" -c Release -o artifacts/nuget \
+          -p:Version="$VERSION" -p:PackageVersion="$VERSION"
+      done
+    - ls -la artifacts/nuget
+    # The temporary key is valid for one hour, so request it right before pushing.
+    - |
+      RESPONSE=$(curl -sS -w '\n%{http_code}' -X POST https://www.nuget.org/api/v2/token \
+        -H 'Content-Type: application/json' \
+        -H "Authorization: Bearer $NUGET_ID_TOKEN" \
+        -d "{\"username\": \"$NUGET_USERNAME\", \"tokenType\": \"ApiKey\"}")
+      STATUS=$(echo "$RESPONSE" | tail -n 1)
+      if [ "$STATUS" != "200" ]; then
+        echo "NuGet token exchange failed (HTTP $STATUS)"
+        exit 1
+      fi
+      API_KEY=$(echo "$RESPONSE" | head -n -1 | sed -n 's/.*"apiKey"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+      if [ -z "$API_KEY" ]; then
+        echo "NuGet token response did not contain an apiKey"
+        exit 1
+      fi
+      for p in Core Emit Sim; do
+        dotnet nuget push "artifacts/nuget/SharpHdl.$p.$VERSION.nupkg" \
+          --source https://api.nuget.org/v3/index.json --api-key "$API_KEY" --skip-duplicate
+      done
