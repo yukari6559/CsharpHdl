@@ -13,8 +13,8 @@
 	<Version>0.5.0</Version>
 	<Authors>araiguma</Authors>
 	<Description>Verilog emitter for SharpHdl.Core modules.</Description>
-	<PackageProjectUrl>https://github.com/yukari6559/CsharpHdl</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/yukari6559/CsharpHdl</RepositoryUrl>
+	<PackageProjectUrl>https://gitlab.com/sharphdl/SharpHDL</PackageProjectUrl>
+	<RepositoryUrl>https://gitlab.com/sharphdl/SharpHDL</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<PackageTags>hdl;verilog;csharp;fpga;rtl;emitter</PackageTags>
     <TargetFramework>net10.0</TargetFramework>

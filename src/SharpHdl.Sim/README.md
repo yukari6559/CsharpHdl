@@ -19,8 +19,8 @@ Optional with emit:
 
 ## Docs
 
-- Repository: https://github.com/yukari6559/CsharpHdl
-- Consumer guide: https://github.com/yukari6559/CsharpHdl/blob/main/docs/consumers.md
+- Repository: https://gitlab.com/sharphdl/SharpHDL
+- Consumer guide: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/consumers.md
 
 ## License
 
