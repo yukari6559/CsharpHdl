@@ -32,26 +32,27 @@ dotnet build
 
 ### メンテナー向け: nuget.org への公開
 
-版の決定は人手、pack / push は CI（**Trusted Publishing / OIDC**）です。長期 API キーは不要です。
+開発の拠点は GitLab（[sharphdl/SharpHDL](https://gitlab.com/sharphdl/SharpHDL)）です。GitHub（`yukari6559/CsharpHdl`）は `main` とタグだけを同期するコピーで、Actions は無効にしています。
 
-1. nuget.org で Trusted Publishing ポリシーを作成済みであること  
-   - Repository Owner: `yukari6559` / Repository: `CsharpHdl` / Workflow: `release-nuget.yml`  
+版の決定は人手、pack / push は GitLab CI（**Trusted Publishing / OIDC**）です。長期 API キーは不要です。
+
+1. nuget.org で GitLab 用の Trusted Publishing ポリシーを作成済みであること  
+   - Namespace path: `sharphdl` / Project path: `SharpHDL` / Environment: `release`（Ref は空のまま。タグで公開するため）  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って push する（例: `0.5.0`）
+3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.5.0`）
 
 ```bash
 git push origin main
 git tag v0.5.0
 git push origin v0.5.0
+git push github main v0.5.0
 ```
 
-`Release NuGet` workflow がテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
+`.gitlab-ci.yml` の `publish-nuget` ジョブがテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
 同じ版は nuget.org 上で上書きできません。直すときは版を上げて新しいタグを付けてください。
 
-リポジトリが Private のとき、ポリシーは初回成功 publish まで一時有効（数日）になることがあります。一度成功すれば恒久化されます。
-
-csproj の `<Version>` はローカル表示用です。タグ付きリリースでは workflow が `-p:Version=` で上書きします。揃えておくと分かりやすいです。
+csproj の `<Version>` はローカル表示用です。タグ付きリリースでは CI が `-p:Version=` で上書きします。揃えておくと分かりやすいです。
 
 ---
 
