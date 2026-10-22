@@ -13,6 +13,7 @@ Use with [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) to genera
 ## Docs
 
 - Repository: https://gitlab.com/sharphdl/SharpHDL
+- Documentation and API reference: https://sharphdl.gitlab.io/SharpHDL
 - Getting started: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/getting-started.md
 - DSL overview: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/dsl-spec.md
 

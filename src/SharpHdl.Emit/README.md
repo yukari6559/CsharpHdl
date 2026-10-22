@@ -20,6 +20,7 @@ Mem array names: optional `name` on `Mem`; default `mem_{rdata}` (2R1W: `mem_{rd
 ## Docs
 
 - Repository: https://gitlab.com/sharphdl/SharpHDL
+- Documentation and API reference: https://sharphdl.gitlab.io/SharpHDL
 - Consumer guide: https://gitlab.com/sharphdl/SharpHDL/-/blob/main/docs/consumers.md
 
 ## License
