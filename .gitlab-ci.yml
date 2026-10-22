@@ -62,7 +62,8 @@ verilog-lint:
   allow_failure: true
   script:
     - apt-get update -qq && apt-get install -y -qq verilator iverilog > /dev/null
-    - verilator --version && iverilog -V 2>&1 | head -n 1
+    # sed reads all input; head would close the pipe early and fail the job with SIGPIPE under pipefail.
+    - verilator --version && iverilog -V 2>&1 | sed -n 1p
     - dotnet run --project tools/VerilogSamples -c Release -- artifacts/verilog
     - tools/lint-verilog.sh artifacts/verilog artifacts/verilog-lint.junit.xml
   artifacts:
