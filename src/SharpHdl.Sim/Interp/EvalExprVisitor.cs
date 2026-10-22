@@ -50,6 +50,18 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 		};
 	}
 
+	public ulong VisitUnary(UnaryExpr unaryExpr)
+	{
+		ulong maskBit = BitUtils.MakeMaskBit(unaryExpr.Expr.GetWidth());
+		return unaryExpr.UnaryOp switch
+		{
+			UnaryOp.Not => ~unaryExpr.Expr.Accept(this) & maskBit,
+			UnaryOp.Neg => (0 - unaryExpr.Expr.Accept(this)) & maskBit,
+			UnaryOp.LogicNot => unaryExpr.Expr.Accept(this) == 0u ? 1u : 0u,
+			_ => throw new SimUnsupportedException(),
+		};
+	}
+
 	public ulong VisitSignal(Signal signal)
 	{
 		return simWorld.Get(signal);
