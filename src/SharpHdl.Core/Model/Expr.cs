@@ -128,6 +128,10 @@ public abstract class Expr
 		{
 			throw new WidthMismatchException();
 		}
+		if (GetWidth() == width)
+		{
+			return this;
+		}
 
 		ZeroExtendExpr zeroExtendExpr = new(width, this);
 		return zeroExtendExpr;
