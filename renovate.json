@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":semanticCommitTypeAll(chore)"],
+  "timezone": "Asia/Tokyo",
+  "labels": ["chore", "workflow::review"],
+  "dependencyDashboardTitle": "Dependency Dashboard (Renovate)",
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 5,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Test-only packages move together.",
+      "matchPackageNames": ["xunit", "xunit.*", "Microsoft.NET.Test.Sdk", "coverlet.collector", "JunitXml.TestLogger"],
+      "groupName": "test packages"
+    },
+    {
+      "description": "Minor and patch updates merge on their own once the pipeline passes.",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin"],
+      "automerge": true,
+      "platformAutomerge": true
+    },
+    {
+      "description": "Major updates wait for a human.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "docfx version used by the Pages jobs.",
+      "managerFilePatterns": ["/^\\.gitlab-ci\\.yml$/"],
+      "matchStrings": ["DOCFX_VERSION: \"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "docfx",
+      "datasourceTemplate": "nuget"
+    }
+  ]
+}
