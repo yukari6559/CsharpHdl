@@ -9,7 +9,7 @@ public sealed class UnaryExpr : Expr
 
 	public override uint GetWidth()
 	{
-		return UnaryOp is UnaryOp.LogicNot ? 1 : Expr.GetWidth();
+		return UnaryOp is UnaryOp.Not or UnaryOp.Neg ? Expr.GetWidth() : 1;
 	}
 
 	public override T Accept<T>(IExprVisitor<T> exprVisitor)
@@ -22,7 +22,13 @@ public enum UnaryOp
 {
 	Not,
 	Neg,
-	LogicNot
+	LogicNot,
+	ReduceAnd,
+	ReduceOr,
+	ReduceXor,
+	ReduceNand,
+	ReduceNor,
+	ReduceXnor
 }
 
 public static class UnaryOpExtension
@@ -34,6 +40,12 @@ public static class UnaryOpExtension
 			UnaryOp.Not => "~",
 			UnaryOp.Neg => "-",
 			UnaryOp.LogicNot => "!",
+			UnaryOp.ReduceAnd => "&",
+			UnaryOp.ReduceOr => "|",
+			UnaryOp.ReduceXor => "^",
+			UnaryOp.ReduceNand => "~&",
+			UnaryOp.ReduceNor => "~|",
+			UnaryOp.ReduceXnor => "~^",
 			_ => unaryOp.ToString()
 		};
 	}
