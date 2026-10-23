@@ -58,6 +58,12 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 			UnaryOp.Not => ~unaryExpr.Expr.Accept(this) & maskBit,
 			UnaryOp.Neg => (0 - unaryExpr.Expr.Accept(this)) & maskBit,
 			UnaryOp.LogicNot => unaryExpr.Expr.Accept(this) == 0u ? 1u : 0u,
+			UnaryOp.ReduceAnd => (unaryExpr.Expr.Accept(this) & maskBit) == maskBit ? 1u : 0u,
+			UnaryOp.ReduceOr => (unaryExpr.Expr.Accept(this) & maskBit) == 0u ? 0u : 1u,
+			UnaryOp.ReduceXor => (ulong)System.Numerics.BitOperations.PopCount(unaryExpr.Expr.Accept(this) & maskBit) % 2,
+			UnaryOp.ReduceNand => (unaryExpr.Expr.Accept(this) & maskBit) == maskBit ? 0u : 1u,
+			UnaryOp.ReduceNor => (unaryExpr.Expr.Accept(this) & maskBit) == 0u ? 1u : 0u,
+			UnaryOp.ReduceXnor => (ulong)System.Numerics.BitOperations.PopCount(unaryExpr.Expr.Accept(this) & maskBit) % 2 == 0 ? 1u : 0u,
 			_ => throw new SimUnsupportedException(),
 		};
 	}
