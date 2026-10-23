@@ -61,7 +61,7 @@ public class EmitExprVisitor : IExprVisitor<string>
 		string s = "";
 		if (unaryExpr.UnaryOp is UnaryOp.LogicNot && unaryExpr.Expr.GetWidth() != 1)
 		{
-			s += "~|";
+			s += UnaryOp.ReduceNor.ToCustomString();
 		}
 		else
 		{
