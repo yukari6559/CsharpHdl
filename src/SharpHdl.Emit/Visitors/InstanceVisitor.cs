@@ -4,10 +4,8 @@ using SharpHdl.Core.Model.Visitors;
 
 namespace SharpHdl.Emit.Visitors;
 
-public class InstanceVisitor(StringBuilder verilogsb, List<InstanceStmt> instanceStmts) : IStmtVisitor
+public class InstanceVisitor(StringBuilder verilogsb, List<InstanceStmt> instanceStmts, HashSet<string> emittedModules) : IStmtVisitor
 {
-	private readonly HashSet<string> emitted = [];
-
 	public void VisitAssign(AssignStmt assignStmt)
 	{
 	}
@@ -19,12 +17,12 @@ public class InstanceVisitor(StringBuilder verilogsb, List<InstanceStmt> instanc
 	public void VisitInstance(InstanceStmt instanceStmt)
 	{
 		instanceStmts.Add(instanceStmt);
-		if (!emitted.Add(instanceStmt.ChildModule.GetType().Name))
+		if (!emittedModules.Add(instanceStmt.ChildModule.GetType().Name))
 		{
 			return;
 		}
 
-		_ = verilogsb.Append(VerilogEmitter.EmitOneModule(instanceStmt.ChildModule, instanceStmt.ChildModule.GetType().Name, [], false));
+		_ = verilogsb.Append(VerilogEmitter.EmitOneModule(instanceStmt.ChildModule, instanceStmt.ChildModule.GetType().Name, [], emittedModules));
 		_ = verilogsb.Append("\n\n");
 	}
 

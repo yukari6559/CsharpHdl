@@ -13,6 +13,7 @@ _ = Directory.CreateDirectory(outDir);
 	(nameof(Alu), () => Described(new Alu())),
 	(nameof(AluTop), () => Described(new AluTop())),
 	(nameof(DualAluTop), () => Described(new DualAluTop())),
+	(nameof(DeepTop), () => Described(new DeepTop())),
 	(nameof(Counter), () => Described(new Counter())),
 	(nameof(CounterTop), () => Described(new CounterTop())),
 	(nameof(SeqResetUlong), () => Described(new SeqResetUlong())),
