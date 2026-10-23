@@ -340,6 +340,21 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0xFFu, 0xFFu, 0xFu, 0xFE01u, 0xEF1u)]
+	[InlineData(0x12u, 0x34u, 0x7u, 0x3A8u, 0x7Eu)]
+	[InlineData(0x80u, 0x02u, 0x0u, 0x100u, 0x000u)]
+	public void MulFullCombKeepsTheFullProduct(uint a, uint b, uint n, uint full, uint mixed)
+	{
+		SimSession<MulFullComb> m = new MulFullComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.N, n);
+		m.Settle();
+		Assert.Equal(full, m.Get(m.Module.Full));
+		Assert.Equal(mixed, m.Get(m.Module.Mixed));
+	}
+
+	[Theory]
 	[InlineData(0x0Fu, 0x3Cu, 0u, 0xF0u, 0xF1u, 0u, 0xF3u, 0x0Fu, 0x30u, 0x0u, 1u)]
 	[InlineData(0x00u, 0xFFu, 1u, 0xFFu, 0x00u, 1u, 0xFFu, 0x00u, 0xFFu, 0xFu, 0u)]
 	[InlineData(0x02u, 0x01u, 0u, 0xFDu, 0xFEu, 0u, 0xFFu, 0x02u, 0x01u, 0xDu, 1u)]
