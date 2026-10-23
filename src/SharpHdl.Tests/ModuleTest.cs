@@ -1071,6 +1071,56 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestReductionsAreOneBit()
+	{
+		In a = In.UInt(8, "a");
+		In b = In.UInt(8, "b");
+
+		Assert.All(
+			[a.ReduceAnd(), a.ReduceOr(), a.ReduceXor(), a.ReduceNand(), a.ReduceNor(), a.ReduceXnor()],
+			r => Assert.Equal(1u, r.GetWidth()));
+		_ = Assert.Throws<WidthMismatchException>(() => a.ReduceOr() & b);
+	}
+
+	[Fact]
+	public void TestReduceCombEmitterEmitsReductionOperators()
+	{
+		ReduceComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ReduceComb));
+
+		const string expected =
+			"module ReduceComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire En,\n" +
+			"\toutput wire AndR,\n" +
+			"\toutput wire OrR,\n" +
+			"\toutput wire XorR,\n" +
+			"\toutput wire NandR,\n" +
+			"\toutput wire NorR,\n" +
+			"\toutput wire XnorR,\n" +
+			"\toutput wire NotAndR,\n" +
+			"\toutput wire EnOr,\n" +
+			"\toutput wire OrOfAnd,\n" +
+			"\toutput wire LowXor\n" +
+			");\n" +
+			"\tassign AndR = &A;\n" +
+			"\tassign OrR = |A;\n" +
+			"\tassign XorR = ^A;\n" +
+			"\tassign NandR = ~&A;\n" +
+			"\tassign NorR = ~|A;\n" +
+			"\tassign XnorR = ~^A;\n" +
+			"\tassign NotAndR = ~(&A);\n" +
+			"\tassign EnOr = En & |A;\n" +
+			"\tassign OrOfAnd = |(A & B);\n" +
+			"\tassign LowXor = ^A[3:0];\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestZeroExtendToSameWidthReturnsExpression()
 	{
 		In a = In.UInt(8, "a");

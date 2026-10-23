@@ -362,6 +362,28 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0xFFu, 0x0Fu, 1u, new uint[] { 1, 1, 0, 0, 0, 1, 0, 1, 1, 0 })]
+	[InlineData(0x00u, 0xFFu, 1u, new uint[] { 0, 0, 0, 1, 1, 1, 1, 0, 0, 0 })]
+	[InlineData(0x07u, 0xF0u, 0u, new uint[] { 0, 1, 1, 1, 0, 0, 1, 0, 0, 1 })]
+	[InlineData(0x80u, 0x80u, 1u, new uint[] { 0, 1, 1, 1, 0, 0, 1, 1, 1, 0 })]
+	public void ReduceCombFoldsAllBits(uint a, uint b, uint en, uint[] expected)
+	{
+		SimSession<ReduceComb> m = new ReduceComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.En, en);
+		m.Settle();
+		uint[] actual =
+		[
+			(uint)m.Get(m.Module.AndR), (uint)m.Get(m.Module.OrR), (uint)m.Get(m.Module.XorR),
+			(uint)m.Get(m.Module.NandR), (uint)m.Get(m.Module.NorR), (uint)m.Get(m.Module.XnorR),
+			(uint)m.Get(m.Module.NotAndR), (uint)m.Get(m.Module.EnOr), (uint)m.Get(m.Module.OrOfAnd),
+			(uint)m.Get(m.Module.LowXor),
+		];
+		Assert.Equal(expected, actual);
+	}
+
+	[Theory]
 	[InlineData(10u, 7u, 3u, 6u, 9u)]
 	[InlineData(0x80u, 0x01u, 0x02u, 0x81u, 0xFEu)]
 	public void SameWidthExtendCombKeepsTreeGrouping(uint a, uint b, uint c, uint subSub, uint subMul)
