@@ -228,7 +228,7 @@ chore/<issue>-<short>
 | **要件** | 作業アイテムの Requirement（#120〜#126 = R1〜R7、#150 = R8）、対応表 `.gitlab/requirements.tsv` | 仕様の大事な規則を足したら要件を作り、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す（見つからないテストは不合格になる） |
 | **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。lint のエラーはパイプラインを止める |
 | **開発版パッケージ** | GitLab のパッケージレジストリ（`main` で Core / Emit / Sim か `Directory.Build.props` が変わったときに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md）。パッケージに入るプロジェクトを足したら `publish-dev-package` の `changes` にも足す |
-| **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる | コミットの件名がそのまま載るので、Conventional Commits の件名を利用者に伝わる言葉で書く。破壊的変更は `feat!:` などの `!` を付ける |
+| **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる（前の版からマージした MR ごとに 1 行。閉じた Issue と MR へのリンク付き。ci / docs / test などは折りたたみ） | MR のタイトルがそのまま載るので、Conventional の形で利用者に伝わる言葉にする。破壊的変更は MR のタイトルに `!` を付ける（`fix(emit)!:` など）。MR の説明に `Closes #N` を書く。スクリプトを変えたら MR の `release-notes-check` で出力を確かめる |
 | **ドキュメントサイト** | https://sharphdl.gitlab.io/SharpHDL （`docs-site/`、`docs/`、XML ドキュメントコメント） | 公開 `docs/` を変えたら MR の `pages-preview` が通ることを確かめる。リンク切れは失敗になる。`main` のサイトは docs・`src/`・CI 定義が変わったときだけデプロイされる（`&docs-paths`） |
 | **定期実行** | パイプラインのスケジュール（毎週月曜 3:00 JST） | 失敗したら原因（SDK の更新、新しい脆弱性など）を Issue にする |
 | **警告の扱い** | `Directory.Build.props`（コードスタイルの規則もビルドで検査、CI では警告をエラー扱い） | 新しい警告を入れるとパイプラインが失敗する。意図して残す指摘は `[SuppressMessage]` に理由を書いて抑制する（抑制したものはレポートにも出ない） |
@@ -257,6 +257,7 @@ chore/<issue>-<short>
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.11 | 2026-10-23 | §10 リリースノートは MR ごと（Issue へのリンク付き）に変更 |
 | 1.10 | 2026-10-23 | §10 版上げの見込み（エージェントが次の版の時期を見積もり、条件がそろったら進める）。§8 名前の候補を出す |
 | 1.9 | 2026-10-22 | §10 開発版パッケージとサイトは元が変わったときだけ公開。DORA 指標・使わない機能を追加 |
 | 1.8 | 2026-10-22 | §10 に依存パッケージの自動更新・変更のないジョブの省略・例の検査・リリース・グループのトップページを追加。閉じた Issue の作業ラベルを外す。`docs-check` を `pages-preview` に訂正 |
