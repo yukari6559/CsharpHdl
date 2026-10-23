@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.5.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.5.0" />
-<PackageReference Include="SharpHdl.Sim" Version="0.5.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.6.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.6.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.6.0" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -40,13 +40,13 @@ dotnet build
    - Namespace path: `sharphdl` / Project path: `SharpHDL` / Environment: `release`（Ref は空のまま。タグで公開するため）  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.5.0`）
+3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.6.0`）
 
 ```bash
 git push origin main
-git tag v0.5.0
-git push origin v0.5.0
-git push github main v0.5.0
+git tag v0.6.0
+git push origin v0.6.0
+git push github main v0.6.0
 ```
 
 `.gitlab-ci.yml` の `publish-nuget` ジョブがテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
@@ -91,11 +91,16 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 3. Program またはテストから Emitter を呼び、`.v` を書く — または `Run` / `Settle` / `Advance` でシミュする  
 4. 生成物を自分のシミュレーション / FPGA フローへ渡す（emit 利用時）  
 
-書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR まで。
+書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR・論理シフト・乗算・単項演算（`~` `-` `!`、リダクション）まで。
+
+**`0.6.0` の変更:**
+- 追加: 論理シフト `<<` / `>>`、乗算 `*`、単項演算 `~x` / `-x` / `!x`、リダクション `x.ReduceAnd()` / `ReduceOr()` / `ReduceXor()` / `ReduceNand()` / `ReduceNor()` / `ReduceXnor()`
+- 修正: `Instance` を使う回路の Verilog で `endmodule` と次の `module` がくっついていた（0.5.0 までは Verilator / Icarus Verilog が受け付けない）。3 段以上の階層で孫モジュールと子のインスタンス行が欠けていた。同じ幅への `ZeroExtend` で入れ子の演算の括弧が消えていた
+- 破壊的変更: `OpExpr` / `UnaryExpr` は DSL（演算子・メソッド）からだけ作れる（`new OpExpr { … }` は不可、プロパティは読み取り専用）。`VerilogEmitter.EmitOneModule` / `CollectInstances` と `InstanceVisitor` のコンストラクタの引数が変わった（`VerilogEmitter.Emitter` は変わらない）
 
 **`0.5.0` の注意（挙動の変更）:**
 - 二項演算と比較（`+ - & | ^ < <= > >=`、`Eq` / `Neq` / `Xnor`）は左右の幅が同じでないと `WidthMismatchException`。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する
 - `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
 
-いまの本線は演算子の穴埋め（シフト・乗算など）（内部 ROADMAP / tickets 参照）。
+いまの本線は演算子の穴埋めの残り（`&&` / `||` など、#9）と、全幅の積の補助 `MulFull`（#114）（内部 ROADMAP / tickets 参照）。

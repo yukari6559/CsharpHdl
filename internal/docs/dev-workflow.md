@@ -176,7 +176,7 @@ chore/<issue>-<short>
 
 ## 8. エージェント向け
 
-`no-concrete-code`（実装は明示依頼があるまで人手）は継続。  
+`no-concrete-code`（実装は明示依頼があるまで人手）は継続。実装の案内で新しい変数・クラス・メソッドなどが要るときは、名前の候補（2〜3 案、おすすめと理由つき）を出す。  
 **リポジトリ操作（GitLab / ブランチ / GitHub への同期）はエージェントが担う**（ユーザーが都度指示しなくてよい。区切りが来たら実行する）。
 
 ### エージェントが実行する操作
@@ -185,7 +185,7 @@ chore/<issue>-<short>
 |------------|------|
 | **作業開始** | Milestone の有無を確認し、無ければ作成。対応 Issue を作成または既存に紐づけ。`feat|refactor|fix|docs|chore/<issue>-<short>` を **作成して checkout** |
 | **マージ可能な品質になったとき** | リモートへ push → **PR 作成**（タイトル Conventional、本文に Summary / Test plan / `Closes #N` / 内部 ID）→ 必要に応じて PR 説明やレビューコメントを編集 → ユーザーが本運用で委任済みなら **マージ**（`glab mr merge`）→ GitHub へ同期。Issue／Milestone の状態を確認 |
-| **版上げ** | 実装 PR と分け、chore Issue＋PR（例: bump 0.3.8） |
+| **版上げ** | 実装 PR と分け、chore Issue＋PR（例: bump 0.3.8）。時期の見積もりと実行もエージェントが持つ（§10「版上げの見込み」） |
 | **「次へ」** | 次 Milestone／Issue を案内し、着手するならブランチまで切る |
 
 ### ユーザーが言うと特に動くフレーズ（必須ではない）
@@ -248,6 +248,7 @@ chore/<issue>-<short>
 | **変更のないジョブの省略** | `.gitlab-ci.yml` の `.code-rules`（MR では `src/` `tools/` `templates/` `examples/`、ソリューション、`Directory.Build.props`、`.editorconfig`、CI 定義が変わったときだけビルド・テスト・lint）。`pages-preview` は docs と `src/` の変更で動く。main・タグ・定期実行は常に全部 | ビルドに効く場所（新しいトップレベルのフォルダ、`global.json` など）を足したら `.code-rules` の一覧にも足す。セキュリティスキャンは常に動く |
 | **例の検査** | CI の `examples-lint`（`tools/emit-examples.sh` が `examples/<名前>/` を 1 つずつビルドし、`tools/ExampleVerilog` が中の Module を `<名前>-<型>.v` に出力して lint） | 新しい例はフォルダを足すだけで対象になる。Module には引数なしのコンストラクタを付ける。lint のエラーはパイプラインを止める |
 | **リリース** | Issue テンプレート「Release」（版上げ MR・タグ・nuget.org と GitLab Release の確認・GitHub への同期） | 版を出すときはこのテンプレートで Issue を作る |
+| **版上げの見込み** | Issue「Release vX.Y.Z」（テンプレート「Release」。時期の条件の Issue に「ブロックされる」関係、`workflow::blocked`） | 版を出したらエージェントが次の版の中身と時期（「#N がマージされたら」）を見積もって Issue を作る。条件の Issue が閉じたら、依頼がなくてもエージェントが版上げを進める。壊れた Verilog や Sim との食い違いを直す修正、破壊的変更が溜まったら前倒しする。1.0 までは破壊的変更か新機能があればマイナー、修正だけならパッチ |
 | **グループのトップページ** | 公開プロジェクト `sharphdl/gitlab-profile`（README と MIT の LICENSE） | 紹介文やリンクが変わったら README を直す。グループ内のプロジェクトはすべて公開・OSS ライセンスのまま |
 
 ---
@@ -256,6 +257,7 @@ chore/<issue>-<short>
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.10 | 2026-10-23 | §10 版上げの見込み（エージェントが次の版の時期を見積もり、条件がそろったら進める）。§8 名前の候補を出す |
 | 1.9 | 2026-10-22 | §10 開発版パッケージとサイトは元が変わったときだけ公開。DORA 指標・使わない機能を追加 |
 | 1.8 | 2026-10-22 | §10 に依存パッケージの自動更新・変更のないジョブの省略・例の検査・リリース・グループのトップページを追加。閉じた Issue の作業ラベルを外す。`docs-check` を `pages-preview` に訂正 |
 | 1.7 | 2026-10-22 | §10 に作業の状態ラベル・重み・自動マージ・MR プレビュー・CI の高速化・リリース環境の保護・脆弱性の自動解決・CI/CD コンポーネントを追加 |
