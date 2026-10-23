@@ -8,95 +8,119 @@ public abstract class Expr
 	public static OpExpr operator +(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Plus };
+		return new OpExpr(left, right, Op.Plus);
 	}
 	public static OpExpr operator -(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Minus };
+		return new OpExpr(left, right, Op.Minus);
 	}
 	public static UnaryExpr operator -(Expr expr)
 	{
-		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.Neg };
+		return new UnaryExpr(expr, UnaryOp.Neg);
 	}
 	public static OpExpr operator *(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Mul };
+		return new OpExpr(left, right, Op.Mul);
 	}
 	public static UnaryExpr operator ~(Expr expr)
 	{
-		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.Not };
+		return new UnaryExpr(expr, UnaryOp.Not);
 	}
 	public static UnaryExpr operator !(Expr expr)
 	{
-		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.LogicNot };
+		return new UnaryExpr(expr, UnaryOp.LogicNot);
 	}
 	public static OpExpr operator &(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.And };
+		return new OpExpr(left, right, Op.And);
 	}
 	public static OpExpr operator |(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Or };
+		return new OpExpr(left, right, Op.Or);
 	}
 	public static OpExpr operator ^(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Xor };
+		return new OpExpr(left, right, Op.Xor);
 	}
 	public static OpExpr operator <(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Lt };
+		return new OpExpr(left, right, Op.Lt);
 	}
 	public static OpExpr operator >(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Gt };
+		return new OpExpr(left, right, Op.Gt);
 	}
 	public static OpExpr operator <=(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Le };
+		return new OpExpr(left, right, Op.Le);
 	}
 	public static OpExpr operator >=(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
-		return new OpExpr() { Left = left, Right = right, Op = Op.Ge };
+		return new OpExpr(left, right, Op.Ge);
 	}
 	public static OpExpr operator <<(Expr left, Expr right)
 	{
-		return new OpExpr() { Left = left, Right = right, Op = Op.Shl };
+		return new OpExpr(left, right, Op.Shl);
 	}
 	public static OpExpr operator >>(Expr left, Expr right)
 	{
-		return new OpExpr() { Left = left, Right = right, Op = Op.Shr };
+		return new OpExpr(left, right, Op.Shr);
 	}
 	public static OpExpr operator <<(Expr left, int right)
 	{
-		return new OpExpr() { Left = left, Right = ShiftAmountLit(right), Op = Op.Shl };
+		return new OpExpr(left, ShiftAmountLit(right), Op.Shl);
 	}
 	public static OpExpr operator >>(Expr left, int right)
 	{
-		return new OpExpr() { Left = left, Right = ShiftAmountLit(right), Op = Op.Shr };
+		return new OpExpr(left, ShiftAmountLit(right), Op.Shr);
 	}
 	public Expr Eq(Expr right)
 	{
 		CheckWidth(this, right);
-		return new OpExpr() { Left = this, Right = right, Op = Op.Eq };
+		return new OpExpr(this, right, Op.Eq);
 	}
 	public Expr Neq(Expr right)
 	{
 		CheckWidth(this, right);
-		return new OpExpr() { Left = this, Right = right, Op = Op.Neq };
+		return new OpExpr(this, right, Op.Neq);
 	}
 	public Expr Xnor(Expr right)
 	{
 		CheckWidth(this, right);
-		return new OpExpr() { Left = this, Right = right, Op = Op.Xnor };
+		return new OpExpr(this, right, Op.Xnor);
+	}
+	public UnaryExpr ReduceAnd()
+	{
+		return new UnaryExpr(this, UnaryOp.ReduceAnd);
+	}
+	public UnaryExpr ReduceOr()
+	{
+		return new UnaryExpr(this, UnaryOp.ReduceOr);
+	}
+	public UnaryExpr ReduceXor()
+	{
+		return new UnaryExpr(this, UnaryOp.ReduceXor);
+	}
+	public UnaryExpr ReduceNand()
+	{
+		return new UnaryExpr(this, UnaryOp.ReduceNand);
+	}
+	public UnaryExpr ReduceNor()
+	{
+		return new UnaryExpr(this, UnaryOp.ReduceNor);
+	}
+	public UnaryExpr ReduceXnor()
+	{
+		return new UnaryExpr(this, UnaryOp.ReduceXnor);
 	}
 	public Expr Concat(params Expr[] exprs)
 	{
@@ -147,30 +171,6 @@ public abstract class Expr
 
 		ZeroExtendExpr zeroExtendExpr = new(width, this);
 		return zeroExtendExpr;
-	}
-	public UnaryExpr ReduceAnd()
-	{
-		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceAnd };
-	}
-	public UnaryExpr ReduceOr()
-	{
-		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceOr };
-	}
-	public UnaryExpr ReduceXor()
-	{
-		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceXor };
-	}
-	public UnaryExpr ReduceNand()
-	{
-		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceNand };
-	}
-	public UnaryExpr ReduceNor()
-	{
-		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceNor };
-	}
-	public UnaryExpr ReduceXnor()
-	{
-		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceXnor };
 	}
 	public abstract uint GetWidth();
 	public abstract T Accept<T>(IExprVisitor<T> exprVisitor);

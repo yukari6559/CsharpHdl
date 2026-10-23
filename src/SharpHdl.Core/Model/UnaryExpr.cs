@@ -4,8 +4,14 @@ namespace SharpHdl.Core.Model;
 
 public sealed class UnaryExpr : Expr
 {
-	public required Expr Expr { get; set; }
-	public required UnaryOp UnaryOp { get; set; }
+	public Expr Expr { get; private set; }
+	public UnaryOp UnaryOp { get; private set; }
+
+	internal UnaryExpr(Expr expr, UnaryOp unaryOp)
+	{
+		Expr = expr;
+		UnaryOp = unaryOp;
+	}
 
 	public override uint GetWidth()
 	{
