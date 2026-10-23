@@ -13,9 +13,10 @@ public static class VerilogEmitter
 {
 	public static string Emitter(Module top, string topName)
 	{
+		HashSet<string> emittedModules = [];
 		List<InstanceStmt> instanceStmts = [];
 
-		return EmitOneModule(top, topName, instanceStmts, true);
+		return EmitOneModule(top, topName, instanceStmts, emittedModules);
 	}
 
 	public static string EmitExpr(Expr expr)
@@ -115,9 +116,9 @@ public static class VerilogEmitter
 		}
 	}
 
-	public static void CollectInstances(List<Stmt> stmts, List<InstanceStmt> instanceStmts, StringBuilder verilogsb)
+	public static void CollectInstances(List<Stmt> stmts, List<InstanceStmt> instanceStmts, StringBuilder verilogsb, HashSet<string> emittedModules)
 	{
-		InstanceVisitor instanceVisitor = new(verilogsb, instanceStmts);
+		InstanceVisitor instanceVisitor = new(verilogsb, instanceStmts, emittedModules);
 		foreach (Stmt item in stmts)
 		{
 			item.Accept(instanceVisitor);
@@ -139,7 +140,7 @@ public static class VerilogEmitter
 		}
 	}
 
-	public static string EmitOneModule(Module module, string moduleName, List<InstanceStmt> instanceStmts, bool emitHierarchy)
+	public static string EmitOneModule(Module module, string moduleName, List<InstanceStmt> instanceStmts, HashSet<string> emittedModules)
 	{
 		StringBuilder verilogsb = new();
 
@@ -150,10 +151,7 @@ public static class VerilogEmitter
 
 		CheckUndeclaredLocals.Check(module);
 
-		if (emitHierarchy)
-		{
-			CollectInstances(stmts, instanceStmts, verilogsb);
-		}
+		CollectInstances(stmts, instanceStmts, verilogsb, emittedModules);
 
 		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"module {moduleName}(\n");
 		_ = CollectRegOuts(stmts, regOuts);
@@ -161,10 +159,7 @@ public static class VerilogEmitter
 		WireDefine(signals, verilogsb, regOuts);
 		LocalWireDefine(localSignals, verilogsb, regOuts);
 
-		if (emitHierarchy)
-		{
-			EmitInstanceLines(instanceStmts, verilogsb);
-		}
+		EmitInstanceLines(instanceStmts, verilogsb);
 
 		EmitModuleBody(stmts, verilogsb);
 
