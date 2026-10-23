@@ -275,4 +275,15 @@ public class LocalSignalTests
 			() => CheckUndeclaredLocals.Check(module));
 		Assert.Contains("'undeclared'", ex.Message, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void UndeclaredLocalInsideUnaryOperandThrowsOnCheck()
+	{
+		BadUndeclaredLocalModule module = new();
+		module.DescribeUndeclaredWireInUnary();
+
+		SignalDeclarationException ex = Assert.Throws<SignalDeclarationException>(
+			() => CheckUndeclaredLocals.Check(module));
+		Assert.Contains("'undeclared'", ex.Message, StringComparison.Ordinal);
+	}
 }

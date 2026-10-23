@@ -15,10 +15,22 @@ public abstract class Expr
 		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Minus };
 	}
+	public static UnaryExpr operator -(Expr expr)
+	{
+		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.Neg };
+	}
 	public static OpExpr operator *(Expr left, Expr right)
 	{
 		CheckWidth(left, right);
 		return new OpExpr() { Left = left, Right = right, Op = Op.Mul };
+	}
+	public static UnaryExpr operator ~(Expr expr)
+	{
+		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.Not };
+	}
+	public static UnaryExpr operator !(Expr expr)
+	{
+		return new UnaryExpr() { Expr = expr, UnaryOp = UnaryOp.LogicNot };
 	}
 	public static OpExpr operator &(Expr left, Expr right)
 	{
@@ -135,6 +147,30 @@ public abstract class Expr
 
 		ZeroExtendExpr zeroExtendExpr = new(width, this);
 		return zeroExtendExpr;
+	}
+	public UnaryExpr ReduceAnd()
+	{
+		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceAnd };
+	}
+	public UnaryExpr ReduceOr()
+	{
+		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceOr };
+	}
+	public UnaryExpr ReduceXor()
+	{
+		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceXor };
+	}
+	public UnaryExpr ReduceNand()
+	{
+		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceNand };
+	}
+	public UnaryExpr ReduceNor()
+	{
+		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceNor };
+	}
+	public UnaryExpr ReduceXnor()
+	{
+		return new UnaryExpr() { Expr = this, UnaryOp = UnaryOp.ReduceXnor };
 	}
 	public abstract uint GetWidth();
 	public abstract T Accept<T>(IExprVisitor<T> exprVisitor);

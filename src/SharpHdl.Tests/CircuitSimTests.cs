@@ -340,6 +340,50 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0x0Fu, 0x3Cu, 0u, 0xF0u, 0xF1u, 0u, 0xF3u, 0x0Fu, 0x30u, 0x0u, 1u)]
+	[InlineData(0x00u, 0xFFu, 1u, 0xFFu, 0x00u, 1u, 0xFFu, 0x00u, 0xFFu, 0xFu, 0u)]
+	[InlineData(0x02u, 0x01u, 0u, 0xFDu, 0xFEu, 0u, 0xFFu, 0x02u, 0x01u, 0xDu, 1u)]
+	[InlineData(0x80u, 0x80u, 1u, 0x7Fu, 0x80u, 0u, 0x7Fu, 0x80u, 0x00u, 0xFu, 0u)]
+	public void UnaryCombMasksToOperandWidth(uint a, uint b, uint en, uint notA, uint negA, uint lNotA, uint notAnd, uint negNeg, uint notAAndB, uint notLow, uint lNotEn)
+	{
+		SimSession<UnaryComb> m = new UnaryComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.En, en);
+		m.Settle();
+		Assert.Equal(notA, m.Get(m.Module.NotA));
+		Assert.Equal(negA, m.Get(m.Module.NegA));
+		Assert.Equal(lNotA, m.Get(m.Module.LNotA));
+		Assert.Equal(notAnd, m.Get(m.Module.NotAnd));
+		Assert.Equal(negNeg, m.Get(m.Module.NegNeg));
+		Assert.Equal(notAAndB, m.Get(m.Module.NotAAndB));
+		Assert.Equal(notLow, m.Get(m.Module.NotLow));
+		Assert.Equal(lNotEn, m.Get(m.Module.LNotEn));
+	}
+
+	[Theory]
+	[InlineData(0xFFu, 0x0Fu, 1u, new uint[] { 1, 1, 0, 0, 0, 1, 0, 1, 1, 0 })]
+	[InlineData(0x00u, 0xFFu, 1u, new uint[] { 0, 0, 0, 1, 1, 1, 1, 0, 0, 0 })]
+	[InlineData(0x07u, 0xF0u, 0u, new uint[] { 0, 1, 1, 1, 0, 0, 1, 0, 0, 1 })]
+	[InlineData(0x80u, 0x80u, 1u, new uint[] { 0, 1, 1, 1, 0, 0, 1, 1, 1, 0 })]
+	public void ReduceCombFoldsAllBits(uint a, uint b, uint en, uint[] expected)
+	{
+		SimSession<ReduceComb> m = new ReduceComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.En, en);
+		m.Settle();
+		uint[] actual =
+		[
+			(uint)m.Get(m.Module.AndR), (uint)m.Get(m.Module.OrR), (uint)m.Get(m.Module.XorR),
+			(uint)m.Get(m.Module.NandR), (uint)m.Get(m.Module.NorR), (uint)m.Get(m.Module.XnorR),
+			(uint)m.Get(m.Module.NotAndR), (uint)m.Get(m.Module.EnOr), (uint)m.Get(m.Module.OrOfAnd),
+			(uint)m.Get(m.Module.LowXor),
+		];
+		Assert.Equal(expected, actual);
+	}
+
+	[Theory]
 	[InlineData(10u, 7u, 3u, 6u, 9u)]
 	[InlineData(0x80u, 0x01u, 0x02u, 0x81u, 0xFEu)]
 	public void SameWidthExtendCombKeepsTreeGrouping(uint a, uint b, uint c, uint subSub, uint subMul)

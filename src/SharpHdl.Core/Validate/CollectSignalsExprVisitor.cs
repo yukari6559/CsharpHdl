@@ -27,6 +27,12 @@ public class CollectSignalsExprVisitor : IExprVisitor<HashSet<Signal>>
 		return signals;
 	}
 
+	public HashSet<Signal> VisitUnary(UnaryExpr unaryExpr)
+	{
+		_ = unaryExpr.Expr.Accept(this);
+		return signals;
+	}
+
 	public HashSet<Signal> VisitSignal(Signal signal)
 	{
 		_ = signals.Add(signal);

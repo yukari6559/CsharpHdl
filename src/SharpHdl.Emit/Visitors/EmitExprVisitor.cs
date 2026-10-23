@@ -56,6 +56,28 @@ public class EmitExprVisitor : IExprVisitor<string>
 		return s;
 	}
 
+	public string VisitUnary(UnaryExpr unaryExpr)
+	{
+		string s = "";
+		if (unaryExpr.UnaryOp is UnaryOp.LogicNot && unaryExpr.Expr.GetWidth() != 1)
+		{
+			s += UnaryOp.ReduceNor.ToCustomString();
+		}
+		else
+		{
+			s += unaryExpr.UnaryOp.ToCustomString();
+		}
+		if (unaryExpr.Expr is OpExpr or UnaryExpr)
+		{
+			s += "(" + unaryExpr.Expr.Accept(this) + ")";
+		}
+		else
+		{
+			s += unaryExpr.Expr.Accept(this);
+		}
+		return s;
+	}
+
 	public string VisitSignal(Signal signal)
 	{
 		return signal.Name;

@@ -1024,6 +1024,103 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestUnaryOpWidths()
+	{
+		In a = In.UInt(8, "a");
+		In b = In.UInt(8, "b");
+
+		Assert.Equal(8u, (~a).GetWidth());
+		Assert.Equal(8u, (-a).GetWidth());
+		Assert.Equal(1u, (!a).GetWidth());
+		Assert.Equal(4u, (~a.Slice(3, 0)).GetWidth());
+		_ = Assert.Throws<WidthMismatchException>(() => !a & b);
+	}
+
+	[Fact]
+	public void TestUnaryCombEmitterParenthesizesOperatorOperands()
+	{
+		UnaryComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(UnaryComb));
+
+		const string expected =
+			"module UnaryComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire En,\n" +
+			"\toutput wire [7:0] NotA,\n" +
+			"\toutput wire [7:0] NegA,\n" +
+			"\toutput wire LNotA,\n" +
+			"\toutput wire [7:0] NotAnd,\n" +
+			"\toutput wire [7:0] NegNeg,\n" +
+			"\toutput wire [7:0] NotAAndB,\n" +
+			"\toutput wire [3:0] NotLow,\n" +
+			"\toutput wire LNotEn\n" +
+			");\n" +
+			"\tassign NotA = ~A;\n" +
+			"\tassign NegA = -A;\n" +
+			"\tassign LNotA = ~|A;\n" +
+			"\tassign NotAnd = ~(A & B);\n" +
+			"\tassign NegNeg = -(-A);\n" +
+			"\tassign NotAAndB = ~A & B;\n" +
+			"\tassign NotLow = ~A[3:0];\n" +
+			"\tassign LNotEn = !En;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestReductionsAreOneBit()
+	{
+		In a = In.UInt(8, "a");
+		In b = In.UInt(8, "b");
+
+		Assert.All(
+			[a.ReduceAnd(), a.ReduceOr(), a.ReduceXor(), a.ReduceNand(), a.ReduceNor(), a.ReduceXnor()],
+			r => Assert.Equal(1u, r.GetWidth()));
+		_ = Assert.Throws<WidthMismatchException>(() => a.ReduceOr() & b);
+	}
+
+	[Fact]
+	public void TestReduceCombEmitterEmitsReductionOperators()
+	{
+		ReduceComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ReduceComb));
+
+		const string expected =
+			"module ReduceComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire En,\n" +
+			"\toutput wire AndR,\n" +
+			"\toutput wire OrR,\n" +
+			"\toutput wire XorR,\n" +
+			"\toutput wire NandR,\n" +
+			"\toutput wire NorR,\n" +
+			"\toutput wire XnorR,\n" +
+			"\toutput wire NotAndR,\n" +
+			"\toutput wire EnOr,\n" +
+			"\toutput wire OrOfAnd,\n" +
+			"\toutput wire LowXor\n" +
+			");\n" +
+			"\tassign AndR = &A;\n" +
+			"\tassign OrR = |A;\n" +
+			"\tassign XorR = ^A;\n" +
+			"\tassign NandR = ~&A;\n" +
+			"\tassign NorR = ~|A;\n" +
+			"\tassign XnorR = ~^A;\n" +
+			"\tassign NotAndR = ~(&A);\n" +
+			"\tassign EnOr = En & |A;\n" +
+			"\tassign OrOfAnd = |(A & B);\n" +
+			"\tassign LowXor = ^A[3:0];\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestZeroExtendToSameWidthReturnsExpression()
 	{
 		In a = In.UInt(8, "a");
