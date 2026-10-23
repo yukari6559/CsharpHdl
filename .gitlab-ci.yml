@@ -132,6 +132,25 @@ examples-lint:
   cache: *nuget-cache
   rules: !reference [.code-rules, rules]
 
+# The tag pipeline runs tools/release-notes.sh with the image's awk (mawk); check it before a tag needs it.
+release-notes-check:
+  stage: test
+  needs: []
+  variables:
+    GIT_DEPTH: 0
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - tools/release-notes.sh
+  script:
+    - git fetch --tags --quiet
+    - TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*')
+    - tools/release-notes.sh "$TAG" | tee release-notes-preview.md
+    - grep -q '^### Packages' release-notes-preview.md
+  artifacts:
+    paths:
+      - release-notes-preview.md
+
 renovate-config:
   stage: test
   needs: []
