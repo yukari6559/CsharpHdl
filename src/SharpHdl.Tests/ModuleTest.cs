@@ -466,6 +466,55 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestDeepTopEmitterEmitsEveryLevelOnce()
+	{
+		DeepTop top = new();
+		top.Describe();
+		string verilog = VerilogEmitter.Emitter(top, nameof(DeepTop));
+
+		const string expected =
+			"module DeepLeaf(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\toutput wire [7:0] Y\n" +
+			");\n" +
+			"\tassign Y = ~A;\n" +
+			"endmodule\n" +
+			"\n" +
+			"module DeepMid(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\toutput wire [7:0] Y\n" +
+			");\n" +
+			"\tDeepLeaf leaf (\n" +
+			"\t\t.A(A),\t\t.Y(Y));\n" +
+			"endmodule\n" +
+			"\n" +
+			"module DeepTop(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\toutput wire [7:0] Y,\n" +
+			"\toutput wire [7:0] Z\n" +
+			");\n" +
+			"\tDeepMid mid (\n" +
+			"\t\t.A(A),\t\t.Y(Y));\n" +
+			"\tDeepLeaf leaf (\n" +
+			"\t\t.A(A),\t\t.Y(Z));\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestEmitterStartsEachCallWithNoEmittedModules()
+	{
+		DeepTop top = new();
+		top.Describe();
+		string first = VerilogEmitter.Emitter(top, nameof(DeepTop));
+		string second = VerilogEmitter.Emitter(top, nameof(DeepTop));
+
+		Assert.Equal(first, second);
+		Assert.Equal(1, CountOccurrences(second, "module DeepLeaf("));
+	}
+
+	[Fact]
 	public void TestDualAluTopEmitterEmitsChildModuleOnce()
 	{
 		DualAluTop top = new();
