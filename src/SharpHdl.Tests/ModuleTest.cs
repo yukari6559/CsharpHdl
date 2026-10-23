@@ -1073,6 +1073,53 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestMulFullBuildsTheExplicitWidenedMultiply()
+	{
+		In a = In.UInt(8, "a");
+		In b = In.UInt(4, "b");
+		Expr full = a.MulFull(b);
+
+		Assert.Equal(12u, full.GetWidth());
+		OpExpr op = Assert.IsType<OpExpr>(full);
+		Assert.Equal(Op.Mul, op.Op);
+		Assert.Equal(VerilogEmitter.EmitExpr(a.ZeroExtend(12) * b.ZeroExtend(12)), VerilogEmitter.EmitExpr(full));
+	}
+
+	[Fact]
+	public void TestMulFullRejectsProductsWiderThan64Bits()
+	{
+		In a = In.UInt(32, "a");
+		In b = In.UInt(32, "b");
+		In c = In.UInt(40, "c");
+
+		Assert.Equal(64u, a.MulFull(b).GetWidth());
+		WidthMismatchException ex = Assert.Throws<WidthMismatchException>(() => c.MulFull(b));
+		Assert.Contains("72", ex.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TestMulFullCombEmitsZeroExtendedOperands()
+	{
+		MulFullComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(MulFullComb));
+
+		const string expected =
+			"module MulFullComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire [3:0] N,\n" +
+			"\toutput wire [15:0] Full,\n" +
+			"\toutput wire [11:0] Mixed\n" +
+			");\n" +
+			"\tassign Full = {{8{1'b0}}, A} * {{8{1'b0}}, B};\n" +
+			"\tassign Mixed = {{4{1'b0}}, A} * {{8{1'b0}}, N};\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestUnaryOpWidths()
 	{
 		In a = In.UInt(8, "a");

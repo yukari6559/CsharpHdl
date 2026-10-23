@@ -98,6 +98,15 @@ public abstract class Expr
 		CheckWidth(this, right);
 		return new OpExpr(this, right, Op.Xnor);
 	}
+	public Expr MulFull(Expr right)
+	{
+		uint fullWidth = GetWidth() + right.GetWidth();
+		if (fullWidth > 64)
+		{
+			throw new WidthMismatchException($"Full product width {fullWidth} exceeds 64.");
+		}
+		return ZeroExtend(fullWidth) * right.ZeroExtend(fullWidth);
+	}
 	public UnaryExpr ReduceAnd()
 	{
 		return new UnaryExpr(this, UnaryOp.ReduceAnd);
