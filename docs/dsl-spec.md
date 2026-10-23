@@ -79,7 +79,7 @@ public sealed class Alu : Module
 | `Switch` / `Case` | **セレクタは `Expr`**（`In`/`Signal`/Slice など）と**定数**ケースの多分岐 |
 | 比較 | `Eq`/`Neq` メソッドと `< <= > >=`（結果 1 bit）。`==`/`!=` は使わない |
 | 算術 `+ -` | 左右は同じ幅。結果も同じ幅（桁あふれは切り捨て） |
-| 乗算 `*` | 左右は同じ幅。結果も同じ幅（積の上位は切り捨て）。全幅の積は `a.ZeroExtend(16) * b.ZeroExtend(16)` のように先に広げる |
+| 乗算 `*` | 左右は同じ幅。結果も同じ幅（積の上位は切り捨て）。全幅の積は `a.ZeroExtend(16) * b.ZeroExtend(16)` のように先に広げるか、同じ意味の `a.MulFull(b)` を使う（左右の幅は違ってよく、結果は左右の幅の和。64 ビットまで） |
 | ビット `& \| ^` / `Xnor` | 左右は同じ幅。`a ^ b` は Verilog `^`、`a.Xnor(b)` は `~^` |
 | 単項 `~ - !` | `~x` はビット反転、`-x` は 2 の補数（どちらも結果は `x` の幅）。`!x` は `x` が 0 なら 1（結果 1 bit。2 ビット以上の `x` は Verilog `~|x` で出る） |
 | リダクション | `x.ReduceAnd()` / `ReduceOr()` / `ReduceXor()` / `ReduceNand()` / `ReduceNor()` / `ReduceXnor()`。`x` の全ビットを 1 ビットにたたみ込む（Verilog `&x` `\|x` `^x` `~&x` `~\|x` `~^x`）。例: 0 でないか `x.ReduceOr()`、パリティ `x.ReduceXor()` |
