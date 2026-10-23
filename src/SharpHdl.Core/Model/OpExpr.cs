@@ -4,9 +4,16 @@ namespace SharpHdl.Core.Model;
 
 public sealed class OpExpr : Expr
 {
-	public required Expr Left { get; set; }
-	public required Expr Right { get; set; }
-	public Op Op { get; set; }
+	public Expr Left { get; private set; }
+	public Expr Right { get; private set; }
+	public Op Op { get; private set; }
+
+	internal OpExpr(Expr left, Expr right, Op op)
+	{
+		Left = left;
+		Right = right;
+		Op = op;
+	}
 
 	public override uint GetWidth()
 	{
