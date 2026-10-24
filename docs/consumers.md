@@ -103,4 +103,4 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 - `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
 
-いまの本線は演算子の穴埋めの残り（`&&` / `||` など、#9）（内部 ROADMAP / tickets 参照）。`main` には全幅の積の補助 `a.MulFull(b)`（#114）が入っていて、次の版で公開する。
+いまの本線は演算子の穴埋めの残り（除算・べき乗・`Mux`・繰り返し連結、#9）（内部 ROADMAP / tickets 参照）。`main` には論理積・論理和 `a.LogicAnd(b)` / `a.LogicOr(b)`（#154）と全幅の積の補助 `a.MulFull(b)`（#114）が入っていて、次の版で公開する。
