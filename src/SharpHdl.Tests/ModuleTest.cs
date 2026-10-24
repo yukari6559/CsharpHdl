@@ -459,7 +459,11 @@ public class ModuleTests
 			"\toutput wire [31:0] Y\n" +
 			");\n" +
 			"\tAlu alu (\n" +
-			"\t\t.A(A),\t\t.B(B),\t\t.Op(Op),\t\t.Y(Y));\n" +
+			"\t\t.A(A),\n" +
+			"\t\t.B(B),\n" +
+			"\t\t.Op(Op),\n" +
+			"\t\t.Y(Y)\n" +
+			"\t);\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);
@@ -485,7 +489,9 @@ public class ModuleTests
 			"\toutput wire [7:0] Y\n" +
 			");\n" +
 			"\tDeepLeaf leaf (\n" +
-			"\t\t.A(A),\t\t.Y(Y));\n" +
+			"\t\t.A(A),\n" +
+			"\t\t.Y(Y)\n" +
+			"\t);\n" +
 			"endmodule\n" +
 			"\n" +
 			"module DeepTop(\n" +
@@ -494,9 +500,13 @@ public class ModuleTests
 			"\toutput wire [7:0] Z\n" +
 			");\n" +
 			"\tDeepMid mid (\n" +
-			"\t\t.A(A),\t\t.Y(Y));\n" +
+			"\t\t.A(A),\n" +
+			"\t\t.Y(Y)\n" +
+			"\t);\n" +
 			"\tDeepLeaf leaf (\n" +
-			"\t\t.A(A),\t\t.Y(Z));\n" +
+			"\t\t.A(A),\n" +
+			"\t\t.Y(Z)\n" +
+			"\t);\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);
