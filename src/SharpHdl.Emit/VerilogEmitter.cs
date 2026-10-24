@@ -133,10 +133,10 @@ public static class VerilogEmitter
 			for (int i = 0; i < item.PortConnections.Count; i++)
 			{
 				_ = i == item.PortConnections.Count - 1
-					? verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name})")
-					: verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name}),");
+					? verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name})\n")
+					: verilogsb.Append(CultureInfo.InvariantCulture, $"\t\t.{item.PortConnections[i].ChildPort.Name}({item.PortConnections[i].ParentSignal.Name}),\n");
 			}
-			_ = verilogsb.Append(");\n");
+			_ = verilogsb.Append("\t);\n");
 		}
 	}
 
