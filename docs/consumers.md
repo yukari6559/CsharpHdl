@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.6.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.6.0" />
-<PackageReference Include="SharpHdl.Sim" Version="0.6.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.7.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.7.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.7.0" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -40,13 +40,13 @@ dotnet build
    - Namespace path: `sharphdl` / Project path: `SharpHDL` / Environment: `release`（Ref は空のまま。タグで公開するため）  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.6.0`）
+3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.7.0`）
 
 ```bash
 git push origin main
-git tag v0.6.0
-git push origin v0.6.0
-git push github main v0.6.0
+git tag v0.7.0
+git push origin v0.7.0
+git push github main v0.7.0
 ```
 
 `.gitlab-ci.yml` の `publish-nuget` ジョブがテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
@@ -91,7 +91,11 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 3. Program またはテストから Emitter を呼び、`.v` を書く — または `Run` / `Settle` / `Advance` でシミュする  
 4. 生成物を自分のシミュレーション / FPGA フローへ渡す（emit 利用時）  
 
-書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR・論理シフト・乗算・単項演算（`~` `-` `!`、リダクション）まで。
+書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR・論理シフト・乗算・単項演算（`~` `-` `!`、リダクション）・全幅の積 `MulFull`・論理積・論理和 `LogicAnd` / `LogicOr` まで。
+
+**`0.7.0` の変更:**
+- 追加: 全幅の積 `a.MulFull(b)`（左右の幅は違ってよく、結果は幅の和。64 ビットまで）。論理積・論理和 `a.LogicAnd(b)` / `a.LogicOr(b)`（Verilog `&&` / `||`。結果は 1 ビット。0 が偽、0 以外が真。左右の幅は違ってよい）
+- 変更: インスタンスのポート接続は 1 行に 1 つ、閉じ `);` は単独の行。0.6.0 までは同じ行にタブ区切り
 
 **`0.6.0` の変更:**
 - 追加: 論理シフト `<<` / `>>`、乗算 `*`、単項演算 `~x` / `-x` / `!x`、リダクション `x.ReduceAnd()` / `ReduceOr()` / `ReduceXor()` / `ReduceNand()` / `ReduceNor()` / `ReduceXnor()`
@@ -103,4 +107,4 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 - `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
 
-いまの本線は演算子の穴埋めの残り（除算・べき乗・`Mux`・繰り返し連結、#9）（内部 ROADMAP / tickets 参照）。`main` には論理積・論理和 `a.LogicAnd(b)` / `a.LogicOr(b)`（#154）と全幅の積の補助 `a.MulFull(b)`（#114）が入っていて、次の版で公開する。
+いまの本線は演算子の穴埋めの残り（除算・べき乗・`Mux`・繰り返し連結、#9）（内部 ROADMAP / tickets 参照）。
