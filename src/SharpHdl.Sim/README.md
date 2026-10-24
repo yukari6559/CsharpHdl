@@ -7,14 +7,14 @@ Cycle-style simulation for [SharpHdl.Core](https://www.nuget.org/packages/SharpH
 ## Install
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.6.0" />
-<PackageReference Include="SharpHdl.Sim" Version="0.6.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.7.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.7.0" />
 ```
 
 Optional with emit:
 
 ```xml
-<PackageReference Include="SharpHdl.Emit" Version="0.6.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.7.0" />
 ```
 
 ## Docs
