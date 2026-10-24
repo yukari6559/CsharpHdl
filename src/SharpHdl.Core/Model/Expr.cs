@@ -107,6 +107,14 @@ public abstract class Expr
 		}
 		return ZeroExtend(fullWidth) * right.ZeroExtend(fullWidth);
 	}
+	public Expr LogicAnd(Expr right)
+	{
+		return new OpExpr(this, right, Op.LogicAnd);
+	}
+	public Expr LogicOr(Expr right)
+	{
+		return new OpExpr(this, right, Op.LogicOr);
+	}
 	public UnaryExpr ReduceAnd()
 	{
 		return new UnaryExpr(this, UnaryOp.ReduceAnd);

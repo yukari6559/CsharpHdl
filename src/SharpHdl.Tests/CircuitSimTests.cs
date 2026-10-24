@@ -355,6 +355,25 @@ public class CircuitSimTests
 	}
 
 	[Theory]
+	[InlineData(0u, 1u, 0u, 0u, 0u, 0u, 0u)]
+	[InlineData(2u, 1u, 0u, 1u, 1u, 1u, 0u)]
+	[InlineData(2u, 0u, 5u, 0u, 1u, 1u, 1u)]
+	[InlineData(0u, 0u, 1u, 0u, 1u, 1u, 0u)]
+	[InlineData(0u, 3u, 4u, 0u, 1u, 1u, 1u)]
+	public void LogicCombTreatsNonZeroAsTrue(uint a, uint b, uint n, uint andAB, uint orAN, uint andOfOr, uint orOfAnd)
+	{
+		SimSession<LogicComb> m = new LogicComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.N, n);
+		m.Settle();
+		Assert.Equal(andAB, m.Get(m.Module.AndAB));
+		Assert.Equal(orAN, m.Get(m.Module.OrAN));
+		Assert.Equal(andOfOr, m.Get(m.Module.AndOfOr));
+		Assert.Equal(orOfAnd, m.Get(m.Module.OrOfAnd));
+	}
+
+	[Theory]
 	[InlineData(0x0Fu, 0x3Cu, 0u, 0xF0u, 0xF1u, 0u, 0xF3u, 0x0Fu, 0x30u, 0x0u, 1u)]
 	[InlineData(0x00u, 0xFFu, 1u, 0xFFu, 0x00u, 1u, 0xFFu, 0x00u, 0xFFu, 0xFu, 0u)]
 	[InlineData(0x02u, 0x01u, 0u, 0xFDu, 0xFEu, 0u, 0xFFu, 0x02u, 0x01u, 0xDu, 1u)]

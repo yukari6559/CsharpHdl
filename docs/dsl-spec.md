@@ -81,6 +81,7 @@ public sealed class Alu : Module
 | 算術 `+ -` | 左右は同じ幅。結果も同じ幅（桁あふれは切り捨て） |
 | 乗算 `*` | 左右は同じ幅。結果も同じ幅（積の上位は切り捨て）。全幅の積は `a.ZeroExtend(16) * b.ZeroExtend(16)` のように先に広げるか、同じ意味の `a.MulFull(b)` を使う（左右の幅は違ってよく、結果は左右の幅の和。64 ビットまで） |
 | ビット `& \| ^` / `Xnor` | 左右は同じ幅。`a ^ b` は Verilog `^`、`a.Xnor(b)` は `~^` |
+| 論理積・論理和 | `a.LogicAnd(b)` / `a.LogicOr(b)`。Verilog `&&` / `||`。結果は 1 ビット。0 が偽、0 以外が真。AND は両方が真のとき 1、OR はどちらかが真のとき 1。左右の幅は違ってよい |
 | 単項 `~ - !` | `~x` はビット反転、`-x` は 2 の補数（どちらも結果は `x` の幅）。`!x` は `x` が 0 なら 1（結果 1 bit。2 ビット以上の `x` は Verilog `~|x` で出る） |
 | リダクション | `x.ReduceAnd()` / `ReduceOr()` / `ReduceXor()` / `ReduceNand()` / `ReduceNor()` / `ReduceXnor()`。`x` の全ビットを 1 ビットにたたみ込む（Verilog `&x` `\|x` `^x` `~&x` `~\|x` `~^x`）。例: 0 でないか `x.ReduceOr()`、パリティ `x.ReduceXor()` |
 | 論理シフト `<< >>` | 量は定数（`x << 2`）か信号・式（`x << amt`）。結果は左の幅。量が左の幅以上なら 0。算術シフトは未対応 |
@@ -88,7 +89,7 @@ public sealed class Alu : Module
 | `Concat(...)` | `{a, b, …}`（左が MSB）。結果幅は各幅の和 |
 | `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅。同じ幅なら何もしない（`ZeroExtend` は式そのものを返し、入れ子の演算の括弧も保たれる） |
 
-**幅の規則:** 二項演算と比較は左右の幅が違うと `WidthMismatchException`（シフトの量だけは例外）。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`）。入れ子の演算は Emit で括弧付きになる（`(A ^ B) & C`、`~(A & B)`）。単項演算とリダクションは中身の幅に制限がない。
+**幅の規則:** 二項演算と比較は左右の幅が違うと `WidthMismatchException`（シフトの量と、論理積・論理和 `LogicAnd` / `LogicOr` は例外）。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`）。入れ子の演算は Emit で括弧付きになる（`(A ^ B) & C`、`~(A & B)`、`(A && B) || N`）。単項演算とリダクションは中身の幅に制限がない。
 
 **`Slice` / `SignExtend` の対象:** 信号か信号のスライスに限る（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` の `Slice` は 1 段にまとまり（`x.Slice(15, 8).Slice(3, 0)` は `x[11:8]`）、範囲外は `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` は `{{52{instr[31]}}, instr[31:20]}` と出る。演算の結果を切り出したいときはローカル `Wire` を経由する。
 

@@ -1227,6 +1227,51 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestLogicAndOrAreOneBitAndAllowUnequalWidths()
+	{
+		In a = In.UInt(8, "A");
+		In b = In.UInt(4, "B");
+
+		Expr and = a.LogicAnd(b);
+		Expr or = a.LogicOr(b);
+		OpExpr andOp = Assert.IsType<OpExpr>(and);
+		OpExpr orOp = Assert.IsType<OpExpr>(or);
+
+		Assert.Equal(Op.LogicAnd, andOp.Op);
+		Assert.Equal(Op.LogicOr, orOp.Op);
+		Assert.Equal(1u, and.GetWidth());
+		Assert.Equal(1u, or.GetWidth());
+		Assert.Equal("A && B", VerilogEmitter.EmitExpr(and));
+		Assert.Equal("A || B", VerilogEmitter.EmitExpr(or));
+	}
+
+	[Fact]
+	public void TestLogicCombEmitsAndOr()
+	{
+		LogicComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(LogicComb));
+
+		const string expected =
+			"module LogicComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire [3:0] N,\n" +
+			"\toutput wire AndAB,\n" +
+			"\toutput wire OrAN,\n" +
+			"\toutput wire AndOfOr,\n" +
+			"\toutput wire OrOfAnd\n" +
+			");\n" +
+			"\tassign AndAB = A && B;\n" +
+			"\tassign OrAN = A || N;\n" +
+			"\tassign AndOfOr = (A && B) || N;\n" +
+			"\tassign OrOfAnd = (A || B) && N;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestZeroExtendToSameWidthReturnsExpression()
 	{
 		In a = In.UInt(8, "a");

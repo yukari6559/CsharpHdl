@@ -17,7 +17,7 @@ public sealed class OpExpr : Expr
 
 	public override uint GetWidth()
 	{
-		return Op is Op.Eq or Op.Neq or Op.Lt or Op.Gt or Op.Le or Op.Ge ? 1 : Left.GetWidth();
+		return Op is Op.Eq or Op.Neq or Op.Lt or Op.Gt or Op.Le or Op.Ge or Op.LogicAnd or Op.LogicOr ? 1 : Left.GetWidth();
 	}
 
 	public override T Accept<T>(IExprVisitor<T> exprVisitor)
@@ -32,7 +32,9 @@ public enum Op
 	Minus,
 	Mul,
 	And,
+	LogicAnd,
 	Or,
+	LogicOr,
 	Xor,
 	Xnor,
 	Eq,
@@ -55,7 +57,9 @@ public static class OpExtension
 			Op.Minus => "-",
 			Op.Mul => "*",
 			Op.And => "&",
+			Op.LogicAnd => "&&",
 			Op.Or => "|",
+			Op.LogicOr => "||",
 			Op.Xor => "^",
 			Op.Xnor => "~^",
 			Op.Eq => "==",
