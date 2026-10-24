@@ -1,6 +1,6 @@
 # Requirement legacy IID <TAB> tests that verify it (space separated).
 # A test is a test method name; "suite:<classname>" means every test case of that class.
-# Work items: #120 = 1, #121 = 2, ... #126 = 7, #150 = 8.
+# Work items: #120 = 1, #121 = 2, ... #126 = 7, #150 = 8, #155 = 9.
 1	TestBinaryOpOperandWidthMismatchThrows TestMulRequiresEqualWidthsAndWidening TestShiftOperandsAreExemptFromWidthRule
 2	TestNestedOpCombEmitterParenthesizesNestedOperands NestedOpCombKeepsTreeGrouping TestSameWidthExtendCombEmitterKeepsParentheses SameWidthExtendCombKeepsTreeGrouping
 3	TestNestedSliceFoldsIntoOneSliceOfTheSignal TestSliceOutOfRangeThrows TestSliceAndSignExtendRejectNonSignalOperands TestSliceSelectCombEmitsValidSelects
@@ -9,3 +9,4 @@
 6	AssignAndSwitchSecondCaseThrows AssignAndIfThenThrows IfThenBeforeAssignThrows DualAssignInIfThenThrows IfThenElseSameSignalDoesNotThrow
 7	suite:verilog-lint
 8	TestUnaryOpWidths TestUnaryCombEmitterParenthesizesOperatorOperands UnaryCombMasksToOperandWidth TestReductionsAreOneBit TestReduceCombEmitterEmitsReductionOperators ReduceCombFoldsAllBits
+9	TestLogicAndOrAreOneBitAndAllowUnequalWidths TestLogicCombEmitsAndOr LogicCombTreatsNonZeroAsTrue
