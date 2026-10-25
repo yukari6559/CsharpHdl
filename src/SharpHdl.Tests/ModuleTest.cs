@@ -207,7 +207,7 @@ public class ModuleTests
 		In b = In.UInt(8, "b");
 		Func<Expr>[] ops =
 		[
-			() => a + b, () => a - b, () => a & b, () => a | b, () => a ^ b,
+			() => a + b, () => a - b, () => a / b, () => a % b, () => a & b, () => a | b, () => a ^ b,
 			() => a < b, () => a > b, () => a <= b, () => a >= b,
 			() => a.Eq(b), () => a.Neq(b), () => a.Xnor(b),
 		];
@@ -242,6 +242,71 @@ public class ModuleTests
 
 		MulComb mod = new();
 		_ = Assert.Throws<WidthMismatchException>(mod.DescribeForgotWiden);
+	}
+
+	[Fact]
+	public void TestDivRequiresEqualWidthsAndRejectsConstantZero()
+	{
+		In a = In.UInt(8, "A");
+		In wide = In.UInt(64, "Wide");
+		In narrow = In.UInt(4, "Narrow");
+
+		OpExpr div = Assert.IsType<OpExpr>(a / a);
+		OpExpr mod = Assert.IsType<OpExpr>(a % a);
+		Assert.Equal(Op.Div, div.Op);
+		Assert.Equal(Op.Mod, mod.Op);
+		Assert.Equal(8u, div.GetWidth());
+		Assert.Equal(8u, mod.GetWidth());
+
+		ConstExpr three = Assert.IsType<ConstExpr>((a / 3).Right);
+		Assert.Equal(8u, three.Width);
+		Assert.Equal(3UL, three.Value);
+		ConstExpr threeRem = Assert.IsType<ConstExpr>((a % 3).Right);
+		Assert.Equal(8u, threeRem.Width);
+		Assert.Equal(3UL, threeRem.Value);
+
+		WidthMismatchException width = Assert.Throws<WidthMismatchException>(() => a / narrow);
+		Assert.Contains("left 8, right 4", width.Message, StringComparison.Ordinal);
+		_ = Assert.Throws<WidthMismatchException>(() => a % narrow);
+		_ = Assert.Throws<WidthMismatchException>(() => a / 256);
+		_ = Assert.Throws<WidthMismatchException>(() => a % 256);
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a / 0);
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a % 0);
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a / -1);
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a % -1);
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a / Lit.Bits(8, 0));
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a % Lit.Bits(8, 256));
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => wide / Lit.Bits(64, 0));
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => wide % 0);
+
+		OpExpr wideDiv = Assert.IsType<OpExpr>(wide / Lit.Bits(64, 1));
+		Assert.Equal(64u, wideDiv.GetWidth());
+		Assert.Equal(64u, (wide / int.MaxValue).GetWidth());
+	}
+
+	[Fact]
+	public void TestDivCombEmitsDivAndMod()
+	{
+		DivComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(DivComb));
+
+		const string expected =
+			"module DivComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\toutput wire [7:0] Quot,\n" +
+			"\toutput wire [7:0] Rem,\n" +
+			"\toutput wire [7:0] Quot3,\n" +
+			"\toutput wire [7:0] Rem3\n" +
+			");\n" +
+			"\tassign Quot = A / B;\n" +
+			"\tassign Rem = A % B;\n" +
+			"\tassign Quot3 = A / 8'd3;\n" +
+			"\tassign Rem3 = A % 8'd3;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
 	}
 
 	[Fact]

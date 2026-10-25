@@ -24,6 +24,46 @@ public abstract class Expr
 		CheckWidth(left, right);
 		return new OpExpr(left, right, Op.Mul);
 	}
+	public static OpExpr operator /(Expr left, Expr right)
+	{
+		CheckWidth(left, right);
+		if (right is ConstExpr constExpr)
+		{
+			if (constExpr.Width == 64)
+			{
+				ArgumentOutOfRangeException.ThrowIfZero(constExpr.Value);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfZero(constExpr.Value & ((1UL << (int)constExpr.Width) - 1));
+			}
+		}
+		return new OpExpr(left, right, Op.Div);
+	}
+	public static OpExpr operator /(Expr left, int right)
+	{
+		return new OpExpr(left, SameWidthLit(left, right), Op.Div);
+	}
+	public static OpExpr operator %(Expr left, Expr right)
+	{
+		CheckWidth(left, right);
+		if (right is ConstExpr constExpr)
+		{
+			if (constExpr.Width == 64)
+			{
+				ArgumentOutOfRangeException.ThrowIfZero(constExpr.Value);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfZero(constExpr.Value & ((1UL << (int)constExpr.Width) - 1));
+			}
+		}
+		return new OpExpr(left, right, Op.Mod);
+	}
+	public static OpExpr operator %(Expr left, int right)
+	{
+		return new OpExpr(left, SameWidthLit(left, right), Op.Mod);
+	}
 	public static UnaryExpr operator ~(Expr expr)
 	{
 		return new UnaryExpr(expr, UnaryOp.Not);
@@ -205,6 +245,16 @@ public abstract class Expr
 		if (right == 0)
 		{
 			width = 1;
+		}
+		return Lit.Bits(width, (ulong)right);
+	}
+	private static Expr SameWidthLit(Expr left, int right)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(right);
+		uint width = left.GetWidth();
+		if ((ulong)right >= (1UL << (int)width) && width != 64)
+		{
+			throw new WidthMismatchException();
 		}
 		return Lit.Bits(width, (ulong)right);
 	}

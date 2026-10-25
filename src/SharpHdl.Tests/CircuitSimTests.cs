@@ -1,5 +1,6 @@
 using SharpHdl.Core.Exceptions;
 using SharpHdl.Sim;
+using SharpHdl.Sim.Interp;
 using SharpHdl.Tests.TestModule;
 
 namespace SharpHdl.Tests;
@@ -503,6 +504,53 @@ public class CircuitSimTests
 		Assert.Equal(full, m.Get(m.Module.Full));
 		Assert.Equal(nested, m.Get(m.Module.Nested));
 		Assert.Equal(q64, m.Get(m.Module.Q64));
+	}
+
+	[Theory]
+	[InlineData(0x14u, 0x03u, 6u, 2u, 6u, 2u)]
+	[InlineData(0xFFu, 0x02u, 0x7Fu, 1u, 0x55u, 0u)]
+	[InlineData(0x00u, 0x05u, 0u, 0u, 0u, 0u)]
+	public void DivCombDividesUnsignedTowardZero(uint a, uint b, uint quot, uint rem, uint quot3, uint rem3)
+	{
+		DivComb mod = new();
+		mod.Describe();
+		SimSession<DivComb> m = new() { Module = mod, SimWorld = ModuleFlat.Build(mod) };
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Settle();
+
+		Assert.Equal(quot, m.Get(m.Module.Quot));
+		Assert.Equal(rem, m.Get(m.Module.Rem));
+		Assert.Equal(quot3, m.Get(m.Module.Quot3));
+		Assert.Equal(rem3, m.Get(m.Module.Rem3));
+	}
+
+	[Fact]
+	public void DivCombThrowsWhenDivisorIsZero()
+	{
+		DivComb signal = new();
+		signal.Describe();
+		SimSession<DivComb> signalSession = new() { Module = signal, SimWorld = ModuleFlat.Build(signal) };
+		signalSession.Set(signalSession.Module.A, 0x14);
+		signalSession.Set(signalSession.Module.B, 0);
+		SimException signalEx = Assert.Throws<SimException>(signalSession.Settle);
+		Assert.Equal("Division by zero.", signalEx.Message);
+
+		DivComb remainder = new();
+		remainder.DescribeRemainderSignalZero();
+		SimSession<DivComb> remainderSession = new() { Module = remainder, SimWorld = ModuleFlat.Build(remainder) };
+		remainderSession.Set(remainderSession.Module.A, 0x14);
+		remainderSession.Set(remainderSession.Module.B, 0);
+		SimException remainderEx = Assert.Throws<SimException>(remainderSession.Settle);
+		Assert.Equal("Modulo by zero.", remainderEx.Message);
+
+		DivComb expr = new();
+		expr.DescribeQuotientExprZero();
+		SimSession<DivComb> exprSession = new() { Module = expr, SimWorld = ModuleFlat.Build(expr) };
+		exprSession.Set(exprSession.Module.A, 0x14);
+		exprSession.Set(exprSession.Module.B, 4);
+		SimException exprEx = Assert.Throws<SimException>(exprSession.Settle);
+		Assert.Equal("Division by zero.", exprEx.Message);
 	}
 
 	[Fact]

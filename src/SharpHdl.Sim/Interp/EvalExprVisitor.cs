@@ -34,6 +34,8 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 			Op.Plus => (opExpr.Left.Accept(this) + opExpr.Right.Accept(this)) & maskBit,
 			Op.Minus => (opExpr.Left.Accept(this) - opExpr.Right.Accept(this)) & maskBit,
 			Op.Mul => (opExpr.Left.Accept(this) * opExpr.Right.Accept(this)) & maskBit,
+			Op.Div => EvalDiv(opExpr.Left, opExpr.Right, maskBit),
+			Op.Mod => EvalMod(opExpr.Left, opExpr.Right, maskBit),
 			Op.And => opExpr.Left.Accept(this) & opExpr.Right.Accept(this) & maskBit,
 			Op.LogicAnd => (opExpr.Left.Accept(this) != 0 && opExpr.Right.Accept(this) != 0) ? 1u : 0u,
 			Op.Or => (opExpr.Left.Accept(this) | opExpr.Right.Accept(this)) & maskBit,
@@ -93,5 +95,25 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 	public ulong VisitZeroExtend(ZeroExtendExpr zeroExtendExpr)
 	{
 		return zeroExtendExpr.Expr.Accept(this) & BitUtils.MakeMaskBit(zeroExtendExpr.Expr.GetWidth());
+	}
+
+	private ulong EvalDiv(Expr left, Expr right, ulong maskBit)
+	{
+		ulong rightValue = right.Accept(this);
+		if (rightValue == 0)
+		{
+			throw new SimException("Division by zero.");
+		}
+		return (left.Accept(this) / rightValue) & maskBit;
+	}
+
+	private ulong EvalMod(Expr left, Expr right, ulong maskBit)
+	{
+		ulong rightValue = right.Accept(this);
+		if (rightValue == 0)
+		{
+			throw new SimException("Modulo by zero.");
+		}
+		return (left.Accept(this) % rightValue) & maskBit;
 	}
 }
