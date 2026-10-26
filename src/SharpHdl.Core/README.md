@@ -7,7 +7,7 @@ Use with [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) to genera
 ## Install
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.8.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.9.0" />
 ```
 
 ## Docs

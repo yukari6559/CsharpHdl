@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.8.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.8.0" />
-<PackageReference Include="SharpHdl.Sim" Version="0.8.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.9.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.9.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.9.0" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -40,13 +40,13 @@ dotnet build
    - Namespace path: `sharphdl` / Project path: `SharpHDL` / Environment: `release`（Ref は空のまま。タグで公開するため）  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.8.0`）
+3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.9.0`）
 
 ```bash
 git push origin main
-git tag v0.8.0
-git push origin v0.8.0
-git push github main v0.8.0
+git tag v0.9.0
+git push origin v0.9.0
+git push github main v0.9.0
 ```
 
 `.gitlab-ci.yml` の `publish-nuget` ジョブがテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
@@ -93,6 +93,9 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 
 書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR・論理シフト・乗算・除算・剰余・定数のべき乗 `Pow`・単項演算（`~` `-` `!`、リダクション）・全幅の積 `MulFull`・論理積・論理和 `LogicAnd` / `LogicOr` まで。
 
+**`0.9.0` の変更:**
+- 追加: 定数のべき乗 `a.Pow(n)`（Verilog `**`。指数は `int` か定数。信号の指数は `ArgumentException`。結果は底の幅。指数 0 は 1。`0 ** 0` も 1。幅に収まらない値は切り捨て。`int` の指数はシフト量と同じ最小幅で、負の指数は `ArgumentOutOfRangeException`）
+
 **`0.8.0` の変更:**
 - 追加: 符号なしの除算・剰余 `a / b` と `a % b`（左右は同じ幅、結果は左の幅。切り捨ては 0 方向。変数の除数も可）。`a / 3` の `3` は左の幅の定数。定数の除数 0 は作る時点で例外。信号や式の除数が 0 のときは Sim が例外。入力の初期値は 0 なので、変数で割る式は値を入れてから実行する
 
@@ -110,4 +113,4 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 - `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
 
-いまの本線は演算子の穴埋めの残り（`Mux`・繰り返し連結、#9）（内部 ROADMAP / tickets 参照）。定数のべき乗 `a.Pow(n)` は #160（指数は定数のみ。結果は底の幅。指数 0 は 1）。
+いまの本線は演算子の穴埋めの残り（`Mux`・繰り返し連結、#9）（内部 ROADMAP / tickets 参照）。
