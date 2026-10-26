@@ -40,6 +40,7 @@ _ = Directory.CreateDirectory(outDir);
 	(nameof(ShiftComb), () => Described(new ShiftComb())),
 	(nameof(MulComb), () => Described(new MulComb())),
 	(nameof(DivComb), () => Described(new DivComb())),
+	(nameof(PowComb), () => Described(new PowComb())),
 	(nameof(MulFullComb), () => Described(new MulFullComb())),
 	(nameof(LogicComb), () => Described(new LogicComb())),
 	(nameof(LocalIfComb), () => Described(new LocalIfComb())),

@@ -36,6 +36,7 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 			Op.Mul => (opExpr.Left.Accept(this) * opExpr.Right.Accept(this)) & maskBit,
 			Op.Div => EvalDiv(opExpr.Left, opExpr.Right, maskBit),
 			Op.Mod => EvalMod(opExpr.Left, opExpr.Right, maskBit),
+			Op.Pow => EvalPow(opExpr.Left, opExpr.Right, maskBit),
 			Op.And => opExpr.Left.Accept(this) & opExpr.Right.Accept(this) & maskBit,
 			Op.LogicAnd => (opExpr.Left.Accept(this) != 0 && opExpr.Right.Accept(this) != 0) ? 1u : 0u,
 			Op.Or => (opExpr.Left.Accept(this) | opExpr.Right.Accept(this)) & maskBit,
@@ -115,5 +116,22 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 			throw new SimException("Modulo by zero.");
 		}
 		return (left.Accept(this) % rightValue) & maskBit;
+	}
+
+	private ulong EvalPow(Expr left, Expr right, ulong maskBit)
+	{
+		ulong leftValue = left.Accept(this) & maskBit;
+		ulong rightValue = right.Accept(this);
+		ulong returnValue = 1;
+		if (rightValue == 0)
+		{
+			return 1;
+		}
+		for (ulong i = 0; i < rightValue; i++)
+		{
+			returnValue *= leftValue;
+			returnValue &= maskBit;
+		}
+		return returnValue;
 	}
 }
