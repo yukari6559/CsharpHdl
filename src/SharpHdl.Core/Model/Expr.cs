@@ -147,6 +147,18 @@ public abstract class Expr
 		}
 		return ZeroExtend(fullWidth) * right.ZeroExtend(fullWidth);
 	}
+	public Expr Pow(Expr right)
+	{
+		if (right is not ConstExpr)
+		{
+			throw new ArgumentException("Power exponent must be a constant.");
+		}
+		return new OpExpr(this, right, Op.Pow);
+	}
+	public Expr Pow(int right)
+	{
+		return new OpExpr(this, ShiftAmountLit(right), Op.Pow);
+	}
 	public Expr LogicAnd(Expr right)
 	{
 		return new OpExpr(this, right, Op.LogicAnd);
