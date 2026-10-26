@@ -310,6 +310,65 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestPowUsesMinimumWidthConstantAndRejectsVariables()
+	{
+		In a = In.UInt(8, "A");
+		In signal = In.UInt(8, "Signal");
+
+		OpExpr three = Assert.IsType<OpExpr>(a.Pow(3));
+		OpExpr zero = Assert.IsType<OpExpr>(a.Pow(0));
+		OpExpr wide = Assert.IsType<OpExpr>(a.Pow(256));
+		OpExpr lit = Assert.IsType<OpExpr>(a.Pow(Lit.Bits(4, 3)));
+
+		Assert.Equal(Op.Pow, three.Op);
+		Assert.Equal(8u, three.GetWidth());
+		ConstExpr threeExp = Assert.IsType<ConstExpr>(three.Right);
+		Assert.Equal(2u, threeExp.Width);
+		Assert.Equal(3UL, threeExp.Value);
+		ConstExpr zeroExp = Assert.IsType<ConstExpr>(zero.Right);
+		Assert.Equal(1u, zeroExp.Width);
+		Assert.Equal(0UL, zeroExp.Value);
+		ConstExpr wideExp = Assert.IsType<ConstExpr>(wide.Right);
+		Assert.Equal(9u, wideExp.Width);
+		Assert.Equal(256UL, wideExp.Value);
+		ConstExpr litExp = Assert.IsType<ConstExpr>(lit.Right);
+		Assert.Equal(4u, litExp.Width);
+		Assert.Equal(3UL, litExp.Value);
+
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a.Pow(-1));
+		ArgumentException variable = Assert.Throws<ArgumentException>(() => a.Pow(signal));
+		Assert.Equal("Power exponent must be a constant.", variable.Message);
+	}
+
+	[Fact]
+	public void TestPowCombEmitsPower()
+	{
+		PowComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(PowComb));
+
+		const string expected =
+			"module PowComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\toutput wire [7:0] Pow3,\n" +
+			"\toutput wire [7:0] Pow5,\n" +
+			"\toutput wire [7:0] Pow6,\n" +
+			"\toutput wire [7:0] Pow8,\n" +
+			"\toutput wire [7:0] Pow0,\n" +
+			"\toutput wire [7:0] PowLit\n" +
+			");\n" +
+			"\tassign Pow3 = A ** 2'd3;\n" +
+			"\tassign Pow5 = A ** 3'd5;\n" +
+			"\tassign Pow6 = A ** 3'd6;\n" +
+			"\tassign Pow8 = A ** 4'd8;\n" +
+			"\tassign Pow0 = A ** 1'd0;\n" +
+			"\tassign PowLit = A ** 4'd3;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestShiftOperandsAreExemptFromWidthRule()
 	{
 		In a = In.UInt(8, "a");

@@ -553,6 +553,24 @@ public class CircuitSimTests
 		Assert.Equal("Division by zero.", exprEx.Message);
 	}
 
+	[Theory]
+	[InlineData(2u, 8u, 32u, 64u, 0u, 1u, 8u)]
+	[InlineData(3u, 27u, 243u, 217u, 161u, 1u, 27u)]
+	[InlineData(0u, 0u, 0u, 0u, 0u, 1u, 0u)]
+	public void PowCombRaisesToAConstantExponent(uint a, uint pow3, uint pow5, uint pow6, uint pow8, uint pow0, uint powLit)
+	{
+		SimSession<PowComb> m = new PowComb().Run();
+		m.Set(m.Module.A, a);
+		m.Settle();
+
+		Assert.Equal(pow3, m.Get(m.Module.Pow3));
+		Assert.Equal(pow5, m.Get(m.Module.Pow5));
+		Assert.Equal(pow6, m.Get(m.Module.Pow6));
+		Assert.Equal(pow8, m.Get(m.Module.Pow8));
+		Assert.Equal(pow0, m.Get(m.Module.Pow0));
+		Assert.Equal(powLit, m.Get(m.Module.PowLit));
+	}
+
 	[Fact]
 	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
 	{
