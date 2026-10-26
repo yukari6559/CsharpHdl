@@ -225,7 +225,7 @@ chore/<issue>-<short>
 |--------|--------------|------------------|
 | **エピック** | グループ `sharphdl` の作業アイテム（#1 Stage 1 / #2 HC1 / #3 SX11 / #4 リファクタ / #5 GitLab 移行） | 新しい Issue を作ったら、該当するエピックを親にする。Stage や HC が増えたらエピックを足す |
 | **Issue の関係** | Issue の「ブロックする / される」 | hdl-coverage-plan の「前提」と同じ関係を付ける |
-| **要件** | 作業アイテムの Requirement（#120〜#126 = R1〜R7、#150 = R8、#155 = R9、#158 = R10）、対応表 `.gitlab/requirements.tsv` | 仕様の大事な規則を足したら要件を作り、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す（見つからないテストは不合格になる） |
+| **要件** | 作業アイテムの Requirement（#120〜#126 = R1〜R7、#150 = R8、#155 = R9、#158 = R10、#161 = R11）、対応表 `.gitlab/requirements.tsv` | 仕様の大事な規則を足したら要件を作り、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す（見つからないテストは不合格になる） |
 | **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。lint のエラーはパイプラインを止める |
 | **開発版パッケージ** | GitLab のパッケージレジストリ（`main` で Core / Emit / Sim か `Directory.Build.props` が変わったときに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md）。パッケージに入るプロジェクトを足したら `publish-dev-package` の `changes` にも足す |
 | **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる（前の版からマージした MR ごとに 1 行。閉じた Issue と MR へのリンク付き。ci / docs / test などは折りたたみ） | MR のタイトルがそのまま載るので、Conventional の形で利用者に伝わる言葉にする。破壊的変更は MR のタイトルに `!` を付ける（`fix(emit)!:` など）。MR の説明に `Closes #N` を書く。スクリプトを変えたら MR の `release-notes-check` で出力を確かめる |
