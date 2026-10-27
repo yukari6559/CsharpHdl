@@ -4,6 +4,7 @@ public interface IExprVisitor<T>
 {
 	T VisitSignal(Signal signal);
 	T VisitOp(OpExpr opExpr);
+	T VisitMux(MuxExpr muxExpr);
 	T VisitUnary(UnaryExpr unaryExpr);
 	T VisitSlice(SliceExpr sliceExpr);
 	T VisitConcat(ConcatExpr concatExpr);

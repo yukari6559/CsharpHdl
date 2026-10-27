@@ -113,6 +113,7 @@ public sealed class Alu : Module
 | 算術 `+ -` | 左右は同じ幅（違えば `WidthMismatchException`）。結果も同じ幅で、桁あふれは切り捨て | 実装済み |
 | 乗算 `*` | 左右は同じ幅で、結果も同じ幅（積の上位は切り捨て）。全幅の積は先に広げる: `a.ZeroExtend(16) * b.ZeroExtend(16)`（8 × 8 → 16）。同じ式を `a.MulFull(b)` で書ける（左右の幅は違ってよく、結果は左右の幅の和。64 ビットを超えると `WidthMismatchException`。符号なし）。広げ忘れて広い左辺に代入すると幅の不一致で例外になるので、黙って桁が落ちることはない | 実装済み（M2a、`MulFull` は #114）。符号付きは HC6 |
 | べき乗 `Pow` | `a.Pow(3)` は Verilog `a ** 2'd3`。C# に `**` の演算子はない。指数は `int` か定数（`ConstExpr`）だけ。信号や式は `ArgumentException`（`Power exponent must be a constant.`）。`int` の指数はシフトの量と同じ定数（`0` 可、負は `ArgumentOutOfRangeException`、最小幅。`3` は `2'd3`、`0` は `1'd0`）。すでに定数の指数はその幅のまま。結果は底の幅で、入りきらない値は切り捨て（8 ビットの `2 ** 8` は `0`、`3 ** 5` は `243`、`3 ** 6` は `217`）。指数 `0` はどの底でも `1`（`0 ** 0` も `1`）。符号なし | 実装済み（#160）。可変の指数と符号付きは対象外 |
+| 条件演算子 `Mux` | `sel.Mux(a, b)` は Verilog `sel ? a : b`。C# に `? :` の演算子はない。真の値と偽の値は同じ幅（違えば `WidthMismatchException`。`Operand widths differ: left …, right …`。left が真の値）。結果はその幅。条件の幅は自由。0 が偽、それ以外が真（8 ビットの `0x80` も真）。Sim は条件を 1 回評価し、選んだ側だけを評価する。演算や Mux が腕や条件にあるとき、および Mux が演算の中にあるときは括弧を付ける（`(A + B) ? C : D`、`Sel ? (A + B) : C`、`(Sel ? A : B) + C`、`~(Sel ? A : B)`）。`If` は文のまま | 実装済み（#162）。符号付きは HC6 |
 | 除算・剰余 `/` `%` | 左右は同じ幅（違えば `WidthMismatchException`）。結果は左の幅。符号なしで、切り捨ては 0 方向。変数の除数も書ける。`a / 3` の `3` は左の幅の定数（0 と負は `ArgumentOutOfRangeException`、幅に入らない値は `WidthMismatchException`。64 ビットなら 0 以外の非負の `int` は入る）。定数の除数 0（幅の中で 0 になる定数。`Lit.Bits(8, 256)` を含む）は作る時点で `ArgumentOutOfRangeException`。信号や式の値が 0 のときは Sim が `SimException`（`Division by zero.` / `Modulo by zero.`） | 実装済み（#157）。符号付きは HC6 |
 | ビット `&` / `|` / `^` / `Xnor` | ビット演算。左右は同じ幅で、結果も同じ幅。`a ^ b` は Verilog `^`、`a.Xnor(b)` は `~^` | 実装済み（`^` / `Xnor` は M2c、PR #103）。単項 `~` は下記「単項演算」（#101） |
 | 論理積・論理和 `LogicAnd` / `LogicOr` | `a.LogicAnd(b)` は Verilog `&&`、`a.LogicOr(b)` は `||`。結果は 1 ビット。0 が偽、0 以外が真。AND は両方が真のとき 1、OR はどちらかが真のとき 1。左右の幅は違ってよい（#105 の対象外）。C# の `&&` / `||` は演算子にしない | 実装済み（#154） |
@@ -125,7 +126,7 @@ public sealed class Alu : Module
 | 制約 | 内容 | Issue |
 |------|------|-------|
 | 入れ子の演算の括弧 | **解消済み**。演算の左右が演算なら括弧で囲んで出す（verilog-emit-spec §5c） | #102 |
-| 左右の幅 | **解消済み**。二項演算と比較（`Eq` / `Neq` / `Xnor` を含む）は左右の幅が違うと Describe 時に `WidthMismatchException`。論理積・論理和（`LogicAnd` / `LogicOr`）とシフトの量は対象外。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`） | #105 |
+| 左右の幅 | **解消済み**。二項演算と比較（`Eq` / `Neq` / `Xnor` を含む）は左右の幅が違うと Describe 時に `WidthMismatchException`。論理積・論理和（`LogicAnd` / `LogicOr`）とシフトの量、Mux の条件は対象外。Mux の真の値と偽の値は同じ幅。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`） | #105 |
 | 式のスライス・符号拡張 | **解消済み**。`Slice` / `SignExtend` の対象は信号か信号のスライスに限り、それ以外は `UnsupportedSelectException`。`Slice` の `Slice` は 1 段にまとめ、`Slice` の `SignExtend` は符号ビットを元の信号から取る（下記 T2b / T2e） | #104 |
 
 #### 単項演算（#101）
@@ -324,6 +325,7 @@ public sealed class Top : Module
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 0.17 | 2026-10-28 | §4 条件演算子: `sel.Mux(a, b)`（真と偽は同じ幅、条件は 0 が偽、選んだ側だけ評価、#162） |
 | 0.16 | 2026-10-26 | §4 べき乗: `a.Pow(n)`（定数指数、結果は底の幅、指数 0 は 1、#160） |
 | 0.15 | 2026-10-25 | §4 除算・剰余: `/` `%`（左の幅、符号なし、定数 0 は作る時点、実行時の 0 は Sim、#157） |
 | 0.14 | 2026-10-24 | §4 論理積・論理和: `a.LogicAnd(b)` / `a.LogicOr(b)`（結果 1 ビット、0 以外が真、左右の幅は違ってよい、#154） |

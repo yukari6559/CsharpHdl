@@ -571,6 +571,40 @@ public class CircuitSimTests
 		Assert.Equal(powLit, m.Get(m.Module.PowLit));
 	}
 
+	[Theory]
+	[InlineData(0u, 1u, 2u, 3u, 2u, 3u, 5u, 3u, 5u, 253u, 1u)]
+	[InlineData(1u, 1u, 2u, 3u, 1u, 3u, 4u, 3u, 1u, 254u, 0u)]
+	[InlineData(0x80u, 1u, 2u, 3u, 1u, 3u, 4u, 3u, 1u, 254u, 0u)]
+	[InlineData(0u, 0u, 0u, 4u, 0u, 0u, 4u, 4u, 4u, 255u, 1u)]
+	public void MuxCombSelectsTheNonZeroArm(uint sel, uint a, uint b, uint c, uint plain, uint condAdd, uint sum, uint trueAdd, uint falseAdd, uint notMux, uint divOrOne)
+	{
+		SimSession<MuxComb> m = new MuxComb().Run();
+		m.Set(m.Module.Sel, sel);
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.C, c);
+		m.Settle();
+
+		Assert.Equal(plain, m.Get(m.Module.Plain));
+		Assert.Equal(condAdd, m.Get(m.Module.CondAdd));
+		Assert.Equal(sum, m.Get(m.Module.Sum));
+		Assert.Equal(trueAdd, m.Get(m.Module.TrueAdd));
+		Assert.Equal(falseAdd, m.Get(m.Module.FalseAdd));
+		Assert.Equal(notMux, m.Get(m.Module.NotMux));
+		Assert.Equal(divOrOne, m.Get(m.Module.DivOrOne));
+	}
+
+	[Fact]
+	public void MuxCombSkipsTheUnselectedArm()
+	{
+		SimSession<MuxComb> m = new MuxComb().Run();
+		Assert.Equal(1u, m.Get(m.Module.DivOrOne));
+
+		m.Set(m.Module.Sel, 1);
+		SimException ex = Assert.Throws<SimException>(m.Settle);
+		Assert.Equal("Division by zero.", ex.Message);
+	}
+
 	[Fact]
 	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
 	{

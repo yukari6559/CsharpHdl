@@ -27,6 +27,14 @@ public class CollectSignalsExprVisitor : IExprVisitor<HashSet<Signal>>
 		return signals;
 	}
 
+	public HashSet<Signal> VisitMux(MuxExpr muxExpr)
+	{
+		_ = muxExpr.Left.Accept(this);
+		_ = muxExpr.Right.Accept(this);
+		_ = muxExpr.Cond.Accept(this);
+		return signals;
+	}
+
 	public HashSet<Signal> VisitUnary(UnaryExpr unaryExpr)
 	{
 		_ = unaryExpr.Expr.Accept(this);

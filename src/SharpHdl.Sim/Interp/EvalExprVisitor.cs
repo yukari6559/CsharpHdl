@@ -55,6 +55,18 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 		};
 	}
 
+	public ulong VisitMux(MuxExpr muxExpr)
+	{
+		if (muxExpr.Cond.Accept(this) == 0)
+		{
+			return muxExpr.Right.Accept(this) & BitUtils.MakeMaskBit(muxExpr.Left.GetWidth());
+		}
+		else
+		{
+			return muxExpr.Left.Accept(this) & BitUtils.MakeMaskBit(muxExpr.Left.GetWidth());
+		}
+	}
+
 	public ulong VisitUnary(UnaryExpr unaryExpr)
 	{
 		ulong maskBit = BitUtils.MakeMaskBit(unaryExpr.Expr.GetWidth());

@@ -167,6 +167,11 @@ public abstract class Expr
 	{
 		return new OpExpr(this, right, Op.LogicOr);
 	}
+	public Expr Mux(Expr left, Expr right)
+	{
+		CheckWidth(left, right);
+		return new MuxExpr(left, right, this);
+	}
 	public UnaryExpr ReduceAnd()
 	{
 		return new UnaryExpr(this, UnaryOp.ReduceAnd);
