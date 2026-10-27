@@ -1,6 +1,6 @@
 # Requirement legacy IID <TAB> tests that verify it (space separated).
 # A test is a test method name; "suite:<classname>" means every test case of that class.
-# Work items: #120 = 1, #121 = 2, ... #126 = 7, #150 = 8, #155 = 9, #158 = 10, #161 = 11.
+# Work items: #120 = 1, #121 = 2, ... #126 = 7, #150 = 8, #155 = 9, #158 = 10, #161 = 11, #164 = 12.
 1	TestBinaryOpOperandWidthMismatchThrows TestMulRequiresEqualWidthsAndWidening TestShiftOperandsAreExemptFromWidthRule
 2	TestNestedOpCombEmitterParenthesizesNestedOperands NestedOpCombKeepsTreeGrouping TestSameWidthExtendCombEmitterKeepsParentheses SameWidthExtendCombKeepsTreeGrouping
 3	TestNestedSliceFoldsIntoOneSliceOfTheSignal TestSliceOutOfRangeThrows TestSliceAndSignExtendRejectNonSignalOperands TestSliceSelectCombEmitsValidSelects
@@ -12,3 +12,4 @@
 9	TestLogicAndOrAreOneBitAndAllowUnequalWidths TestLogicCombEmitsAndOr LogicCombTreatsNonZeroAsTrue
 10	TestDivRequiresEqualWidthsAndRejectsConstantZero TestDivCombEmitsDivAndMod DivCombDividesUnsignedTowardZero DivCombThrowsWhenDivisorIsZero
 11	TestPowUsesMinimumWidthConstantAndRejectsVariables TestPowCombEmitsPower PowCombRaisesToAConstantExponent
+12	TestMuxRequiresEqualDataWidths TestMuxCombEmitsConditional MuxCombSelectsTheNonZeroArm MuxCombSkipsTheUnselectedArm

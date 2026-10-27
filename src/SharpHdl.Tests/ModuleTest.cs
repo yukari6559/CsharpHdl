@@ -369,6 +369,55 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestMuxRequiresEqualDataWidths()
+	{
+		In sel = In.UInt(8, "Sel");
+		In narrowSel = In.UInt(1, "Narrow");
+		In a = In.UInt(8, "A");
+		In b = In.UInt(4, "B");
+
+		MuxExpr same = Assert.IsType<MuxExpr>(sel.Mux(a, a));
+		Assert.Equal(8u, same.GetWidth());
+		Assert.Equal(8u, narrowSel.Mux(a, a).GetWidth());
+
+		WidthMismatchException mismatch = Assert.Throws<WidthMismatchException>(() => sel.Mux(a, b));
+		Assert.Equal("Operand widths differ: left 8, right 4.", mismatch.Message);
+	}
+
+	[Fact]
+	public void TestMuxCombEmitsConditional()
+	{
+		MuxComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(MuxComb));
+
+		const string expected =
+			"module MuxComb(\n" +
+			"\tinput wire [7:0] Sel,\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire [7:0] B,\n" +
+			"\tinput wire [7:0] C,\n" +
+			"\toutput wire [7:0] Plain,\n" +
+			"\toutput wire [7:0] CondAdd,\n" +
+			"\toutput wire [7:0] Sum,\n" +
+			"\toutput wire [7:0] TrueAdd,\n" +
+			"\toutput wire [7:0] FalseAdd,\n" +
+			"\toutput wire [7:0] NotMux,\n" +
+			"\toutput wire [7:0] DivOrOne\n" +
+			");\n" +
+			"\tassign Plain = Sel ? A : B;\n" +
+			"\tassign CondAdd = (A + B) ? C : A;\n" +
+			"\tassign Sum = (Sel ? A : B) + C;\n" +
+			"\tassign TrueAdd = Sel ? (A + B) : C;\n" +
+			"\tassign FalseAdd = Sel ? A : (B + C);\n" +
+			"\tassign NotMux = ~(Sel ? A : B);\n" +
+			"\tassign DivOrOne = Sel ? (A / B) : 8'd1;\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestShiftOperandsAreExemptFromWidthRule()
 	{
 		In a = In.UInt(8, "a");
