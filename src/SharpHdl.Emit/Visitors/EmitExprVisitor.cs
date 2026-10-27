@@ -36,7 +36,7 @@ public class EmitExprVisitor : IExprVisitor<string>
 	public string VisitOp(OpExpr opExpr)
 	{
 		string s = "";
-		if (opExpr.Left is OpExpr)
+		if (opExpr.Left is OpExpr or MuxExpr)
 		{
 			s += "(" + opExpr.Left.Accept(this) + ")" + " ";
 		}
@@ -45,13 +45,45 @@ public class EmitExprVisitor : IExprVisitor<string>
 			s += opExpr.Left.Accept(this) + " ";
 		}
 		s += opExpr.Op.ToCustomString() + " ";
-		if (opExpr.Right is OpExpr)
+		if (opExpr.Right is OpExpr or MuxExpr)
 		{
 			s += "(" + opExpr.Right.Accept(this) + ")";
 		}
 		else
 		{
 			s += opExpr.Right.Accept(this);
+		}
+		return s;
+	}
+
+	public string VisitMux(MuxExpr muxExpr)
+	{
+		string s = "";
+		if (muxExpr.Cond is OpExpr or MuxExpr or UnaryExpr)
+		{
+			s += "(" + muxExpr.Cond.Accept(this) + ")";
+		}
+		else
+		{
+			s += muxExpr.Cond.Accept(this);
+		}
+		s += " ? ";
+		if (muxExpr.Left is OpExpr or MuxExpr or UnaryExpr)
+		{
+			s += "(" + muxExpr.Left.Accept(this) + ")";
+		}
+		else
+		{
+			s += muxExpr.Left.Accept(this);
+		}
+		s += " : ";
+		if (muxExpr.Right is OpExpr or MuxExpr or UnaryExpr)
+		{
+			s += "(" + muxExpr.Right.Accept(this) + ")";
+		}
+		else
+		{
+			s += muxExpr.Right.Accept(this);
 		}
 		return s;
 	}
@@ -67,7 +99,7 @@ public class EmitExprVisitor : IExprVisitor<string>
 		{
 			s += unaryExpr.UnaryOp.ToCustomString();
 		}
-		if (unaryExpr.Expr is OpExpr or UnaryExpr)
+		if (unaryExpr.Expr is OpExpr or UnaryExpr or MuxExpr)
 		{
 			s += "(" + unaryExpr.Expr.Accept(this) + ")";
 		}
