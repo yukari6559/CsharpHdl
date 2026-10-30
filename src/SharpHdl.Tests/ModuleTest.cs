@@ -418,6 +418,67 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestReplicateUsesConstantCountsAndLimitsWidth()
+	{
+		In a = In.UInt(8, "A");
+		In wide = In.UInt(64, "Wide");
+		In signal = In.UInt(8, "Signal");
+
+		ReplicateExpr twice = Assert.IsType<ReplicateExpr>(a.Replicate(2));
+		Assert.Equal(2, twice.Count);
+		Assert.Equal(16u, twice.GetWidth());
+		ReplicateExpr lit = Assert.IsType<ReplicateExpr>(a.Replicate(Lit.Bits(8, 260)));
+		Assert.Equal(4, lit.Count);
+		Assert.Equal(32u, lit.GetWidth());
+		Assert.Equal(64u, wide.Replicate(1).GetWidth());
+
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a.Replicate(0));
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a.Replicate(-1));
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() => a.Replicate(Lit.Bits(8, 256)));
+		ArgumentException variable = Assert.Throws<ArgumentException>(() => a.Replicate(signal));
+		Assert.Equal("Replication count must be a constant.", variable.Message);
+		WidthMismatchException tooWide = Assert.Throws<WidthMismatchException>(() => a.Replicate(9));
+		Assert.Equal("Replication width 72 exceeds 64.", tooWide.Message);
+		_ = Assert.Throws<WidthMismatchException>(() => wide.Replicate(2));
+		WidthMismatchException tooMany = Assert.Throws<WidthMismatchException>(() => a.Replicate(Lit.Bits(8, 100)));
+		Assert.Equal("Replication count 100 exceeds 64.", tooMany.Message);
+		WidthMismatchException huge = Assert.Throws<WidthMismatchException>(() => a.Replicate(Lit.Bits(64, 0x1_0000_0002)));
+		Assert.Equal("Replication count 4294967298 exceeds 64.", huge.Message);
+	}
+
+	[Fact]
+	public void TestReplicateCombEmitsRepeatConcatenation()
+	{
+		ReplicateComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(ReplicateComb));
+
+		const string expected =
+			"module ReplicateComb(\n" +
+			"\tinput wire [7:0] A,\n" +
+			"\tinput wire Bit,\n" +
+			"\tinput wire [3:0] N,\n" +
+			"\toutput wire [15:0] Twice,\n" +
+			"\toutput wire [7:0] Fill,\n" +
+			"\toutput wire [7:0] Once,\n" +
+			"\toutput wire [31:0] LitCount,\n" +
+			"\toutput wire [15:0] Mixed,\n" +
+			"\toutput wire [15:0] Sum,\n" +
+			"\toutput wire [15:0] NotRep\n" +
+			");\n" +
+			"\tassign Twice = {2{A}};\n" +
+			"\tassign Fill = {8{Bit}};\n" +
+			"\tassign Once = {1{A}};\n" +
+			"\tassign LitCount = {4{A}};\n" +
+			"\tassign Mixed = {{2{N}}, A};\n" +
+			"\tassign Sum = {2{A}} + {2{A}};\n" +
+			"\tassign NotRep = ~{2{A}};\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestShiftOperandsAreExemptFromWidthRule()
 	{
 		In a = In.UInt(8, "a");

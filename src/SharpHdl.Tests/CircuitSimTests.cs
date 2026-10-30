@@ -605,6 +605,26 @@ public class CircuitSimTests
 		Assert.Equal("Division by zero.", ex.Message);
 	}
 
+	[Theory]
+	[InlineData(0xA5u, 1u, 0x3u, 0xA5A5u, 0xFFu, 0xA5u, 0xA5A5A5A5u, 0x33A5u, 0x4B4Au, 0x5A5Au)]
+	[InlineData(0x01u, 0u, 0xFu, 0x0101u, 0x00u, 0x01u, 0x01010101u, 0xFF01u, 0x0202u, 0xFEFEu)]
+	public void ReplicateCombCopiesTheValueMsbFirst(uint a, uint bit, uint n, uint twice, uint fill, uint once, uint litCount, uint mixed, uint sum, uint notRep)
+	{
+		SimSession<ReplicateComb> m = new ReplicateComb().Run();
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.Bit, bit);
+		m.Set(m.Module.N, n);
+		m.Settle();
+
+		Assert.Equal(twice, m.Get(m.Module.Twice));
+		Assert.Equal(fill, m.Get(m.Module.Fill));
+		Assert.Equal(once, m.Get(m.Module.Once));
+		Assert.Equal(litCount, m.Get(m.Module.LitCount));
+		Assert.Equal(mixed, m.Get(m.Module.Mixed));
+		Assert.Equal(sum, m.Get(m.Module.Sum));
+		Assert.Equal(notRep, m.Get(m.Module.NotRep));
+	}
+
 	[Fact]
 	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
 	{
