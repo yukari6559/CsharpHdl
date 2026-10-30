@@ -24,6 +24,11 @@ public class EmitExprVisitor : IExprVisitor<string>
 		return s;
 	}
 
+	public string VisitReplicate(ReplicateExpr replicateExpr)
+	{
+		return "{" + replicateExpr.Count + "{" + replicateExpr.Expr.Accept(this) + "}" + "}";
+	}
+
 	public string VisitConst(ConstExpr constExpr)
 	{
 		ulong masked = constExpr.Width != 64
