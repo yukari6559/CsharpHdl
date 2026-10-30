@@ -242,6 +242,16 @@ Comb の Emit は同一出力への三項 `assign` チェーン（現行）。�
 |---------------|------|--------|
 | `Slice(hi, lo)` | Verilog の `x[hi:lo]`（両端 inclusive） | `hi - lo + 1` |
 | `Concat(a, b, …)` または 2 引数の入れ子 | Verilog の `{a, b, …}`（左が MSB） | 各オペランド幅の和 |
+| `Replicate(n)` | Verilog の `{n{x}}`（同じ値を `n` 回、MSB 側から並べる。#165） | `n` × `x` の幅 |
+
+繰り返し連結 `Replicate` の規則:
+
+- 回数は `int` か定数（`ConstExpr`）。信号や式は `ArgumentException`（`Replication count must be a constant.`）
+- 定数は自分の幅でマスクしてから回数にする（`Lit.Bits(8, 260)` は 4。Emit の `8'd260` も 4 と出るのと同じ）。0 以下は `ArgumentOutOfRangeException`（`Lit.Bits(8, 256)` もマスクすると 0）
+- 回数が 64 を超えると `WidthMismatchException`（`Replication count 100 exceeds 64.`）。結果の幅が 64 を超えても同じ（8 ビットの `Replicate(9)` は `Replication width 72 exceeds 64.`）。64 ビットの値は回数 1 だけ
+- Emit は `{4{A}}`（回数は幅の付かない数）。回数 1 も `{1{A}}`。演算の中でも括弧は付けない（`{2{A}} + {2{A}}`、`~{2{A}}`、`{{2{N}}, A}`）
+- Sim は中の式を 1 回だけ評価し、その幅ずつ左へ積む（8 ビットの `0xA5` を 2 回で `0xA5A5`）
+- `SignExtend` / `ZeroExtend` の出力（`{{52{Instr[31]}}, Instr[31:20]}`、`{{8{1'b0}}, A}`）は今のまま。可変の回数と符号付きは対象外
 
 ルール:
 
@@ -325,6 +335,7 @@ public sealed class Top : Module
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 0.18 | 2026-10-30 | T2b 繰り返し連結: `x.Replicate(n)`（回数は定数、64 ビットまで、MSB 側から並べる、#165） |
 | 0.17 | 2026-10-28 | §4 条件演算子: `sel.Mux(a, b)`（真と偽は同じ幅、条件は 0 が偽、選んだ側だけ評価、#162） |
 | 0.16 | 2026-10-26 | §4 べき乗: `a.Pow(n)`（定数指数、結果は底の幅、指数 0 は 1、#160） |
 | 0.15 | 2026-10-25 | §4 除算・剰余: `/` `%`（左の幅、符号なし、定数 0 は作る時点、実行時の 0 は Sim、#157） |

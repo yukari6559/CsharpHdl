@@ -21,6 +21,22 @@ public class EvalExprVisitor(SimWorld simWorld) : IExprVisitor<ulong>
 		return result;
 	}
 
+	public ulong VisitReplicate(ReplicateExpr replicateExpr)
+	{
+		ulong baseValue = replicateExpr.Expr.Accept(this);
+		ulong currentValue = baseValue & BitUtils.MakeMaskBit(replicateExpr.Expr.GetWidth());
+		if (replicateExpr.Count == 1)
+		{
+			return currentValue;
+		}
+		for (int i = 1; i < replicateExpr.Count; i++)
+		{
+			currentValue <<= (int)replicateExpr.Expr.GetWidth();
+			currentValue += baseValue;
+		}
+		return currentValue;
+	}
+
 	public ulong VisitConst(ConstExpr constExpr)
 	{
 		return constExpr.Value & BitUtils.MakeMaskBit(constExpr.Width);

@@ -15,6 +15,12 @@ public class CollectSignalsExprVisitor : IExprVisitor<HashSet<Signal>>
 		return signals;
 	}
 
+	public HashSet<Signal> VisitReplicate(ReplicateExpr replicateExpr)
+	{
+		_ = replicateExpr.Expr.Accept(this);
+		return signals;
+	}
+
 	public HashSet<Signal> VisitConst(ConstExpr constExpr)
 	{
 		return signals;

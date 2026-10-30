@@ -42,6 +42,7 @@ _ = Directory.CreateDirectory(outDir);
 	(nameof(DivComb), () => Described(new DivComb())),
 	(nameof(PowComb), () => Described(new PowComb())),
 	(nameof(MuxComb), () => Described(new MuxComb())),
+	(nameof(ReplicateComb), () => Described(new ReplicateComb())),
 	(nameof(MulFullComb), () => Described(new MulFullComb())),
 	(nameof(LogicComb), () => Described(new LogicComb())),
 	(nameof(LocalIfComb), () => Described(new LocalIfComb())),
