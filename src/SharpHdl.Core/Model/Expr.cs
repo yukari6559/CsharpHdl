@@ -201,6 +201,38 @@ public abstract class Expr
 		Expr[] thisexprs = [.. exprs.Prepend(this)];
 		return new ConcatExpr(thisexprs);
 	}
+	public Expr Replicate(int count)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+		ulong resultWidth = (ulong)count * GetWidth();
+		if (resultWidth > 64)
+		{
+			throw new WidthMismatchException($"Replication width {resultWidth} exceeds 64.");
+		}
+		return new ReplicateExpr(count, this);
+	}
+	public Expr Replicate(Expr expr)
+	{
+		if (expr is not ConstExpr constExpr)
+		{
+			throw new ArgumentException("Replication count must be a constant.");
+		}
+		ulong maskedCount;
+		if (constExpr.Width == 64)
+		{
+			maskedCount = constExpr.Value;
+		}
+		else
+		{
+			maskedCount = constExpr.Value & ((1UL << (int)constExpr.Width) - 1);
+		}
+		if (maskedCount > 64)
+		{
+			throw new WidthMismatchException($"Replication count {maskedCount} exceeds 64.");
+		}
+		ArgumentOutOfRangeException.ThrowIfZero(maskedCount);
+		return Replicate((int)maskedCount);
+	}
 	public Expr Slice(uint msb, uint lsb)
 	{
 		if (this is not Signal and not SliceExpr)
