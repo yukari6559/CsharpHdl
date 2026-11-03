@@ -379,6 +379,8 @@ public class ModuleTests
 		MuxExpr same = Assert.IsType<MuxExpr>(sel.Mux(a, a));
 		Assert.Equal(8u, same.GetWidth());
 		Assert.Equal(8u, narrowSel.Mux(a, a).GetWidth());
+		Assert.Equal("Narrow ? A : A", VerilogEmitter.EmitExpr(narrowSel.Mux(a, a)));
+		Assert.Equal("(A == A) ? A : A", VerilogEmitter.EmitExpr(a.Eq(a).Mux(a, a)));
 
 		WidthMismatchException mismatch = Assert.Throws<WidthMismatchException>(() => sel.Mux(a, b));
 		Assert.Equal("Operand widths differ: left 8, right 4.", mismatch.Message);
@@ -405,13 +407,13 @@ public class ModuleTests
 			"\toutput wire [7:0] NotMux,\n" +
 			"\toutput wire [7:0] DivOrOne\n" +
 			");\n" +
-			"\tassign Plain = Sel ? A : B;\n" +
-			"\tassign CondAdd = (A + B) ? C : A;\n" +
-			"\tassign Sum = (Sel ? A : B) + C;\n" +
-			"\tassign TrueAdd = Sel ? (A + B) : C;\n" +
-			"\tassign FalseAdd = Sel ? A : (B + C);\n" +
-			"\tassign NotMux = ~(Sel ? A : B);\n" +
-			"\tassign DivOrOne = Sel ? (A / B) : 8'd1;\n" +
+			"\tassign Plain = |Sel ? A : B;\n" +
+			"\tassign CondAdd = |(A + B) ? C : A;\n" +
+			"\tassign Sum = (|Sel ? A : B) + C;\n" +
+			"\tassign TrueAdd = |Sel ? (A + B) : C;\n" +
+			"\tassign FalseAdd = |Sel ? A : (B + C);\n" +
+			"\tassign NotMux = ~(|Sel ? A : B);\n" +
+			"\tassign DivOrOne = |Sel ? (A / B) : 8'd1;\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);
@@ -1188,6 +1190,19 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestWideIfCombReducesWideConditions()
+	{
+		WideIfComb mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(WideIfComb));
+
+		Assert.Contains("\tif (|Sel) begin\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tif (|(A + B)) begin\n", verilog, StringComparison.Ordinal);
+		Assert.Contains("\tif (En) begin\n", verilog, StringComparison.Ordinal);
+		Assert.DoesNotContain("if (Sel)", verilog, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void TestNestedIfCombStoresNestedIfInThen()
 	{
 		NestedIfComb mod = new();
@@ -1475,8 +1490,13 @@ public class ModuleTests
 		Assert.Equal(Op.LogicOr, orOp.Op);
 		Assert.Equal(1u, and.GetWidth());
 		Assert.Equal(1u, or.GetWidth());
-		Assert.Equal("A && B", VerilogEmitter.EmitExpr(and));
-		Assert.Equal("A || B", VerilogEmitter.EmitExpr(or));
+		Assert.Equal("|A && |B", VerilogEmitter.EmitExpr(and));
+		Assert.Equal("|A || |B", VerilogEmitter.EmitExpr(or));
+
+		In en = In.UInt(1, "En");
+		In f = In.UInt(1, "F");
+		Assert.Equal("En && F", VerilogEmitter.EmitExpr(en.LogicAnd(f)));
+		Assert.Equal("(A == A) || F", VerilogEmitter.EmitExpr(a.Eq(a).LogicOr(f)));
 	}
 
 	[Fact]
@@ -1496,10 +1516,10 @@ public class ModuleTests
 			"\toutput wire AndOfOr,\n" +
 			"\toutput wire OrOfAnd\n" +
 			");\n" +
-			"\tassign AndAB = A && B;\n" +
-			"\tassign OrAN = A || N;\n" +
-			"\tassign AndOfOr = (A && B) || N;\n" +
-			"\tassign OrOfAnd = (A || B) && N;\n" +
+			"\tassign AndAB = |A && |B;\n" +
+			"\tassign OrAN = |A || |N;\n" +
+			"\tassign AndOfOr = (|A && |B) || |N;\n" +
+			"\tassign OrOfAnd = (|A || |B) && |N;\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);

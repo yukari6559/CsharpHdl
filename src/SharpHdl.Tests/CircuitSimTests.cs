@@ -625,6 +625,23 @@ public class CircuitSimTests
 		Assert.Equal(notRep, m.Get(m.Module.NotRep));
 	}
 
+	[Theory]
+	[InlineData(0x80u, 1u, 2u, 0u, 1u, 1u, 2u)]
+	[InlineData(0u, 1u, 0xFFu, 1u, 0xFFu, 0xFFu, 1u)]
+	public void WideIfCombTreatsNonZeroAsTrue(uint sel, uint a, uint b, uint en, uint y, uint z, uint w)
+	{
+		SimSession<WideIfComb> m = new WideIfComb().Run();
+		m.Set(m.Module.Sel, sel);
+		m.Set(m.Module.A, a);
+		m.Set(m.Module.B, b);
+		m.Set(m.Module.En, en);
+		m.Settle();
+
+		Assert.Equal(y, m.Get(m.Module.Y));
+		Assert.Equal(z, m.Get(m.Module.Z));
+		Assert.Equal(w, m.Get(m.Module.W));
+	}
+
 	[Fact]
 	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
 	{
