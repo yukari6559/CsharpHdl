@@ -497,7 +497,7 @@ flowchart TB
 | [pin-attribute-spec.md](pin-attribute-spec.md) | Attribute フィールド、検証規則 | 未作成 |
 | [backend-spec.md](backend-spec.md) | IBackend、BuildContext、CLI 拡張 | 未作成 |
 | [vscode-extension-spec.md](vscode-extension-spec.md) | コマンド、Webview、設定 | 未作成 |
-| [e2e-workflow.md](e2e-workflow.md) | ボード別完走手順 | 未作成 |
+| [e2e-workflow.md](e2e-workflow.md) | ボード別完走手順 | Tang Primer 25K の T0 を記録済み。他ボードは未 |
 | [synth-research-log.md](synth-research-log.md) | Yosys 置換の探究ログ | 未作成 |
 | [long-term-plan.md](long-term-plan.md) | 本ドキュメント | 作成済み |
 

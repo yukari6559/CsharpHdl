@@ -42,6 +42,7 @@
 |------|------|
 | [hdl-coverage-plan.md](hdl-coverage-plan.md) | **Verilog / SystemVerilog 全機能の対応表と 10 割対応計画（HC0–HC9）、SharpHDL 独自機能（SX1–SX10）、Stage 1–5** |
 | [long-term-plan.md](long-term-plan.md) | VSCode 統合・ピン Attribute・マルチバックエンド・合成探究 |
+| [e2e-workflow.md](e2e-workflow.md) | Tang Primer 25K の完走手順（T0。他ボードは未） |
 | [ROADMAP.md](ROADMAP.md) § Phase 5+ | 長期計画の概要（本計画へのリンク） |
 
 ## 運用
