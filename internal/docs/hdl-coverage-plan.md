@@ -307,7 +307,7 @@ Verilog / SystemVerilog には無い、**C# で書くこと・ツール一式で
 | Quartus Prime（Intel / Altera） | あり（Questa の FPGA 向け版） | あり | あり（`quartus_pgm`） | macOS 非対応 |
 | オープンソース一式 | Icarus Verilog / Verilator | yosys + nextpnr-himbaechel + Apicula（Gowin 向け） | openFPGALoader | macOS で動く |
 
-- Tang Primer 25K を Mac で使う場合: ④ は Icarus Verilog か Verilator（Gowin のシミュレーションモデルを読み込む）、⑥ はオープンソース一式、⑦ は openFPGALoader が現実的。Gowin EDA を使う場合は Windows / Linux 機か VM
+- Tang Primer 25K を Mac で使う場合: ⑥ と ⑦ は確認済みで、`yowasp-yosys`、nextpnr-himbaechel 0.11.1（GW5A-25A のみ）、Apicula 0.34、openFPGALoader。デバイスは `GW5A-LV25MG121NES`。手順は [e2e-workflow.md](e2e-workflow.md)。④ は、SharpHDL が出す Verilog を Icarus Verilog か Verilator で読む（確認用の VHDL blink だけ GHDL）。Gowin EDA を使う場合は Windows / Linux 機か VM
 - バックエンドの実装順: オープンソース一式（Mac で全段階が通る）→ Gowin EDA → Vivado / Quartus
 
 #### 設定（`sharphdl.json` + 実行時引数）
@@ -388,7 +388,7 @@ Verilog / SystemVerilog には無い、**C# で書くこと・ツール一式で
 
 | 順 | 作業 | 既存 | 前提 |
 |----|------|------|------|
-| 今すぐ | ツールの動作確認：手書き blinky で、Mac 上のオープンソース一式（+ Icarus Verilog）が Tang Primer 25K の書き込みまで通るか | T0 #86 | なし |
+| 今すぐ | ツールの動作確認：手書き blink で、Mac 上のオープンソース一式が Tang Primer 25K の SRAM 書き込みまで通るか。**完了**（[e2e-workflow.md](e2e-workflow.md)） | T0 #86 | なし |
 | 1 | HC0 ローカル信号の Emit / Sim | M4b #8 **完了** | — |
 | 2 | `Describe` を呼ぶ契約の確定 | #16（R-E8） | — |
 | 3 | Sim の波形出力（VCD）と入力の記録（HC8 の一部を前倒し） | #87 | 1 |

@@ -112,7 +112,7 @@ Sim S2 と L1（M1–M5）のあとに本格化してよい。詳細は [long-te
 | G | エンドツーエンド統合（記述 → 書き込み） |
 | H | Yosys バックエンド自作（技術探究） |
 
-就活デモ（MidiSynth）では、**Stage 1 の中で** SX1（`.cst` 出力）と SX2（書き込みまでの一括実行 + VS Code `tasks.json`）を B〜E の最小スライスとして並行で進める。ボードは Tang Primer 25K、ツールは Mac で動くオープンソース一式（yosys + nextpnr-himbaechel + Apicula + openFPGALoader）を第一候補とし、まず手書き blinky で通るかを確認する。詳細は [hdl-coverage-plan.md](hdl-coverage-plan.md) §4–5。
+就活デモ（MidiSynth）では、**Stage 1 の中で** SX1（`.cst` 出力）と SX2（書き込みまでの一括実行 + VS Code `tasks.json`）を B〜E の最小スライスとして並行で進める。ボードは Tang Primer 25K。手書き blink は Mac 上の `yowasp-yosys`、nextpnr-himbaechel 0.11.1（GW5A-25A のみ）、Apicula 0.34、openFPGALoader で SRAM 書き込みまで通っている。手順は [e2e-workflow.md](e2e-workflow.md)。詳細は [hdl-coverage-plan.md](hdl-coverage-plan.md) §4–5。
 
 ## 消費者との関係
 
