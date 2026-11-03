@@ -147,7 +147,7 @@ S2 完了（済み）
 
 ## 受け取り方
 
-- **M3 完了後:** 公開作業は GitHub Issue / PR（[dev-workflow.md](../dev-workflow.md)）。本ファイルはチェックリスト正本のまま
+- **M3 完了後:** 公開の課題は YouTrack の SHDL、差分は GitLab の MR（[dev-workflow.md](../dev-workflow.md)）。本ファイルはチェックリスト正本のまま
 - チケット消化 → nuget.org の版上げ（Core / Emit / Sim 同一 Version）
 - MidiSynth 側は PackageReference の版を上げて検証
 - 仕様の正本更新: [dsl-spec.md](../dsl-spec.md) / [verilog-emit-spec.md](../verilog-emit-spec.md) / [sim-spec.md](../sim-spec.md)
