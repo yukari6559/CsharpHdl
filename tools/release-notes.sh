@@ -1,6 +1,6 @@
 #!/bin/sh
 # Writes release notes for a tag: one line per merge request merged since the previous tag,
-# with the issues it closed. Breaking changes, features and fixes are listed; the other
+# with the YouTrack issues it names (SHDL-N, or a historical Closes #N). Breaking changes, features and fixes are listed; the other
 # Conventional types (ci, docs, test, chore, build, refactor, ...) and feat / fix scoped to
 # ci, build, deps, docs or test go into a collapsed section.
 # Reads the first-parent history: GitLab merge commits ("See merge request …!N") and the
@@ -36,10 +36,17 @@ NF >= 2 {
 	if (title == "") next
 
 	issues = ""
+	seen = " "
 	rest = body
 	while (match(rest, /([Cc]lose[sd]?|[Ff]ix(e[sd])?|[Rr]esolve[sd]?) #[0-9]+/)) {
-		m = substr(rest, RSTART, RLENGTH); sub(/.*#/, "#", m)
-		issues = issues (issues == "" ? "" : ", ") m
+		m = substr(rest, RSTART, RLENGTH); sub(/.*#/, "", m)
+		add_issue(m)
+		rest = substr(rest, RSTART + RLENGTH)
+	}
+	rest = body
+	while (match(rest, /SHDL-[0-9]+/)) {
+		m = substr(rest, RSTART, RLENGTH); sub(/^SHDL-/, "", m)
+		add_issue(m)
 		rest = substr(rest, RSTART + RLENGTH)
 	}
 	refs = issues (issues != "" && ref != "" ? ", " : "") ref
@@ -58,6 +65,13 @@ NF >= 2 {
 	else if (type == "feat" && !internal) f = f line "\n"
 	else if (type == "fix" && !internal) x = x line "\n"
 	else { o = o line "\n"; on++ }
+}
+function add_issue(num,   key, link) {
+	key = " " num " "
+	if (index(seen, key) > 0) return
+	seen = seen num " "
+	link = "[SHDL-" num "](https://araiguma.youtrack.cloud/issue/SHDL-" num ")"
+	issues = issues (issues == "" ? "" : ", ") link
 }
 function first_line(s,   n, i, lines) {
 	n = split(s, lines, "\n")

@@ -10,7 +10,7 @@ C# の DSL で同期回路を記述し、人が読める Verilog を生成する
 
 **現状:** RV64 向け原語＋ Sim S2。比較・`If`/`Else`・幅付き定数 `Lit.Bits`（M1–M3）、ローカル `Wire` / `Reg`（M4）、XOR `^` / XNOR `Xnor` あり。`0.11.0` で繰り返し連結 `Replicate` が入った。`0.10.0` で条件演算子 `Mux` が入った。`0.9.0` で定数のべき乗 `Pow` が入った。`0.8.0` で符号なしの除算 `/` と剰余 `%` が入った。`0.7.0` で全幅の積 `MulFull` と論理積・論理和 `LogicAnd` / `LogicOr` が入り、インスタンスのポート接続は 1 行に 1 つになった。`0.6.0` で論理シフト `<<` `>>`・乗算 `*`・単項演算（`~` `-` `!`、リダクション `ReduceAnd()` など）が入り、階層の Verilog 出力（モジュールの区切り、3 段以上）が直った。二項演算・比較の左右は同じ幅が必須（`0.5.0` から。論理積・論理和とシフトの量は除く）。  
 **ドキュメント:** [sharphdl.gitlab.io/SharpHDL](https://sharphdl.gitlab.io/SharpHDL)（ガイド・DSL・API リファレンス）  
-**開発:** [GitLab sharphdl/SharpHDL](https://gitlab.com/sharphdl/SharpHDL)（Issue・マージリクエスト・CI）。GitHub の [yukari6559/CsharpHdl](https://github.com/yukari6559/CsharpHdl) は `main` とタグだけを同期するコピーです。  
+**開発:** 課題は [YouTrack SHDL](https://araiguma.youtrack.cloud/issues/SHDL)。マージリクエストと CI は [GitLab sharphdl/SharpHDL](https://gitlab.com/sharphdl/SharpHDL)。GitHub の [yukari6559/CsharpHdl](https://github.com/yukari6559/CsharpHdl) は `main` とタグだけを同期するコピーです。  
 **配布:** [SharpHdl.Core](https://www.nuget.org/packages/SharpHdl.Core) / [SharpHdl.Emit](https://www.nuget.org/packages/SharpHdl.Emit) / [SharpHdl.Sim](https://www.nuget.org/packages/SharpHdl.Sim)（例: `0.11.0`）。メンテナーの公開手順は [docs/consumers.md](docs/consumers.md)（タグ `v*.*.*` → CI）。
 
 ```

@@ -131,7 +131,7 @@ Milestone: **refactor-visitor**。1 Issue ≈ 1 PR、上から順に。
 
 ## 将来検討（未 Issue）
 
-GitHub Issue はまだ切らない。着手するときに Milestone／Issue 化する。
+着手するときに YouTrack の課題にする。GitHub と GitLab の Issue は切らない。
 
 | 由来 | 内容 | メモ |
 |------|------|------|

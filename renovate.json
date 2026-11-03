@@ -10,6 +10,7 @@
     "chore",
     "workflow::review"
   ],
+  "dependencyDashboard": false,
   "dependencyDashboardTitle": "Dependency Dashboard (Renovate)",
   "prHourlyLimit": 0,
   "prConcurrentLimit": 5,
