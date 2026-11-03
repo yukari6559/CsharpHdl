@@ -25,6 +25,19 @@ public static class VerilogEmitter
 		return expr.Accept(exprVisitor);
 	}
 
+	public static string EmitReduceOr(Expr expr)
+	{
+		EmitExprVisitor exprVisitor = new();
+		if (expr is OpExpr or MuxExpr or UnaryExpr)
+		{
+			return "|(" + expr.Accept(exprVisitor) + ")";
+		}
+		else
+		{
+			return "|" + expr.Accept(exprVisitor);
+		}
+	}
+
 	public static HashSet<Signal> CollectRegOuts(List<Stmt> stmts, HashSet<Signal> regOuts)
 	{
 		RegOutVisitor regOutVisitor = new(regOuts);

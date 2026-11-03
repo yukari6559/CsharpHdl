@@ -15,7 +15,16 @@ public class IfVisitor(StringBuilder verilogsb, int depth) : IStmtVisitor
 
 	public void VisitIf(IfStmt ifStmt)
 	{
-		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}if ({VerilogEmitter.EmitExpr(ifStmt.Cond)}) begin\n");
+		string condEmitStr;
+		if (ifStmt.Cond.GetWidth() > 1)
+		{
+			condEmitStr = VerilogEmitter.EmitReduceOr(ifStmt.Cond);
+		}
+		else
+		{
+			condEmitStr = VerilogEmitter.EmitExpr(ifStmt.Cond);
+		}
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"{string.Concat(Enumerable.Repeat("\t", depth))}if ({condEmitStr}) begin\n");
 
 		IfVisitor nestIfVisitor = new(verilogsb, depth + 1);
 
