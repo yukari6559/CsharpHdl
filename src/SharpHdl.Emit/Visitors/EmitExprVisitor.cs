@@ -41,22 +41,36 @@ public class EmitExprVisitor : IExprVisitor<string>
 	public string VisitOp(OpExpr opExpr)
 	{
 		string s = "";
-		if (opExpr.Left is OpExpr or MuxExpr)
+		if (opExpr.Op is Op.LogicAnd or Op.LogicOr && opExpr.Left.GetWidth() > 1)
 		{
-			s += "(" + opExpr.Left.Accept(this) + ")" + " ";
+			s += VerilogEmitter.EmitReduceOr(opExpr.Left) + " ";
 		}
 		else
 		{
-			s += opExpr.Left.Accept(this) + " ";
+			if (opExpr.Left is OpExpr or MuxExpr)
+			{
+				s += "(" + opExpr.Left.Accept(this) + ")" + " ";
+			}
+			else
+			{
+				s += opExpr.Left.Accept(this) + " ";
+			}
 		}
 		s += opExpr.Op.ToCustomString() + " ";
-		if (opExpr.Right is OpExpr or MuxExpr)
+		if (opExpr.Op is Op.LogicAnd or Op.LogicOr && opExpr.Right.GetWidth() > 1)
 		{
-			s += "(" + opExpr.Right.Accept(this) + ")";
+			s += VerilogEmitter.EmitReduceOr(opExpr.Right);
 		}
 		else
 		{
-			s += opExpr.Right.Accept(this);
+			if (opExpr.Right is OpExpr or MuxExpr)
+			{
+				s += "(" + opExpr.Right.Accept(this) + ")";
+			}
+			else
+			{
+				s += opExpr.Right.Accept(this);
+			}
 		}
 		return s;
 	}
@@ -64,7 +78,11 @@ public class EmitExprVisitor : IExprVisitor<string>
 	public string VisitMux(MuxExpr muxExpr)
 	{
 		string s = "";
-		if (muxExpr.Cond is OpExpr or MuxExpr or UnaryExpr)
+		if (muxExpr.Cond.GetWidth() > 1)
+		{
+			s += VerilogEmitter.EmitReduceOr(muxExpr.Cond);
+		}
+		else if (muxExpr.Cond is OpExpr or MuxExpr or UnaryExpr)
 		{
 			s += "(" + muxExpr.Cond.Accept(this) + ")";
 		}
