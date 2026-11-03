@@ -93,7 +93,9 @@ public sealed class Alu : Module
 | `Replicate(n)` | `{n{x}}`。同じ値を `n` 回並べる。回数は `int` か定数（信号は作れない）。0 以下は例外。結果幅は `n` × `x` の幅で、64 ビットまで |
 | `SignExtend(toWidth)` / `ZeroExtend(toWidth)` | 符号／ゼロ拡張。`toWidth >=` 元幅。同じ幅なら何もしない（`ZeroExtend` は式そのものを返し、入れ子の演算の括弧も保たれる） |
 
-**幅の規則:** 二項演算と比較は左右の幅が違うと `WidthMismatchException`（シフトの量と、論理積・論理和 `LogicAnd` / `LogicOr`、Mux の条件は例外。Mux の真の値と偽の値は同じ幅）。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`）。入れ子の演算は Emit で括弧付きになる（`(A ^ B) & C`、`~(A & B)`、`(A && B) || N`、`(Sel ? A : B) + C`）。単項演算とリダクションは中身の幅に制限がない。
+**幅の規則:** 二項演算と比較は左右の幅が違うと `WidthMismatchException`（シフトの量と、論理積・論理和 `LogicAnd` / `LogicOr`、Mux の条件は例外。Mux の真の値と偽の値は同じ幅）。幅を揃えるときは `ZeroExtend` / `SignExtend` を明示する（例: `A + B.ZeroExtend(8)`）。入れ子の演算は Emit で括弧付きになる（`(A ^ B) & C`、`~(A & B)`、`(En && F) || G`、`(Sel ? A : B) + C`）。単項演算とリダクションは中身の幅に制限がない。
+
+**条件の幅:** `If` の条件、`Mux` の条件、`LogicAnd` / `LogicOr` の左右は何ビットでもよい（0 が偽、それ以外が真）。2 ビット以上なら Emit は同じ意味のリダクション OR `|x` で 1 ビットにしてから出す（8 ビットの `Sel` は `if (|Sel)`、`|Sel ? A : B`、`|A && |B`）。Verilator の幅の警告を避けるためで、意味は変わらない。
 
 **`Slice` / `SignExtend` の対象:** 信号か信号のスライスに限る（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` の `Slice` は 1 段にまとまり（`x.Slice(15, 8).Slice(3, 0)` は `x[11:8]`）、範囲外は `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` は `{{52{instr[31]}}, instr[31:20]}` と出る。演算の結果を切り出したいときはローカル `Wire` を経由する。
 
