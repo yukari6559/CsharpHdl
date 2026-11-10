@@ -481,6 +481,74 @@ public class ModuleTests
 	}
 
 	[Fact]
+	public void TestRomChecksWidthsAndCopiesInit()
+	{
+		SmallRom mod = new();
+		In clk = In.UInt(1, "clk");
+		In addr = In.UInt(2, "addr");
+		In narrowAddr = In.UInt(1, "narrow");
+		Out data = Out.UInt(8, "data");
+		Out wideData = Out.UInt(16, "wide");
+
+		ulong[] table = [10, 20];
+		mod.Rom(clk, 4, 8, addr, table, data);
+		table[0] = 99;
+		RomStmt rom = Assert.IsType<RomStmt>(mod.GetStmts().Last());
+		Assert.Equal([10UL, 20UL], rom.Init);
+		Assert.Equal(4u, rom.Depth);
+
+		_ = Assert.Throws<WidthMismatchException>(() => mod.Rom(clk, 4, 8, narrowAddr, [1], data));
+		_ = Assert.Throws<WidthMismatchException>(() => mod.Rom(clk, 4, 8, addr, [1], wideData));
+		_ = Assert.Throws<WidthMismatchException>(() => mod.Rom(clk, 4, 8, addr, [1, 2, 3, 4, 5], data));
+		WidthMismatchException tooBig = Assert.Throws<WidthMismatchException>(() => mod.Rom(clk, 4, 8, addr, [1, 2, 256], data));
+		Assert.Equal("Rom init[2] = 256 does not fit in 8 bits.", tooBig.Message);
+
+		In wideAddr = In.UInt(1, "wa");
+		Out full = Out.UInt(64, "full");
+		mod.Rom(clk, 2, 64, wideAddr, [ulong.MaxValue], full);
+		Assert.Equal([ulong.MaxValue], Assert.IsType<RomStmt>(mod.GetStmts().Last()).Init);
+	}
+
+	[Fact]
+	public void TestSmallRomEmitsInitialBlockAndSyncRead()
+	{
+		SmallRom mod = new();
+		mod.Describe();
+		string verilog = VerilogEmitter.Emitter(mod, nameof(SmallRom));
+
+		const string expected =
+			"module SmallRom(\n" +
+			"\tinput wire clk,\n" +
+			"\tinput wire [1:0] Phase,\n" +
+			"\toutput reg [7:0] Sine,\n" +
+			"\toutput reg [7:0] Tri\n" +
+			");\n" +
+			"reg [7:0] rom_Sine [0:3];\n" +
+			"initial begin\n" +
+			"\trom_Sine[0] = 8'd10;\n" +
+			"\trom_Sine[1] = 8'd20;\n" +
+			"\trom_Sine[2] = 8'd30;\n" +
+			"\trom_Sine[3] = 8'd0;\n" +
+			"end\n" +
+			"always @(posedge clk) begin\n" +
+			"\tSine <= rom_Sine[Phase];\n" +
+			"end\n" +
+			"reg [7:0] wave_table [0:3];\n" +
+			"initial begin\n" +
+			"\twave_table[0] = 8'd1;\n" +
+			"\twave_table[1] = 8'd2;\n" +
+			"\twave_table[2] = 8'd3;\n" +
+			"\twave_table[3] = 8'd4;\n" +
+			"end\n" +
+			"always @(posedge clk) begin\n" +
+			"\tTri <= wave_table[Phase];\n" +
+			"end\n" +
+			"endmodule";
+
+		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
 	public void TestShiftOperandsAreExemptFromWidthRule()
 	{
 		In a = In.UInt(8, "a");

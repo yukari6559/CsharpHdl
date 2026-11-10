@@ -44,6 +44,7 @@ _ = Directory.CreateDirectory(outDir);
 	(nameof(MuxComb), () => Described(new MuxComb())),
 	(nameof(ReplicateComb), () => Described(new ReplicateComb())),
 	(nameof(WideIfComb), () => Described(new WideIfComb())),
+	(nameof(SmallRom), () => Described(new SmallRom())),
 	(nameof(MulFullComb), () => Described(new MulFullComb())),
 	(nameof(LogicComb), () => Described(new LogicComb())),
 	(nameof(LocalIfComb), () => Described(new LocalIfComb())),
