@@ -66,6 +66,15 @@ public class SeqStmtVisitor(SimWorld simWorld, Signal clk) : IStmtVisitor
 		}
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		if (simWorld.ResolveAlias(romStmt.Clk) == simWorld.ResolveAlias(clk))
+		{
+			ulong addr = EvalExpr.Eval(romStmt.Addr, simWorld);
+			nextValues[romStmt.Rdata] = simWorld.MemState[romStmt.Rdata][addr];
+		}
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 	}

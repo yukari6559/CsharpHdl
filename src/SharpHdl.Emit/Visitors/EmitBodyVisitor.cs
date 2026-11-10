@@ -80,6 +80,34 @@ public class EmitBodyVisitor(StringBuilder verilogsb) : IStmtVisitor
 		_ = verilogsb.Append($"end\n");
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		string romName = $"rom_{romStmt.Rdata.Name}";
+		if (!string.IsNullOrWhiteSpace(romStmt.Name))
+		{
+			romName = romStmt.Name;
+		}
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"reg [{romStmt.Width - 1}:0] {romName} [0:{romStmt.Depth - 1}];\n");
+		_ = verilogsb.Append("initial begin\n");
+		for (int i = 0; i < romStmt.Depth; i++)
+		{
+			ulong value;
+			if (i < romStmt.Init.Count)
+			{
+				value = romStmt.Init[i];
+			}
+			else
+			{
+				value = 0;
+			}
+			_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{romName}[{i}] = {romStmt.Width}'d{value};\n");
+		}
+		_ = verilogsb.Append("end\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"always @(posedge {romStmt.Clk.Name}) begin\n");
+		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t{romStmt.Rdata.Name} <= {romName}[{romStmt.Addr.Name}];\n");
+		_ = verilogsb.Append("end\n");
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		throw SeqAssignAtTopLevel();

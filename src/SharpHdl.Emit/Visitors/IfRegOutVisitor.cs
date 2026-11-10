@@ -45,6 +45,11 @@ public class IfRegOutVisitor(HashSet<Signal> regOuts) : IStmtVisitor
 		throw IfVisitor.NotAllowedInIf("MemWstrb");
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		throw IfVisitor.NotAllowedInIf("Rom");
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		throw IfVisitor.NotAllowedInIf("Seq assign");

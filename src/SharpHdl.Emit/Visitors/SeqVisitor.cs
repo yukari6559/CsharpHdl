@@ -38,6 +38,11 @@ public class SeqVisitor(StringBuilder verilogsb, Signal reset) : IStmtVisitor
 		throw NotAllowedInSeq("MemWstrb");
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		throw NotAllowedInSeq("Rom");
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		_ = verilogsb.Append(CultureInfo.InvariantCulture, $"\t\tif ({reset.Name}) begin\n");

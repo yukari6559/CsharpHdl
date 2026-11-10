@@ -38,6 +38,11 @@ public class SeqBlockVisitor : IStmtVisitor
 		throw new SimUnsupportedException();
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		throw new SimUnsupportedException();
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		seqAssignStmts.Add(seqAssignStmt);

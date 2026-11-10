@@ -44,6 +44,15 @@ public class SimInitVisitor(SimWorld simWorld) : IStmtVisitor
 		simWorld.MemState[memWstrbStmt.Rdata] = new ulong[memWstrbStmt.Depth];
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		simWorld.MemState[romStmt.Rdata] = new ulong[romStmt.Depth];
+		for (int i = 0; i < romStmt.Init.Count; i++)
+		{
+			simWorld.MemState[romStmt.Rdata][i] = romStmt.Init[i];
+		}
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		throw new SimUnsupportedException();

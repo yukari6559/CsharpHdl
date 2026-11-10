@@ -290,6 +290,22 @@ Comb の Emit は同一出力への三項 `assign` チェーン（現行）。�
 - 同一アドレスの読み書きは初版 **旧値読み**（バイパスなし）。x0 ゼロ化は消費者側
 - **読みレイテンシ:** 1R1W / wstrb は同期読み（addr 提示の次拍で `rdata` 有効）。2R1W 読みは組み合わせ（同一拍 RAW は旧値、書き込みコミット後の評価から新値）。Sim も同じ（詳細は [sim-spec.md](sim-spec.md) §4.2）
 
+### 初期値付き ROM `Rom`（M5、SHDL-10）
+
+```csharp
+ulong[] sine = [.. Enumerable.Range(0, 256)
+    .Select(i => (ulong)Math.Round(127.5 + 127.5 * Math.Sin(2 * Math.PI * i / 256)))];
+Rom(Clk, 256, 8, Phase, sine, Sine);   // Rom(clk, depth, width, addr, init, rdata, name = null)
+```
+
+- 書き込み口のない 1R1W `Mem`。読み出しは同期（`addr` 提示の次拍で `rdata` 有効）。`rdata` は `output reg`
+- 検査は 1R1W `Mem` と同じ（`clk` 1 ビット、`rdata` は `width` ビット、`addr` は `ceil(log2(depth))` ビット、`depth >= 1`）。違えば `WidthMismatchException`
+- `init` は C# で作った `ulong` の表。`depth` より短くてよく、残りは 0。長いと `WidthMismatchException`。`width` に入らない値も `WidthMismatchException`（`Rom init[2] = 256 does not fit in 8 bits.`）。黙って切り捨てない
+- 表はコピーして持つ（呼ぶ側の配列をあとで変えても ROM は変わらない）
+- Emit は `initial` ブロックで全番地（0 も含む）を書き、`always @(posedge clk)` で読む（[verilog-emit-spec.md](verilog-emit-spec.md) §5）。配列名は既定 `rom_{rdata}`、`name` が空白でなければそれ
+- Sim は `Run()` で表を入れる。`LoadMem` / `PeekMem` / `PokeMem` は `rdata` をキーに `Mem` と同じく使える（テストから表を差し替えられる）
+- 対象外: `$readmemh` と別ファイルの `.hex`（HC9）、書き込みのできる `Mem` の初期値、非同期読み出し、ブロック RAM の属性。深さが 2 のべき乗でないときの範囲外の番地は `Mem` と同じく扱わない
+
 ---
 
 ## 5. 階層
@@ -335,6 +351,7 @@ public sealed class Top : Module
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 0.20 | 2026-11-10 | §4 初期値付き ROM `Rom`（同期読み、表は C# の `ulong`、短ければ 0、入らない値は例外、SHDL-10） |
 | 0.19 | 2026-11-03 | §4 Mux と論理積・論理和: 2 ビット以上の条件は Emit で `\|x` にする（`If` の条件も同じ、#169） |
 | 0.18 | 2026-10-30 | T2b 繰り返し連結: `x.Replicate(n)`（回数は定数、64 ビットまで、MSB 側から並べる、#165） |
 | 0.17 | 2026-10-28 | §4 条件演算子: `sel.Mux(a, b)`（真と偽は同じ幅、条件は 0 が偽、選んだ側だけ評価、#162） |

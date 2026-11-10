@@ -137,3 +137,19 @@ public sealed class IfStmt(Expr cond, List<Stmt> then, List<Stmt>? @else) : Stmt
 		stmtVisitor.VisitIf(this);
 	}
 }
+
+public sealed class RomStmt(In clk, uint depth, uint width, In addr, IReadOnlyList<ulong> init, Out rdata, string? name) : Stmt
+{
+	public In Clk { get; private set; } = clk;
+	public uint Depth { get; private set; } = depth;
+	public uint Width { get; private set; } = width;
+	public In Addr { get; private set; } = addr;
+	public Out Rdata { get; private set; } = rdata;
+	public IReadOnlyList<ulong> Init { get; private set; } = [.. init];
+	public string? Name { get; private set; } = name;
+
+	public override void Accept(IStmtVisitor stmtVisitor)
+	{
+		stmtVisitor.VisitRom(this);
+	}
+}

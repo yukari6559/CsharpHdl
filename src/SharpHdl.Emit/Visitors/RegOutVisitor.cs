@@ -33,6 +33,11 @@ public class RegOutVisitor(HashSet<Signal> regOuts) : IStmtVisitor
 		_ = regOuts.Add(memWstrbStmt.Rdata);
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		_ = regOuts.Add(romStmt.Rdata);
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		throw EmitBodyVisitor.SeqAssignAtTopLevel();

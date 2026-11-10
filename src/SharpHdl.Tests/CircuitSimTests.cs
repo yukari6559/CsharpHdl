@@ -643,6 +643,40 @@ public class CircuitSimTests
 	}
 
 	[Fact]
+	public void SmallRomLoadsInitAndReadsOnTheClock()
+	{
+		SimSession<SmallRom> m = new SmallRom().Run();
+		Assert.Equal(10u, m.PeekMem(m.Module.Sine, 0));
+		Assert.Equal(20u, m.PeekMem(m.Module.Sine, 1));
+		Assert.Equal(30u, m.PeekMem(m.Module.Sine, 2));
+		Assert.Equal(0u, m.PeekMem(m.Module.Sine, 3));
+		Assert.Equal(0u, m.Get(m.Module.Sine));
+
+		m.Set(m.Module.Phase, 2);
+		m.Advance(m.Module.Clk);
+		Assert.Equal(30u, m.Get(m.Module.Sine));
+		Assert.Equal(3u, m.Get(m.Module.Tri));
+
+		m.Set(m.Module.Phase, 3);
+		m.Settle();
+		Assert.Equal(30u, m.Get(m.Module.Sine));
+		m.Advance(m.Module.Clk);
+		Assert.Equal(0u, m.Get(m.Module.Sine));
+		Assert.Equal(4u, m.Get(m.Module.Tri));
+	}
+
+	[Fact]
+	public void SmallRomTableCanBeReplacedWithLoadMem()
+	{
+		SimSession<SmallRom> m = new SmallRom().Run();
+		m.LoadMem(m.Module.Sine, [7UL]);
+		m.Set(m.Module.Phase, 0);
+		m.Advance(m.Module.Clk);
+		Assert.Equal(7u, m.Get(m.Module.Sine));
+		Assert.Equal(1u, m.Get(m.Module.Tri));
+	}
+
+	[Fact]
 	public void BitUtilsShiftHandlesFullWidthAndLargeAmounts()
 	{
 		Assert.Equal(1UL, BitUtils.ShiftRight(ulong.MaxValue, 63, 64));

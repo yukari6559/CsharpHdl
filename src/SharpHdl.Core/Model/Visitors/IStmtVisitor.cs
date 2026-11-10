@@ -10,5 +10,6 @@ public interface IStmtVisitor
 	void VisitMem(MemStmt memStmt);
 	void VisitMem2R1W(Mem2R1WStmt mem2R1WStmt);
 	void VisitMemWstrb(MemWstrbStmt memWstrbStmt);
+	void VisitRom(RomStmt romStmt);
 	void VisitIf(IfStmt ifStmt);
 }
