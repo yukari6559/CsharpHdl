@@ -16,9 +16,9 @@ ISA 固有の記述は CsharpHdl には置きません。消費者側に置い�
 ## NuGet（nuget.org）— 推奨
 
 ```xml
-<PackageReference Include="SharpHdl.Core" Version="0.11.0" />
-<PackageReference Include="SharpHdl.Emit" Version="0.11.0" />
-<PackageReference Include="SharpHdl.Sim" Version="0.11.0" />
+<PackageReference Include="SharpHdl.Core" Version="0.12.0" />
+<PackageReference Include="SharpHdl.Emit" Version="0.12.0" />
+<PackageReference Include="SharpHdl.Sim" Version="0.12.0" />
 ```
 
 `Sim` は回路を xUnit 等で回すときだけ足せば足ります（emit のみなら Core + Emit）。
@@ -40,13 +40,13 @@ dotnet build
    - Namespace path: `sharphdl` / Project path: `SharpHDL` / Environment: `release`（Ref は空のまま。タグで公開するため）  
    - Pattern 例: `SharpHdl.*`（Sim を含むこと）  
 2. `main` を公開したい状態にする  
-3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.11.0`）
+3. タグを打って GitLab に push し、GitHub のコピーにも送る（例: `0.12.0`）
 
 ```bash
 git push origin main
-git tag v0.11.0
-git push origin v0.11.0
-git push github main v0.11.0
+git tag v0.12.0
+git push origin v0.12.0
+git push github main v0.12.0
 ```
 
 `.gitlab-ci.yml` の `publish-nuget` ジョブがテスト → pack（タグの版）→ OIDC で一時キー取得 → nuget.org へ push します。  
@@ -93,6 +93,10 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 
 書き方の参考: リポジトリの `examples/`（製品 ISA は含みません）。`Sim` は **S2 完了**。比較・If/Else・**Lit.Bits（M3）**・ローカル `Wire` / `Reg`（M4）・XOR / XNOR・論理シフト・乗算・除算・剰余・定数のべき乗 `Pow`・条件演算子 `Mux`・繰り返し連結 `Replicate`・単項演算（`~` `-` `!`、リダクション）・全幅の積 `MulFull`・論理積・論理和 `LogicAnd` / `LogicOr` まで。
 
+**`0.12.0` の変更:**
+- 追加: 初期値付き ROM `Rom(clk, depth, width, addr, init, rdata, name = null)`（波形の表など。表は C# の `ulong` で、`depth` より短ければ残りは 0。長い、または `width` に入らない値は `WidthMismatchException`。読み出しは 1R1W `Mem` と同じ同期読み。Verilog は `initial` ブロックで全番地を書く。Sim は `Run()` で表を入れ、`LoadMem` で差し替えられる）
+- 変更: 2 ビット以上の条件（`Mux` の条件、`LogicAnd` / `LogicOr` の左右、`If` の条件）は、Verilog で `|x` にして 1 ビットにしてから出す（8 ビットの `Sel` は `|Sel ? A : B`、`|A && |B`、`if (|Sel)`）。意味は変わらない。Verilator `-Wall` の幅の警告（WIDTHTRUNC）が出なくなる
+
 **`0.11.0` の変更:**
 - 追加: 繰り返し連結 `x.Replicate(n)`（Verilog `{n{x}}`。回数は `int` か定数で、定数は自分の幅でマスクしてから使う。0 以下は `ArgumentOutOfRangeException`。回数か結果の幅が 64 を超えると `WidthMismatchException`。信号の回数は `ArgumentException`）
 
@@ -119,4 +123,4 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 - `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
 
-いまの本線は Tang Primer 25K への書き込みまでの流れ（ボード定義と `.cst`、SHDL-88 以降）（内部 ROADMAP / tickets 参照）。初期値付き ROM `Rom(clk, depth, width, addr, init, rdata)` は SHDL-10（表は C# の `ulong`、読み出しは同期）。
+いまの本線は Tang Primer 25K への書き込みまでの流れ（ボード定義と `.cst`、SHDL-88 以降）（内部 ROADMAP / tickets 参照）。
