@@ -10,6 +10,7 @@ public class Module
 	private readonly List<Stmt> Stmts = [];
 	private readonly List<Signal> Locals = [];
 	private readonly HashSet<string> Defined = [];
+	private bool isDescribed;
 	public void SetPorts(List<Signal> ports)
 	{
 		HashSet<string> seen = [];
@@ -79,6 +80,18 @@ public class Module
 	public ReadOnlyCollection<Signal> GetLocals()
 	{
 		return Locals.AsReadOnly();
+	}
+
+	public void DescribeOnce()
+	{
+		if (!isDescribed)
+		{
+			isDescribed = true;
+			if (Stmts.Count == 0)
+			{
+				Describe();
+			}
+		}
 	}
 
 	public virtual void Describe()

@@ -65,6 +65,19 @@ public class CircuitSimTests
 		_ = Assert.Throws<MultiDriveException>(module.Run);
 	}
 
+	[Fact]
+	public void DescribeThenRunKeepsSingleDrive()
+	{
+		Alu alu = new();
+		alu.Describe();
+		SimSession<Alu> session = alu.Run();
+		session.Set(session.Module.A, 1);
+		session.Set(session.Module.B, 2);
+		session.Set(session.Module.Op, 0);
+		session.Settle();
+		Assert.Equal(3u, session.Get(session.Module.Y));
+	}
+
 	[Theory]
 	[InlineData(0u, 1u, 2u, 3u)]
 	[InlineData(1u, 5u, 3u, 2u)]

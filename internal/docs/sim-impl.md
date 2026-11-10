@@ -53,7 +53,7 @@ SharpHdl.Sim/
 
 ```
 new T() 済み（または Run 内で Activator — 推奨は呼び出し側 new）
-  → module.Describe()
+  → module.DescribeOnce()
   → ModuleFlat.Build(module):
        全 Signal を values[signal] = 0
        ルート stmts を走査し

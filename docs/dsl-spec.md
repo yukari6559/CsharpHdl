@@ -56,6 +56,8 @@ public sealed class Alu : Module
 }
 ```
 
+`Describe()` はモジュールの文を組み立てる。`VerilogEmitter.Emitter` と `Run()` は、文がまだ無いときにこれを 1 回だけ呼ぶ。先に `Describe()` していても、文は二重に入らない。
+
 ---
 
 ## 4. 文・演算

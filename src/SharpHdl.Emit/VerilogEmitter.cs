@@ -155,6 +155,8 @@ public static class VerilogEmitter
 
 	public static string EmitOneModule(Module module, string moduleName, List<InstanceStmt> instanceStmts, HashSet<string> emittedModules)
 	{
+		module.DescribeOnce();
+
 		StringBuilder verilogsb = new();
 
 		List<Signal> signals = [.. module.GetPorts()];

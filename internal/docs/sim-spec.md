@@ -64,7 +64,7 @@ Assert.Equal(0u, c.Get(c.Module.Count));
 
 | メンバー | 意味 |
 |----------|------|
-| `TModule.Run()` | `Describe()` → 多重駆動検査 → 未登録ローカル検査 → セッション開始。ポート・ローカル・Mem は 0 初期化 |
+| `TModule.Run()` | `DescribeOnce()` → 多重駆動検査 → 未登録ローカル検査 → セッション開始。ポート・ローカル・Mem は 0 初期化。文が無ければここで `Describe()` する。呼び出し側が先に `Describe()` していても、文は二重に入らない（SHDL-16） |
 | `Set(Signal, ulong)` / `Get(Signal)` | ポートの読み書き（幅超過は例外）。**ローカル（`Internal`）への `Set` は `SimException`**。ローカルの `Get` は可（観測用） |
 | `Settle()` | Comb / 2R1W の組み合わせ読みを再評価 |
 | `Advance(In clk)` | そのクロックの **同期更新（posedge 相当）** → `Settle()`。**`clk` を 0/1 でトグルする必要はない**（レベルをいじる抽象ではない） |

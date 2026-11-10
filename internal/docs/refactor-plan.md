@@ -54,7 +54,7 @@ R0  M3 完了（Emit/テスト/版上げ）
 | **R-E5** | 高 | Mem 配列名が常に `mem` | 1 モジュール複数 Mem で識別子衝突 | 一意名（`mem_{rdata}` 等）または名前引数 | **M5 より前** | 名前変更あり |
 | **R-E6** | 中 | 子モジュール名 = `GetType().Name` | 衝突・リネームに弱い | emit 名 API / 属性（dsl-spec §7） | なし | 名前変更あり得 |
 | **R-E7** | 中 | ConstExpr Emit 未配線 | — | **M3 で解消済み（`0.3.8`）** | — | — |
-| **R-E8** | 中 | Emitter が `Describe()` を呼ばない | 呼び出し忘れで空 module が「成功」に見える | 入口で Describe、または契約を明記し二重呼び出し防止 | なし | 契約次第 |
+| **R-E8** | 中 | Emitter が `Describe()` を呼ばない | 呼び出し忘れで空 module が「成功」に見える | **完了（SHDL-16）**。`DescribeOnce()` を `Run()` と `EmitOneModule` の入口で呼ぶ。文が無いときだけ `Describe()`。印は `Describe()` の前に立てる | なし | 呼び出し忘れの空 module は中身が出る。`Describe()` 済みの `Run()` は多重駆動にならない |
 | **R-E9** | 低 | `EmitPlaceholder` + Smoke が stub | 本番経路を守っていない | 削除または実 Emitter スモーク | なし | テスト更新 |
 | **R-E10** | 低 | Seq を信号ごとに if/else reset | 読み味・冗長 | 同一 clk/reset を 1 always にまとめる（emit-spec 推奨） | なし | 差分出る |
 | **R-E11** | 低 | width=1 の `output reg [0:0]` と wire の表記ゆれ | 見た目・ツール差 | 1bit 表記を統一 | なし | 差分出る |
@@ -197,7 +197,8 @@ Milestone: **refactor-visitor**。1 Issue ≈ 1 PR、上から順に。
 - [ ] R-S4 ModuleFlat 再帰（#29、R-V2 後）
 
 ### 並行・低優先
-- [ ] R-T1 / R-T3 / R-D1 / R-C6 / R-E9 / R-E8
+- [ ] R-T1 / R-T3 / R-D1 / R-C6 / R-E9
+- [x] R-E8 Describe を 1 回だけ（SHDL-16）
 
 ---
 
@@ -205,6 +206,7 @@ Milestone: **refactor-visitor**。1 Issue ≈ 1 PR、上から順に。
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.6 | 2026-11-10 | R-E8（SHDL-16）完了。`Module.DescribeOnce()` を `Run()` と `EmitOneModule` が呼ぶ。文が無いときだけ `Describe()` し、2 回目は足さない |
 | 1.5 | 2026-10-13 | R-V4（#78 / PR #82）完了。`IExprVisitor<T>` と `Expr.Accept<T>`、`Signal` 以外の Expr を sealed。Emit は `EmitExprVisitor`、Sim は `EvalExprVisitor`。`GetWidth` は Visitor にせず `Expr` の抽象メンバのまま（Core の構築時幅チェックで使うため。新 Expr 型は abstract なので実装漏れはコンパイルエラー）。Milestone refactor-visitor 完了 |
 | 1.4 | 2026-10-10 | R-V3（#77 / PR #81）完了。`CheckMultiDriveVisitor`（If／Switch は枝ごとに数えて和集合を外側へ）、`StmtSupport` 廃止（トップレベル SeqAssign は `SimInitVisitor` で拒否） |
 | 1.3 | 2026-10-09 | R-V2（#76 / PR #80）完了。Sim を `CombStmtVisitor`／`SeqStmtVisitor`＋`SeqBlockVisitor`／`SimInitVisitor` に移行し、Core `Walk` と `SimCombStmtHandler` を削除 |
