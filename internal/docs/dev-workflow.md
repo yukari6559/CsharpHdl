@@ -226,7 +226,7 @@ chore/SHDL-<n>-<short>
 |--------|--------------|------------------|
 | **エピック** | YouTrack の親課題（SHDL-1 Stage 1 / SHDL-172 SX11 / SHDL-173 リファクタ / SHDL-174 ツール） | 新しい課題を作ったら、該当する親の subtask にする。GitLab グループのエピックには足さない |
 | **Issue の関係** | Issue の「ブロックする / される」 | hdl-coverage-plan の「前提」と同じ関係を付ける |
-| **要件** | 作業アイテムの Requirement（#120〜#126 = R1〜R7、#150 = R8、#155 = R9、#158 = R10、#161 = R11、#164 = R12、#167 = R13）、対応表 `.gitlab/requirements.tsv` | 仕様の大事な規則を足したら要件を作り、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す（見つからないテストは不合格になる） |
+| **要件** | YouTrack の課題（タグ `requirement`、State は Fixed で作業の一覧に出さない。R1〜R7 = SHDL-120〜126、R8 = SHDL-150、R9 = SHDL-155、R10 = SHDL-158、R11 = SHDL-161、R12 = SHDL-164、R13 = SHDL-167、R14 = SHDL-186）、対応表 `.gitlab/requirements.tsv`（キーは `SHDL-N`）、CI の `requirements`（`tools/requirements-check.sh`。MR でも動く） | 仕様の大事な規則を足したら、YouTrack に要件の課題を作り（タグ `requirement`、State Fixed）、対応表に検証するテスト名を書く。テスト名を変えたら対応表も直す。対応表のテストが見つからない、または失敗すると、MR のパイプラインが失敗する。GitLab の Requirement は Issue を無効にしたので作れない（2026-11-10 から使わない） |
 | **Verilog の検証** | `tools/VerilogSamples`（出力するモジュールの一覧）、CI の `verilog-lint`（`templates/verilog-lint.yml` のコンポーネント） | 正しい回路を表すテスト用モジュールを足したら一覧に足す。lint のエラーはパイプラインを止める |
 | **開発版パッケージ** | GitLab のパッケージレジストリ（`main` で Core / Emit / Sim か `Directory.Build.props` が変わったときに `X.Y.(Z+1)-dev.<パイプライン番号>`） | 何もしない。正式版の前に利用側で試してもらうときに案内する（docs/consumers.md）。パッケージに入るプロジェクトを足したら `publish-dev-package` の `changes` にも足す |
 | **リリースノート** | タグのパイプラインで `tools/release-notes.sh` が生成し、GitLab Release に載せる（前の版からマージした MR ごとに 1 行。`SHDL-N` は YouTrack へのリンク。ci / docs / test などは折りたたみ） | MR のタイトルがそのまま載るので、Conventional の形で利用者に伝わる言葉にする。破壊的変更は MR のタイトルに `!` を付ける（`fix(emit)!:` など）。MR の説明とコミットメッセージに `SHDL-N` を書く。スクリプトを変えたら MR の `release-notes-check` で出力を確かめる |
@@ -258,6 +258,7 @@ chore/SHDL-<n>-<short>
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.13 | 2026-11-10 | §10 要件を YouTrack の課題（タグ `requirement`）に移し、対応表のキーを `SHDL-N` にする。CI の検査は MR でも動き、見つからないテストで失敗する |
 | 1.12 | 2026-11-03 | 課題の正を YouTrack SHDL にする。GitLab の Issue は無効。ブランチ名とリリースノートは `SHDL-N` |
 | 1.11 | 2026-10-23 | §10 リリースノートは MR ごと（Issue へのリンク付き）に変更 |
 | 1.10 | 2026-10-23 | §10 版上げの見込み（エージェントが次の版の時期を見積もり、条件がそろったら進める）。§8 名前の候補を出す |
