@@ -9,7 +9,7 @@ public static class ModuleSimExtensions
 	public static SimSession<T> Run<T>(this T module) where T : Module
 	{
 		SimSession<T> simSession = new() { Module = module };
-		module.Describe();
+		module.DescribeOnce();
 		CheckMultiDrive.Check([.. module.GetStmts()]);
 		CheckUndeclaredLocals.Check(module);
 		simSession.SimWorld = ModuleFlat.Build(module);
