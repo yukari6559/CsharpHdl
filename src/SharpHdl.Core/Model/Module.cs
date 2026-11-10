@@ -171,6 +171,31 @@ public class Module
 
 		Stmts.Add(new MemWstrbStmt(clk, depth, width, we, wstrb, addr, wdata, rdata, name));
 	}
+
+	public void Rom(In clk, uint depth, uint width, In addr, IReadOnlyList<ulong> init, Out rdata, string? name = null)
+	{
+		if (rdata.Width != width || depth < 1 || addr.Width != (int)Math.Ceiling(Math.Log(depth, 2)) || clk.Width != 1)
+		{
+			throw new WidthMismatchException();
+		}
+		if (init.Count > depth)
+		{
+			throw new WidthMismatchException();
+		}
+		if (width != 64)
+		{
+			for (int i = 0; i < init.Count; i++)
+			{
+				if (init[i] >= (1UL << (int)width))
+				{
+					throw new WidthMismatchException($"Rom init[{i}] = {init[i]} does not fit in {width} bits.");
+				}
+			}
+		}
+
+		Stmts.Add(new RomStmt(clk, depth, width, addr, init, rdata, name));
+	}
+
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:メンバーを static に設定します", Justification = "<保留中>")]
 	public void If(Expr cond, Action then, Action? @else = null)
 	{

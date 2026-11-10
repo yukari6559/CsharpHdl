@@ -58,6 +58,10 @@ public class CheckUndeclaredLocalsVisitor(Module module) : IStmtVisitor
 	{
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		CollectSignalsExprVisitor collectSignalsExprVisitor = new();
