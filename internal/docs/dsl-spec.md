@@ -90,6 +90,8 @@ public sealed class Alu : Module
 }
 ```
 
+`Describe()` は、そのモジュールの文を 1 回組み立てる。`VerilogEmitter.Emitter` と `Run()` は `DescribeOnce()` を通すので、呼び出し側が `Describe()` を忘れても中身が出て、先に呼んでいても文は二重に入らない（SHDL-16）。2 回目以降の `Describe()` を自分で呼ぶと、これまでどおり文が重なる。
+
 ---
 
 ## 4. 文・演算（Phase 1〜2 で必須）
