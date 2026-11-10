@@ -63,6 +63,10 @@ public class CombStmtVisitor(SimWorld simWorld) : IStmtVisitor
 	{
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 	}
