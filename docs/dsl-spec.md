@@ -115,6 +115,14 @@ public sealed class Alu : Module
 
 **Emit 配列名:** optional 引数 `name`（省略可）。省略時は `mem_{rdata}`（2R1W は `mem_{rdata0}`）。明示時はその識別子を Verilog 配列に使う。
 
+### 初期値付き ROM `Rom`
+
+`Rom(clk, depth, width, addr, init, rdata, name = null)`。波形の表（サイン波など）を回路に持たせる、書き込み口のない 1R1W メモリ。読み出しは同期（次の拍で `rdata` が変わる）。
+
+- `init` は C# で作った `ulong` の表。`depth` より短ければ残りは 0。長い、または `width` に入らない値があると `WidthMismatchException`
+- Verilog は `initial` ブロックで全番地を書く。配列名は既定 `rom_{rdata}`
+- Sim は `Run()` で表を入れる。`LoadMem` / `PeekMem` / `PokeMem` も `rdata` を指して使える
+
 ### 階層
 
 子モジュールをインスタンス化し、ポート接続する。子は別 `module` として emit されます。段の数に制限はなく（子の中の子も出る）、同じ型の `module` は 1 回だけ、使われる側が先・トップが最後の順に並びます。Sim は今のところ 1 階層までです（#29）。

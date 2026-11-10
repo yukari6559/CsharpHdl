@@ -119,4 +119,4 @@ dotnet nuget add source https://gitlab.com/api/v4/projects/87940359/packages/nug
 - `Slice` / `SignExtend` は信号か信号のスライスにだけ付けられる（演算・連結・定数・拡張には `UnsupportedSelectException`）。`Slice` は範囲外で `WidthMismatchException`。`instr.Slice(31, 20).SignExtend(64)` のような即値の取り出しはそのまま書ける
 - テストベンチからローカル信号（`Wire` / `Reg`）への `Set` は `SimException`（`Get` は可）。`SetLocal(s)` していない `Wire` / `Reg` を使うと `SignalDeclarationException`
 
-いまの本線は波形向けの ROM 初期化（#10）（内部 ROADMAP / tickets 参照）。
+いまの本線は Tang Primer 25K への書き込みまでの流れ（ボード定義と `.cst`、SHDL-88 以降）（内部 ROADMAP / tickets 参照）。初期値付き ROM `Rom(clk, depth, width, addr, init, rdata)` は SHDL-10（表は C# の `ulong`、読み出しは同期）。
