@@ -49,6 +49,7 @@ variables:
         - Directory.Build.props
         - .editorconfig
         - .gitlab-ci.yml
+        - .gitlab/requirements.tsv
     - if: $CI_PIPELINE_SOURCE != "merge_request_event"
 
 stages:
@@ -197,6 +198,7 @@ renovate:
   script:
     - renovate
 
+# Requirements are YouTrack issues (SHDL-N, tag "requirement"); a missing or failed listed test fails the job.
 requirements:
   stage: report
   needs:
@@ -204,13 +206,9 @@ requirements:
       artifacts: true
     - job: verilog-lint
       artifacts: true
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules: !reference [.code-rules, rules]
   script:
-    - tools/requirements-report.sh .gitlab/requirements.tsv requirements.json artifacts/test/*.junit.xml artifacts/verilog/verilog-lint.junit.xml
-  artifacts:
-    reports:
-      requirements: requirements.json
+    - tools/requirements-check.sh .gitlab/requirements.tsv artifacts/test/*.junit.xml artifacts/verilog/verilog-lint.junit.xml
 
 .docfx:
   cache: *nuget-cache

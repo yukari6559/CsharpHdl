@@ -1,13 +1,13 @@
 #!/bin/sh
-# Builds a GitLab requirements report from JUnit files.
+# Checks the requirements map against JUnit files. Requirements are YouTrack issues (SHDL-N, tag "requirement").
 # A requirement passes when every listed test exists and none of its test cases failed.
-# A listed test that is missing counts as a failure, so renamed tests are noticed.
-# Usage: tools/requirements-report.sh <map.tsv> <out.json> <junit.xml>...
+# A listed test that is missing counts as a failure, so renamed tests are noticed before merge.
+# Exits 1 when any requirement fails.
+# Usage: tools/requirements-check.sh <map.tsv> <junit.xml>...
 set -u
 
 map="$1"
-out="$2"
-shift 2
+shift
 # Paths without spaces (CI artifact paths); kept in a variable because the loop reuses "$@".
 junits="$*"
 
@@ -39,10 +39,20 @@ count() {
 	' "$@"
 }
 
-entries=""
-while IFS='	' read -r iid tests; do
-	case "$iid" in
+total=0
+failures=0
+while IFS='	' read -r key tests; do
+	case "$key" in
 		'' | \#*) continue ;;
+	esac
+	total=$((total + 1))
+	case "$key" in
+		SHDL-[0-9]*) ;;
+		*)
+			echo "$key: not a YouTrack key (SHDL-N)"
+			failures=$((failures + 1))
+			continue
+			;;
 	esac
 	status=passed
 	for test in $tests; do
@@ -51,13 +61,15 @@ while IFS='	' read -r iid tests; do
 		found="$1"
 		failed="$2"
 		if [ "$found" -eq 0 ] || [ "$failed" -ne 0 ]; then
-			echo "requirement $iid: $test found=$found failed=$failed"
+			echo "$key: $test found=$found failed=$failed"
 			status=failed
 		fi
 	done
-	echo "requirement $iid: $status"
-	entries="$entries${entries:+,}\"$iid\":\"$status\""
+	echo "$key: $status"
+	if [ "$status" != passed ]; then
+		failures=$((failures + 1))
+	fi
 done < "$map"
 
-printf '{%s}\n' "$entries" > "$out"
-cat "$out"
+echo "requirements: $total checked, $failures failed"
+[ "$failures" -eq 0 ]
