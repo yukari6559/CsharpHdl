@@ -82,7 +82,7 @@ public class ModuleTests
 	}
 
 	[Fact]
-	public void TestAluModuleEmitterEmitsPortFrame()
+	public void TestAluModuleEmitterDescribesWhenOmitted()
 	{
 		Alu alu = new();
 		string verilog = VerilogEmitter.Emitter(alu, nameof(Alu));
@@ -94,9 +94,27 @@ public class ModuleTests
 			"\tinput wire [1:0] Op,\n" +
 			"\toutput wire [31:0] Y\n" +
 			");\n" +
+			"\tassign Y = (Op == 2'd0) ? (A + B) :\n" +
+			"\t\t(Op == 2'd1) ? (A - B) :\n" +
+			"\t\t(Op == 2'd2) ? (A & B) :\n" +
+			"\t\t(A | B);\n" +
 			"endmodule";
 
 		Assert.Equal(expected, verilog);
+	}
+
+	[Fact]
+	public void TestDescribeOnceAppendsStatementsOnce()
+	{
+		Alu alu = new();
+		alu.DescribeOnce();
+		alu.DescribeOnce();
+		_ = Assert.Single(alu.GetStmts());
+
+		Alu described = new();
+		described.Describe();
+		described.DescribeOnce();
+		_ = Assert.Single(described.GetStmts());
 	}
 
 	[Fact]
@@ -734,6 +752,18 @@ public class ModuleTests
 		Assert.Equal(4, instance.PortConnections.Count);
 		Assert.Equal(top.A, instance.PortConnections[0].ParentSignal);
 		Assert.Equal(top.Y, instance.PortConnections[3].ParentSignal);
+	}
+
+	[Fact]
+	public void TestAluTopEmitterDescribesWhenOmitted()
+	{
+		AluTop top = new();
+		string verilog = VerilogEmitter.Emitter(top, nameof(AluTop));
+
+		Assert.Contains("assign Y = (Op == 2'd0) ? (A + B) :", verilog, StringComparison.Ordinal);
+		Assert.Contains("Alu alu (", verilog, StringComparison.Ordinal);
+		Assert.Equal(1, CountOccurrences(verilog, "module Alu("));
+		Assert.Equal(1, CountOccurrences(verilog, "assign Y ="));
 	}
 
 	[Fact]
