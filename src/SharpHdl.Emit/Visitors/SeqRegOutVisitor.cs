@@ -35,6 +35,11 @@ public class SeqRegOutVisitor(HashSet<Signal> regOuts) : IStmtVisitor
 		throw SeqVisitor.NotAllowedInSeq("MemWstrb");
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		throw SeqVisitor.NotAllowedInSeq("Rom");
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		_ = regOuts.Add(seqAssignStmt.Signal);

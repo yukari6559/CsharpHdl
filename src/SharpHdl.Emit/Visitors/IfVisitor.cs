@@ -64,6 +64,11 @@ public class IfVisitor(StringBuilder verilogsb, int depth) : IStmtVisitor
 		throw NotAllowedInIf("MemWstrb");
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+		throw NotAllowedInIf("Rom");
+	}
+
 	public void VisitSeqAssign(SeqAssignStmt seqAssignStmt)
 	{
 		throw NotAllowedInIf("Seq assign");

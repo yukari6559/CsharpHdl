@@ -30,6 +30,10 @@ public class InstanceVisitor(StringBuilder verilogsb, List<InstanceStmt> instanc
 	{
 	}
 
+	public void VisitRom(RomStmt romStmt)
+	{
+	}
+
 	public void VisitMem2R1W(Mem2R1WStmt mem2R1WStmt)
 	{
 	}
