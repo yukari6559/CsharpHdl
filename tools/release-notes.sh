@@ -1,6 +1,7 @@
 #!/bin/sh
 # Writes release notes for a tag: one line per merge request merged since the previous tag,
-# with the YouTrack issues it names (SHDL-N, or a historical Closes #N). Breaking changes, features and fixes are listed; the other
+# with the YouTrack issues it names (SHDL-N in the branch name of the merge subject or in the body, or a historical
+# Closes #N). Breaking changes, features and fixes are listed; the other
 # Conventional types (ci, docs, test, chore, build, refactor, ...) and feat / fix scoped to
 # ci, build, deps, docs or test go into a collapsed section.
 # Reads the first-parent history: GitLab merge commits ("See merge request …!N") and the
@@ -43,7 +44,7 @@ NF >= 2 {
 		add_issue(m)
 		rest = substr(rest, RSTART + RLENGTH)
 	}
-	rest = body
+	rest = subject "\n" body
 	while (match(rest, /SHDL-[0-9]+/)) {
 		m = substr(rest, RSTART, RLENGTH); sub(/^SHDL-/, "", m)
 		add_issue(m)
