@@ -16,6 +16,7 @@ VSCode 上で HDL 記述から FPGA 書き込みまで一貫して行える環�
 
 > **2026-10-14 更新:** 軸1（L1–L4）は [hdl-coverage-plan.md](hdl-coverage-plan.md) の **HC0–HC9**（Verilog / SystemVerilog 全機能の 10 割対応）に、軸2（Phase B–H）と独自機能は同書の **SX1–SX10** に対応付けた。進める順番は同書 §5 の **Stage 1–5** を正とする。  
 > 発展先として **半導体（ASIC）の設計・検証**（SX12、Stage 6）を追加した。Phase H（合成の自作探究）とは別に、既存のオープンソース ASIC フロー・形式検証・C# による検証基盤を使う実用路線。  
+> **2026-11-11 追加:** FPGA とは別のモードとして **アナログ・混在信号**（SX13）を追加した。計画は [analog-plan.md](analog-plan.md)。  
 > Stage 1 では Phase B / C / D / E の最小部分（Tang Primer 25K のボード定義、`.cst` 出力、書き込みまでの一括実行、VS Code `tasks.json`）を先に通す。下記 Phase C の出力形式は **Gowin `.cst` を最優先** とし、XDC / QSF はその後。
 
 ---
@@ -499,6 +500,7 @@ flowchart TB
 | [vscode-extension-spec.md](vscode-extension-spec.md) | コマンド、Webview、設定 | 未作成 |
 | [e2e-workflow.md](e2e-workflow.md) | ボード別完走手順 | Tang Primer 25K の T0 を記録済み。他ボードは未 |
 | [synth-research-log.md](synth-research-log.md) | Yosys 置換の探究ログ | 未作成 |
+| [analog-plan.md](analog-plan.md) | アナログ・混在信号モード（SX13） | 作成済み（計画のみ） |
 | [long-term-plan.md](long-term-plan.md) | 本ドキュメント | 作成済み |
 
 ---
@@ -538,6 +540,7 @@ flowchart TB
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 1.7 | 2026-11-11 | アナログ・混在信号モード（SX13、[analog-plan.md](analog-plan.md)）へのリンクを追加 |
 | 1.6 | 2026-10-17 | 現況表・L1・最初のタスクを M4 完了 / M2 進行中（#101〜#105）に更新 |
 | 1.5 | 2026-10-14 | 発展先として半導体（ASIC）設計・検証（hdl-coverage-plan SX12 / Stage 6）を追記 |
 | 1.4 | 2026-10-14 | [hdl-coverage-plan.md](hdl-coverage-plan.md)（HC0–HC9 / SX1–SX10 / Stage 1–5）と対応付け。制約出力は Gowin `.cst` 優先 |

@@ -42,6 +42,7 @@
 |------|------|
 | [hdl-coverage-plan.md](hdl-coverage-plan.md) | **Verilog / SystemVerilog 全機能の対応表と 10 割対応計画（HC0–HC9）、SharpHDL 独自機能（SX1–SX10）、Stage 1–5** |
 | [long-term-plan.md](long-term-plan.md) | VSCode 統合・ピン Attribute・マルチバックエンド・合成探究 |
+| [analog-plan.md](analog-plan.md) | アナログ・混在信号モード（SX13）。Verilog-AMS などから取り入れるもの、外部シミュレータと C# Sim での検証 |
 | [e2e-workflow.md](e2e-workflow.md) | Tang Primer 25K の完走手順（T0。他ボードは未） |
 | [ROADMAP.md](ROADMAP.md) § Phase 5+ | 長期計画の概要（本計画へのリンク） |
 
@@ -71,6 +72,7 @@
 「MIDIシンセ宿題は？」 → tickets/midisynth-tang-primer25k-requests.md（**いまの本線**）
 「今週の本線は？」 → ROADMAP.md「いまの本線（MidiSynth L1）」
 「Verilog の○○は使える？いつ入る？」 → hdl-coverage-plan.md の機能マトリクス
+「アナログ回路は書ける？」 → analog-plan.md（計画のみ・未着手）
 「リファクタは？」 → refactor-plan.md（M3 版上げ後。機能チケットと分離）
 「Issue/PR のやり方は？」 → dev-workflow.md（M3 完了後に移行）
 ```
