@@ -151,9 +151,9 @@ SystemC AMS の計算モデルの分け方にならい、安くて速い段か�
 | **SX13b 実数信号（RNM）** | 実数の信号をイベント駆動で流す。Sim に「秒」と時刻つきイベントを足し、クロックの周期で拍と秒を対応させる | SV の `real`（Icarus / Verilator）、Verilog-AMS の `wreal` | SX13a、HC8 の VCD |
 | **SX13c 固定刻みデータフロー**（TDF 相当） | 決まった刻みで値を流すブロック（フィルタ、変調器、ADC・DAC の振る舞いモデル） | Verilog-A / Verilog-AMS の振る舞い記述 | SX13b |
 | **SX13d 線形回路網**（ELN 相当） | 抵抗、コンデンサ、インダクタ、電圧源、電流源、制御電源。MNA と陰的積分で `.op` / `.tran` / `.ac` を解く | SPICE ネットリスト（ngspice、Xyce）、SpiceSharp | SX13a |
-| **SX13e 振る舞い記述の原語** | Verilog-A の寄与文とアナログ演算子（`ddt` / `idt` / `cross` / `transition` / `timer`）に当たる C# の原語 | Verilog-A（ngspice + OpenVAF、Xyce + ADMS、Gnucap）、Verilog-AMS（商用の AMS シミュレータ） | SX13c、SX13d |
+| **SX13e 振る舞い記述の原語** | Verilog-A の寄与文とアナログ演算子（`ddt` / `idt` / `cross` / `transition` / `timer`）に当たる C# の原語 | Verilog-A（ngspice + OpenVAF-reloaded、Xyce + ADMS、Gnucap）、Verilog-AMS（商用の AMS シミュレータ） | SX13c、SX13d |
 | **SX13f 混在シミュレーション** | 今の Module（デジタル）とアナログ部分を同時に動かす。自作 Sim では拍と秒を同期する。外部では ngspice の `d_cosim` で Verilator / Icarus の出力を回路の中に置く | ngspice + `d_cosim`、商用の AMS シミュレータ | SX13b、SX13d、SX2 の一括実行 |
-| **SX13g 素子の差し替えと外部モデル**（主目的のため長期から本線へ） | 任意の端子数の素子を、外部のモデル（Verilog-A のコンパクトモデル、SPICE のサブ回路、PDK＝半導体工場が配る素子モデル一式）で与える仕組み。ダイオード、MOSFET、RFET、FeRFET を同じ仕組みで扱う。自作 Sim のニュートン法は小さな回路の答え合わせ用にとどめ、本格的な検証は外部に任せる | ngspice + OpenVAF（Verilog-A）、ngspice + PDK（SKY130 など）。混在信号チップでは SX12c と合流 | SX13d、SX13e |
+| **SX13g 素子の差し替えと外部モデル**（主目的のため長期から本線へ） | 任意の端子数の素子を、外部のモデル（Verilog-A のコンパクトモデル、SPICE のサブ回路、PDK＝半導体工場が配る素子モデル一式）で与える仕組み。ダイオード、MOSFET、RFET、FeRFET を同じ仕組みで扱う。自作 Sim のニュートン法は小さな回路の答え合わせ用にとどめ、本格的な検証は外部に任せる | ngspice + OpenVAF-reloaded（Verilog-A）、ngspice + PDK（SKY130 など）。混在信号チップでは SX12c と合流 | SX13d、SX13e |
 | **SX13h FMI 連携**（長期） | C# の回路を FMU にして、または FMU を取り込んで、機械・熱のモデルと連成する（モーター制御など） | OpenModelica などの FMI 対応ツール | SX13c |
 | **SX13i スイッチレベル** | 素子を「ゲートの値でオン・オフするスイッチ」とみなし、0 / 1 / X / Z と駆動の強さで節点の値を決める。素子のモデルに「スイッチとしての振る舞い」を持たせ、RFET はプログラムゲートの値で n 型か p 型のスイッチになる | Verilog のスイッチレベル記述（Icarus Verilog） | SX13a、SX13g の素子の枠 |
 | **SX13j 配線の寄生と伝送線路** | 配線を、長さと層から抵抗・容量（分布 RC）と、長いものは伝送線路として自動で置く。隣の配線との結合容量（クロストーク）は後から | SPICE の伝送線路素子（ngspice） | SX13d |
@@ -204,7 +204,7 @@ SystemC AMS の計算モデルの分け方にならい、安くて速い段か�
 |--------|--------------|--------|------------|
 | **C# Sim（自作）** | Module + アナログ部品 | 速い反復、xUnit のテスト、VCD 出力 | SX13b から段階的に作る |
 | **SpiceSharp** | C# のオブジェクト（同じプロセス内） | 自作 Sim の線形回路網（SX13d）の答え合わせ。外部コマンド無しで CI に載せられる | MIT。NuGet 3.2.3（.NET Standard 2.0、最終更新 2024-10）。依存に取るか答え合わせ専用にするかは要決定 |
-| **ngspice** | SPICE ネットリスト、Verilog-A（OSDI 経由） | トランジスタレベルの検証、混在シミュレーション | Verilog-A は OpenVAF でコンパイルして読み込む（ngspice 39 から）。**OpenVAF は macOS 版が無い**（Linux / Windows）。デジタル部分は `d_cosim` で Verilator（ngspice 42 から）・Icarus Verilog・GHDL（VHDL）を回路の中で動かせる |
+| **ngspice** | SPICE ネットリスト、Verilog-A（OSDI 経由） | トランジスタレベルの検証、混在シミュレーション | Verilog-A は OpenVAF でコンパイルして OSDI（コンパイル済みモデルをシミュレータが読み込むための共通の口）経由で読み込む（ngspice 39 から）。OpenVAF は開発が止まり、後継の **OpenVAF-reloaded**（コマンド名 `openvaf-r`）を使う。後継の出力は OSDI 0.4 で、ngspice 44 以降が読める（0.5 は ngspice 48 以降）。デジタル部分は `d_cosim` で Verilator（ngspice 42 から）・Icarus Verilog・GHDL（VHDL）を回路の中で動かせる |
 | **Xyce** | SPICE ネットリスト、Verilog-A（ADMS 経由） | 大きな回路、並列実行 | ADMS 経由の Verilog-A は開発元が alpha 品質と明記。アナログ部分だけで、Verilog-AMS のデジタル部分は扱わない。モデルは C++ に変換して Xyce に組み込む必要がある |
 | **Gnucap**（+ modelgen-verilog） | Verilog-AMS（一部） | Verilog-AMS をそのまま読めるオープンソースの候補 | 開発中。2026-02 時点で `electrical` などの discipline 文は未対応 |
 | **Icarus Verilog** | Verilog のスイッチレベル記述 | スイッチレベル（SX13i）の外部の答え合わせ | 既に一括実行の RTL シミュレーション（#91）で使う |
@@ -212,7 +212,7 @@ SystemC AMS の計算モデルの分け方にならい、安くて速い段か�
 | **OpenModelica** など | FMU | 機械・熱との連成（SX13h） | — |
 | **商用の AMS シミュレータ**（Cadence、Siemens、Synopsys） | Verilog-AMS | 現場の検証フロー | ライセンスが要るので CI では出力の文字列の検証まで |
 
-**macOS での注意：** OpenVAF に macOS 版が無いので、Verilog-A のモデル（RFET を含む）を ngspice で回す段は、Linux のコンテナか GitLab CI（Linux）で動かす。派生版の macOS 対応は要確認。
+**macOS での Verilog-A：** OpenVAF-reloaded の README に macOS の手順がある（Homebrew で LLVM 18〜21 を入れ、Rust を profile「complete」で入れて `./configure` → `./build.sh --release`）。`OpenVAF/OpenVAF-Reloaded` の v24.0.1mob（2026-06）には macOS（Apple Silicon / Intel）のビルド済みバイナリもある。ngspice の公式ページと ngspice 44 のマニュアルにある「macOS は未対応」は、後継より前の記述。手元の ngspice が OSDI を有効にしてビルドされているか（configure の `--enable-osdi`）は別に確かめる。CI（Linux）でも同じモデルを回す。
 
 ### 6.1.1 再構成可能トランジスタのモデル（2026-11 時点で確認）
 
@@ -220,8 +220,8 @@ SX13g の最初の題材。どれも外部のモデルとして読み込み、Sh
 
 | モデル | 中身 | 注意 |
 |--------|------|------|
-| THM-RFET（THM、2026-04 公開） | DIG-RFET と TIG-RFET の物理ベースの Verilog-A コンパクトモデル。ソースとドレイン、プログラムゲートと制御ゲートの役割を対称に選べる | 式で書かれたモデルなので OpenVAF で扱える見込み。ライセンスは要確認 |
-| RFET の Verilog-A モデル集（Zenodo、2025-06 公開） | GlobalFoundries の 22nm FDSOI に基づく表引きモデル（測定値または TCAD＝素子の物理シミュレーションの結果の表）。DIG / BB / TIG の各種。ゲート長 20 nm の予測モデルを含む | 表引き（`$table_model`）を OpenVAF が扱えるかは要確認。容量の情報が無いモデルは遅延の評価に使えない |
+| THM-RFET（THM、2026-04 公開） | DIG-RFET と TIG-RFET の物理ベースの Verilog-A コンパクトモデル。ソースとドレイン、プログラムゲートと制御ゲートの役割を対称に選べる | 式で書かれたモデルなので OpenVAF-reloaded で扱える見込み。ライセンスは要確認 |
+| RFET の Verilog-A モデル集（Zenodo、2025-06 公開） | GlobalFoundries の 22nm FDSOI に基づく表引きモデル（測定値または TCAD＝素子の物理シミュレーションの結果の表）。DIG / BB / TIG の各種。ゲート長 20 nm の予測モデルを含む | 表引き（`$table_model`）を OpenVAF-reloaded が扱えるかは要確認。容量の情報が無いモデルは遅延の評価に使えない |
 | FeRFET の Verilog-A モデル（論文、2025） | 強誘電体で極性を保持する RFET | 入手方法は要確認。構成メモリを兼ねる構造の比較に使う |
 
 ### 6.2 比較の規則
@@ -309,7 +309,7 @@ SX13g の最初の題材。どれも外部のモデルとして読み込み、Sh
 | 5 | A/D 境界の時刻の許容幅の既定（§6.2） | SX13b |
 | 6 | Stage の位置（§9） | Stage 4 の終わり |
 | 7 | 最初に使う RFET のモデル（式の THM-RFET か、表引きの Zenodo のモデル集か）と、そのライセンス（§6.1.1） | SX13g |
-| 8 | macOS で Verilog-A のモデルを回す環境（Linux のコンテナか CI か）（§6.1） | SX13g |
+| 8 | 手元（macOS）の ngspice の入れ方：OSDI を有効にしたビルドを使えるか、自分でビルドするか（§6.1） | SX13g |
 | 9 | 利用者の回路をファブリックへ写す方法（VTR / OpenFPGA に任せるか、SX8 の自作か、両方を比べるか）（§5 の SX13k） | SX13k |
 | 10 | Sim の時刻の内部表現（fs の整数か、秒の `double` か）（§5.2） | SX13b（主目的だけ先に進めるなら SX13i） |
 
@@ -319,5 +319,6 @@ SX13g の最初の題材。どれも外部のモデルとして読み込み、Sh
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 0.3 | 2026-11-11 | OpenVAF は後継の OpenVAF-reloaded を使い、macOS でも動く（手順とビルド済みバイナリあり）と訂正。OSDI の版と ngspice の版の対応を追記。要決定 8 を ngspice の OSDI 有効化に変更（SHDL-191） |
 | 0.2 | 2026-11-11 | 主目的（再構成可能トランジスタを使った 10 GHz 級の再構成可能回路）と汎用性の方針（§0.1 / §0.2）。用語、スイッチレベル記述と VTR / OpenFPGA、SX13g を本線へ、SX13i〜SX13l、10 GHz 級で変わること（§5.2）、最短経路（§5.3）、RFET のモデル（§6.1.1）、ps 単位のゴールデン、要決定 7〜10（SHDL-190） |
 | 0.1 | 2026-11-11 | 初版。前提の用語、各言語から取り入れるもの、モード、SX13a〜SX13h、検証先と比較の規則、ゴールデン、要決定の一覧（SHDL-189） |
