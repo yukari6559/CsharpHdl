@@ -260,7 +260,7 @@ Verilog / SystemVerilog には無い、**C# で書くこと・ツール一式で
 | **SX10** | C# ソースへの対応付け | 例外・検査エラー・出力 Verilog の各行が、C# の何行目から来たかを示す（呼び出し元情報を使う） | HC9、SX3 |
 | **SX12** | 半導体（ASIC）設計・検証への発展 | ASIC 向けの設計規則への切り替え、4 値シミュレーション、SDC とタイミング解析、オープンソース ASIC フロー（GDS まで）、合成後ネットリストの検証と等価性検査、形式検証、C# による検証基盤（UVM 相当）、既存の Verilog / SV 設計を C# で検証する用途。詳細は §4.3 | Stage 6 |
 | **SX11** | VS Code からの実機デバッグ | C# で観測する信号とトリガ条件を指定 → デバッグ用ビルドでロジックアナライザ回路を自動挿入 → 実機で記録 → PC に吸い上げて VCD（C# の信号名のまま）→ VS Code で C# Sim / RTL の波形と並べて表示。実機のレジスタの読み書き、VS Code のデバッガ UI（Debug Adapter Protocol）まで段階的に。詳細は §4.2 | Phase E / G |
-| **SX13** | アナログ・混在信号モード | FPGA とは別のモードで、アナログ回路とデジタルとの混在回路を書き、外部のシミュレータ（ngspice、Xyce、Gnucap、商用の AMS シミュレータ）と C# Sim の両方で許容誤差つきで検証する。Verilog-AMS を起点に、VHDL-AMS・SystemC AMS・SPICE・Modelica・SV の実数モデリングの良いところを取り入れる。詳細は §4.4 と [analog-plan.md](analog-plan.md) | SX4、HC8、SX2 |
+| **SX13** | アナログ・混在信号モード | 主目的は、再構成可能トランジスタ（RFET）などを併用した、FPGA のように書き換えられる 10 GHz 級の汎用回路の設計と検証。機能そのものは素子・構造に依存しない汎用の仕組みにする。FPGA とは別のモードで、アナログ回路とデジタルとの混在回路を書き、外部のシミュレータ（ngspice、Xyce、Gnucap、商用の AMS シミュレータ）と C# Sim の両方で許容誤差つきで検証する。Verilog-AMS を起点に、VHDL-AMS・SystemC AMS・SPICE・Modelica・SV の実数モデリングの良いところを取り入れる。詳細は §4.4 と [analog-plan.md](analog-plan.md) | SX4、HC8、SX2 |
 
 ### 4.1 検証から書き込みまでのワークフロー（SX2 の詳細）
 
@@ -383,6 +383,8 @@ Verilog / SystemVerilog には無い、**C# で書くこと・ツール一式で
 
 **目的:** 電圧・電流が連続に変わるアナログ回路と、今の Module（デジタル）との混在回路を C# で書き、FPGA とは別のモードで検証する。FPGA ではアナログ回路を作れないので、HC の外の独自機能とする。計画の正本は [analog-plan.md](analog-plan.md)。
 
+**主目的:** 再構成可能トランジスタ（1 個で n 型と p 型を切り替えられる素子）などを併用し、FPGA のように書き換えられて 10 GHz 級で動く新しい汎用回路（ファブリック）を作るための設計と検証。ただし機能は汎用にし、RFET や特定の構造を Core / Sim に組み込まない（analog-plan §0.2）。
+
 | ID | 内容 | 前提 |
 |----|------|------|
 | SX13a 量の型と境界 | 単位つきの量（電圧、電流、抵抗、容量など）、節点と端子、明示の A/D・D/A 境界部品、モードの切り替えと検査 | SX4 |
@@ -391,10 +393,14 @@ Verilog / SystemVerilog には無い、**C# で書くこと・ツール一式で
 | SX13d 線形回路網 | R・C・L・電源の回路を修正節点解析と陰的積分で解く（`.op` / `.tran` / `.ac`）。SPICE ネットリストを出力し、SpiceSharp・ngspice と答え合わせ | SX13a |
 | SX13e 振る舞い記述の原語 | Verilog-A の寄与文とアナログ演算子に当たる原語。Verilog-A / Verilog-AMS を出力 | SX13c、SX13d |
 | SX13f 混在シミュレーション | デジタルとアナログを同時に動かす。外部では ngspice の `d_cosim`（Verilator / Icarus） | SX13b、SX13d、SX2 |
-| SX13g 非線形素子と外部モデル（長期） | ダイオード・MOSFET・PDK のモデル。混在信号チップとして SX12c と合流 | SX13d、SX12c |
+| SX13g 素子の差し替えと外部モデル | 任意の端子数の素子を Verilog-A・SPICE のサブ回路・PDK のモデルで与える。ダイオード・MOSFET・RFET・FeRFET を同じ仕組みで。混在信号チップとして SX12c と合流 | SX13d、SX13e |
 | SX13h FMI 連携（長期） | FMU で Modelica などの機械・熱のモデルと連成 | SX13c |
+| SX13i スイッチレベル | 素子をスイッチとみなし 0 / 1 / X / Z と駆動の強さで速く検証。Verilog のスイッチレベル記述を出力 | SX13a、SX13g |
+| SX13j 配線の寄生と伝送線路 | 配線を分布 RC と伝送線路として置く（10 GHz では約 1.5 mm を超える配線が伝送線路） | SX13d |
+| SX13k 再構成可能ファブリックの生成と検証 | 引数からファブリックを組み立て、利用者の回路を写した構成ビットを入れて検証し、元の Module の Sim と一致を確かめる。VTR / OpenFPGA との連携 | SX13g、SX13i、SX8 または VTR |
+| SX13l 高速動作の評価 | 最高動作周波数、遅延、エネルギー、ジッタ。コーナーとモンテカルロ | SX13j、SX13k |
 
-**位置づけ:** SX13a は Stage 3（SX4）の後、SX13b 以降は Stage 4（HC8）の後。Stage 6 とは独立に進められる。独立の Stage（案：Stage 7）にするかは [analog-plan.md](analog-plan.md) §9 で決める。`fpga` モードで出る Verilog の文字列は変えない。
+**位置づけ:** SX13a は Stage 3（SX4）の後、SX13b 以降は Stage 4（HC8）の後。Stage 6 とは独立に進められる。主目的は analog-plan §5.3 の最短経路（a → d → e → g → i → j → k → l）で進める。独立の Stage（案：Stage 7）にするかは [analog-plan.md](analog-plan.md) §9 で決める。`fpga` モードで出る Verilog の文字列は変えない。
 
 ---
 
@@ -499,6 +505,7 @@ SX12a〜SX12h（§4.3）。FPGA 向けの DSL・Sim・一括実行・検証を�
 
 | 版 | 日付 | 変更 |
 |----|------|------|
+| 0.16 | 2026-11-11 | SX13 の主目的（RFET を使った 10 GHz 級の再構成可能回路）と SX13i〜SX13l を追加。SX13g を本線へ |
 | 0.15 | 2026-11-11 | SX13 アナログ・混在信号モード（§4.4、[analog-plan.md](analog-plan.md)）を追加 |
 | 0.14 | 2026-11-10 | SHDL-10 完了: 初期値付き ROM（`initial`）🟡。書き込みのできる `Mem` の初期値と `$readmemh` は残り |
 | 0.13 | 2026-10-30 | #165 完了: 繰り返し連結 `{N{x}}` ✅ |
